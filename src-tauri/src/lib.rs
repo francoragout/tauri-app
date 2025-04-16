@@ -1,34 +1,46 @@
-use tauri_plugin_sql::{Migration, MigrationKind};
+use tauri::Builder;
+use tauri_plugin_sql::{Builder as SqlBuilder, Migration, MigrationKind};
 
-fn get_migrations() -> Vec<Migration> {
-    vec![Migration {
+pub fn run() {
+    let migrations = vec![Migration {
         version: 1,
-        description: "create_products_table",
-        sql: r#"
+        description: "create_initial_tables",
+        sql: "
                 CREATE TABLE IF NOT EXISTS products (
-                    id TEXT PRIMARY KEY,
-                    category TEXT NOT NULL,
+                    id INTEGER PRIMARY KEY,
                     name TEXT NOT NULL,
                     variant TEXT,
-                    weight TEXT,
-                    purchase_price REAL NOT NULL,
-                    sale_price REAL NOT NULL,
+                    weight REAL,
+                    unit TEXT,
+                    category TEXT UNIQUE,
+                    price REAL NOT NULL,
                     stock INTEGER NOT NULL
                 );
-            "#,
-        kind: MigrationKind::Up,
-    }]
-}
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
-    tauri::Builder::default()
+                CREATE TABLE IF NOT EXISTS sales (
+                    id INTEGER PRIMARY KEY,
+                    date TEXT DEFAULT CURRENT_TIMESTAMP,
+                    total REAL NOT NULL
+                );
+
+                CREATE TABLE IF NOT EXISTS sale_items (
+                    sale_id INTEGER NOT NULL,
+                    product_id INTEGER NOT NULL,
+                    quantity INTEGER NOT NULL,
+                    FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
+                    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+                    PRIMARY KEY (sale_id, product_id)
+                );
+            ",
+        kind: MigrationKind::Up,
+    }];
+
+    Builder::default()
         .plugin(
-            tauri_plugin_sql::Builder::default()
-                .add_migrations("sqlite:mydatabase.db", get_migrations())
+            SqlBuilder::default()
+                .add_migrations("sqlite:mydatabase.db", migrations)
                 .build(),
         )
-        .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

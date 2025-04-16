@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -13,16 +12,14 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ProductSchema } from "@/lib/zod";
-import { useTransition } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { CreateProduct } from "@/lib/db";
 import { toast } from "sonner";
 import {
   Select,
@@ -31,35 +28,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { cn } from "@/lib/utils";
-import { DollarSignIcon } from "lucide-react";
-import { Toggle } from "../ui/toggle";
+import { useCreateProduct } from "@/lib/mutations/useCreateProduct";
 
 export default function ProductCreateForm() {
-  const [isPending, startTransition] = useTransition();
-  // const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
-    defaultValues: {},
+    defaultValues: {
+      name: "",
+      variant: "",
+      weight: undefined,
+      unit: undefined,
+      category: "",
+      price: undefined,
+      stock: undefined,
+    },
   });
 
+  const { mutate, isPending } = useCreateProduct();
+
   function onSubmit(values: z.infer<typeof ProductSchema>) {
-    startTransition(() => {
-      CreateProduct(values).then((response) => {
-        if (response.success) {
-          toast.success(response.message);
-        } else {
-          toast.error(response.message);
-        }
-      });
+    mutate(values, {
+      onSuccess: () => {
+        setIsOpen(false);
+        form.reset();
+        toast.success("Producto creado exitosamente.");
+      },
+      onError: () => {
+        toast.error("Error al crear el producto.");
+      },
     });
   }
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Edit Profile</Button>
+        <Button size="sm">Agregar</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -69,84 +74,19 @@ export default function ProductCreateForm() {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-2">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disabled={isPending}
-                          placeholder="Nombre (requerido)"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="variant"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disabled={isPending}
-                          placeholder="Variante (opcional)"
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="weight"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="Peso (opcional)"
-                          value={field.value?.value || ""}
-                          onChange={(e) =>
-                            field.onChange({
-                              ...field.value,
-                              value: e.target.value,
-                            })
-                          }
-                          disabled={isPending}
-                        />
-                        <Select
-                          onValueChange={(value) =>
-                            field.onChange({ ...field.value, unit: value })
-                          }
-                          disabled={isPending}
-                        >
-                          <SelectTrigger
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value?.unit && "text-muted-foreground"
-                            )}
-                          >
-                            <SelectValue placeholder="Unidad" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="kg">kg</SelectItem>
-                            <SelectItem value="g">g</SelectItem>
-                            <SelectItem value="l">l</SelectItem>
-                            <SelectItem value="ml">ml</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <Input
+                        {...field}
+                        disabled={isPending}
+                        placeholder="Nombre (requerido)"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -155,21 +95,16 @@ export default function ProductCreateForm() {
 
               <FormField
                 control={form.control}
-                name="purchase_price"
+                name="variant"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex gap-2 items-center">
-                      <Toggle className="h-9 w-9 bg-accent">
-                        <DollarSignIcon />
-                      </Toggle>
-                      <FormControl>
-                        <Input
-                          placeholder="Precio compra (requerido)"
-                          {...field}
-                          disabled={isPending}
-                        />
-                      </FormControl>
-                    </div>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={isPending}
+                        placeholder="Variante (opcional)"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -177,21 +112,76 @@ export default function ProductCreateForm() {
 
               <FormField
                 control={form.control}
-                name="sale_price"
+                name="weight"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex gap-2 items-center">
-                      <Toggle className="h-9 w-9 bg-accent">
-                        <DollarSignIcon />
-                      </Toggle>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={isPending}
+                        placeholder="Peso (opcional)"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="unit"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
-                        <Input
-                          placeholder="Precio venta (requerido)"
-                          {...field}
-                          disabled={isPending}
-                        />
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Unidad (opcional)" />
+                        </SelectTrigger>
                       </FormControl>
-                    </div>
+                      <SelectContent>
+                        <SelectItem value="kg">kg</SelectItem>
+                        <SelectItem value="g">g</SelectItem>
+                        <SelectItem value="l">l</SelectItem>
+                        <SelectItem value="ml">ml</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={isPending}
+                        placeholder="Categoría (requerido)"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={isPending}
+                        placeholder="Precio (requerido)"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -214,16 +204,23 @@ export default function ProductCreateForm() {
                 )}
               />
             </div>
-            <DialogFooter>
+
+            <div className="flex justify-end space-x-2">
               <Button
-                type="submit"
+                variant="outline"
                 size="sm"
-                className="h-8"
                 disabled={isPending}
+                onClick={() => {
+                  setIsOpen(false);
+                  form.reset();
+                }}
               >
+                Cancelar
+              </Button>
+              <Button type="submit" size="sm" disabled={isPending}>
                 Guardar
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </Form>
       </DialogContent>

@@ -1,17 +1,30 @@
 import { z } from "zod";
 
 export const ProductSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  variant: z.string().nullable(),
-  weight: z.object({
-    value: z.string().optional(),
-    unit: z.string().optional(),
+  id: z.string().optional(),
+  name: z.string().nonempty({
+    message: "Ingrese el nombre del producto",
   }),
-  category: z.string(),
-  purchase_price: z.coerce.number(),
-  sale_price: z.coerce.number(),
-  stock: z.coerce.number(),
+  variant: z.string().optional(),
+  weight: z.coerce.number({
+    invalid_type_error: "Solo se permiten números enteros y decimales",
+  }).optional(),
+  unit: z.enum(["kg", "g", "l", "ml", "unidad"]).optional(),
+  category: z.string().nonempty({
+    message: "Seleccione la categoría del producto",
+  }),
+  price: z.coerce.number({
+    invalid_type_error: "Ingrese el precio del producto",
+  }).min(1, {
+    message: "El precio de venta debe ser mayor a 0",
+  }),
+  stock: z.coerce.number({
+    invalid_type_error: "Ingrese el stock del producto",
+  }).int({
+    message: "El stock debe ser un número entero",
+  }).min(1, {
+    message: "El stock debe ser mayor a 0",
+  }),
 });
 
 export type Product = z.infer<typeof ProductSchema>;

@@ -34,7 +34,7 @@
   },
   "plugins": {
     "sql": {
-      "default": "sqlite:mydatabase.db"
+      "preload": ["sqlite:mydatabase.db"]
     }
   }
 }
