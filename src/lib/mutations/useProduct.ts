@@ -1,11 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
-import { z } from "zod";
-import { ProductSchema } from "../zod";
+import { Product } from "../zod";
 
-type Product = z.infer<typeof ProductSchema>;
-
-export function useCreateProduct() {
+export function CreateProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -32,7 +29,7 @@ export function useCreateProduct() {
   });
 }
 
-export function useUpdateProduct() {
+export function UpdateProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({

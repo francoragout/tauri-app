@@ -6,6 +6,7 @@ import { ProductSchema } from "@/lib/zod";
 import { Plus } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/features/cart/cartSlice";
+import { toast } from "sonner";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -28,6 +29,7 @@ export function ProductsTableRowActions<TData>({
         quantity: 1,
       })
     );
+    toast.success("Agregado al carrito", )
   };
 
   return (

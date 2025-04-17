@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useCreateProduct } from "@/lib/mutations/useCreateProduct";
+import { CreateProduct } from "@/lib/mutations/useProduct";
 
 export default function ProductCreateForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,7 +46,7 @@ export default function ProductCreateForm() {
     },
   });
 
-  const { mutate, isPending } = useCreateProduct();
+  const { mutate, isPending } = CreateProduct();
 
   function onSubmit(values: z.infer<typeof ProductSchema>) {
     mutate(values, {

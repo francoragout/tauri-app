@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+// 📦 Esquema para crear y leer un producto
+
 export const ProductSchema = z.object({
   id: z.number().optional(),
   name: z.string().nonempty({
@@ -34,11 +36,31 @@ export const ProductSchema = z.object({
     }),
 });
 
+// 📤 Esquema para crear una venta con productos
+
 export const SaleSchema = z.object({
-  id: z.number().optional(),
-  date: z.string().optional(),
   total: z.number(),
+  date: z.string().optional(),
+  items: z.array(
+    z.object({
+      product_id: z.number().int(),
+      quantity: z.number().int().positive(),
+    })
+  ),
+})
+
+// 📥 Esquemas de respuesta para JOIN plano
+// Basado en tu SQL JOIN entre sales, sale_items y products
+
+
+export const SaleItemsSchema = z.object({
+  sale_id: z.number(),
+  sale_date: z.string(),
+  sale_total: z.number(),
+  products_summary: z.string(), // Nuevo campo para los productos combinados
 });
 
+export type SaleItems = z.infer<typeof SaleItemsSchema>;
 export type Product = z.infer<typeof ProductSchema>;
 export type Sale = z.infer<typeof SaleSchema>;
+
