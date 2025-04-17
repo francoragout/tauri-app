@@ -27,7 +27,34 @@ export function useCreateProduct() {
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] }); // 🔄 refresca la tabla automáticamente
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (values: Product) => {
+      const db = await Database.load("sqlite:mydatabase.db");
+
+      await db.execute(
+        `UPDATE products SET name = $1, variant = $2, weight = $3, unit = $4, category = $5, price = $6, stock = $7 WHERE id = $8`,
+        [
+          values.name,
+          values.variant,
+          values.weight,
+          values.unit,
+          values.category,
+          values.price,
+          values.stock,
+          values.id,
+        ]
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 }

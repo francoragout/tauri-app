@@ -2,17 +2,18 @@ use tauri::Builder;
 use tauri_plugin_sql::{Builder as SqlBuilder, Migration, MigrationKind};
 
 pub fn run() {
-    let migrations = vec![Migration {
-        version: 1,
-        description: "create_initial_tables",
-        sql: "
+    let migrations = vec![
+        Migration {
+            version: 1,
+            description: "create_initial_tables",
+            sql: "
                 CREATE TABLE IF NOT EXISTS products (
                     id INTEGER PRIMARY KEY,
                     name TEXT NOT NULL,
                     variant TEXT,
                     weight REAL,
                     unit TEXT,
-                    category TEXT UNIQUE,
+                    category TEXT,
                     price REAL NOT NULL,
                     stock INTEGER NOT NULL
                 );
@@ -32,8 +33,9 @@ pub fn run() {
                     PRIMARY KEY (sale_id, product_id)
                 );
             ",
-        kind: MigrationKind::Up,
-    }];
+            kind: MigrationKind::Up,
+        },
+    ];
 
     Builder::default()
         .plugin(

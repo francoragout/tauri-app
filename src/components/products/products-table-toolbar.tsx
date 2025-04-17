@@ -1,14 +1,11 @@
 "use client";
 
 import { Table } from "@tanstack/react-table";
-
 import { Input } from "@/components/ui/input";
 import { DataTableFacetedFilter } from "../data-table-faceted-filter";
-import { categories } from "@/constants/data";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 import ProductCreateForm from "./product-create-form";
-
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -18,6 +15,8 @@ export function ProductsTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
+
+  
 
   return (
     <div className="flex items-center justify-between">
@@ -33,8 +32,15 @@ export function ProductsTableToolbar<TData>({
         {table.getColumn("category") && (
           <DataTableFacetedFilter
             column={table.getColumn("category")}
-            title="Categoría"
-            options={categories}
+            title="Categorías"
+            options={
+              Array.from(
+                table.getColumn("category")?.getFacetedUniqueValues()?.entries() ?? []
+              ).map(([key, _]) => ({
+                label: String(key),
+                value: String(key),
+              }))
+            }
           />
         )}
 

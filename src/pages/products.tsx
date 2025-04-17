@@ -1,4 +1,3 @@
-// src/pages/products.tsx
 import "../App.css";
 import { useQuery } from "@tanstack/react-query";
 import { ProductsColumns } from "@/components/products/products-columns";
@@ -6,7 +5,6 @@ import { ProductsTable } from "@/components/products/products-table";
 import { z } from "zod";
 import { ProductSchema } from "@/lib/zod";
 import Database from "@tauri-apps/plugin-sql";
-
 
 type Product = z.infer<typeof ProductSchema>;
 

@@ -62,16 +62,18 @@ export const ProductsColumns: ColumnDef<Product>[] = [
   {
     accessorKey: "category",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Categoría" />
+      <DataTableColumnHeader column={column} title="Categorías" />
     ),
-    cell: ({ row }) => <div>{row.getValue("category")}</div>,
+    filterFn: (row, columnId, filterValue) => {
+      return filterValue.includes(row.getValue(columnId));
+    },
   },
   {
     accessorKey: "price",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Precio" />
     ),
-    cell: ({ row }) => <div>{row.getValue("sale_price")}</div>,
+    cell: ({ row }) => <div>${row.getValue("price")}</div>,
   },
   {
     accessorKey: "stock",
