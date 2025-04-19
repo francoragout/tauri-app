@@ -48,34 +48,11 @@ import {
 import { CreateSale } from "@/lib/mutations/useSale";
 import { toast } from "sonner";
 import { useState } from "react";
+import { Customer } from "@/lib/zod";
 
-const frameworks = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
-  },
-];
-
-export default function Cart() {
+export default function Cart({ customers }: { customers: Customer[] }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-
   const items = useSelector((state: RootState) => state.cart.items);
   const totalCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const totalPrice = items.reduce(
@@ -106,15 +83,19 @@ export default function Cart() {
         product_id: item.id!,
         quantity: item.quantity,
       })),
+      customer_id: value ? +value : undefined,
+      is_paid: value ? 0 : 1,
     };
 
     mutate(values, {
       onSuccess: () => {
         dispatch(clearCart());
+        setValue("");
         toast.success("Venta realizada exitosamente.");
       },
-      onError: () => {
-        toast.error("Error al realizar la venta.");
+      onError: (error: any) => {
+        const errorMessage = error?.message || "Error al realizar la venta.";
+        toast.error(errorMessage);
       },
     });
   };
@@ -160,7 +141,7 @@ export default function Cart() {
         ) : (
           <>
             <Table>
-              <TableHeader className="bg-secondary">
+              <TableHeader className="bg-accent">
                 <TableRow>
                   <TableHead>Producto</TableHead>
                   <TableHead>Cantidad</TableHead>
@@ -210,7 +191,7 @@ export default function Cart() {
               </TableFooter>
             </Table>
             <DropdownMenuSeparator />
-            <div className="grid grid-cols-2 gap-2 items-center mt-2 mb-1">
+            <div className="grid grid-cols-2 gap-2 items-center mt-3 mb-2">
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -221,39 +202,50 @@ export default function Cart() {
                     className="justify-between"
                   >
                     {value
-                      ? frameworks.find(
-                          (framework) => framework.value === value
-                        )?.label
+                      ? customers.find((customer) => customer.id === +value)
+                          ?.full_name
                       : "Cliente (opcional)"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
+                <PopoverContent
+                  className="w-100 p-0 -translate-x-[5px] rounded-t-none"
+                  align="start"
+                >
                   <Command>
-                    <CommandInput placeholder="Search framework..." />
+                    <CommandInput placeholder="Buscar cliente..." />
                     <CommandList>
-                      <CommandEmpty>No framework found.</CommandEmpty>
+                      <CommandEmpty>No se encontró cliente.</CommandEmpty>
                       <CommandGroup>
-                        {frameworks.map((framework) => (
+                        {customers.map((customer) => (
                           <CommandItem
-                            key={framework.value}
-                            value={framework.value}
+                            key={customer.id}
+                            value={customer.full_name}
                             onSelect={(currentValue) => {
-                              setValue(
-                                currentValue === value ? "" : currentValue
+                              const selectedCustomer = customers.find(
+                                (c) => c.full_name === currentValue
                               );
+
+                              if (!selectedCustomer?.id) return;
+
+                              if (value === selectedCustomer.id.toString()) {
+                                setValue("");
+                              } else {
+                                setValue(selectedCustomer.id.toString());
+                              }
+
                               setOpen(false);
                             }}
                           >
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                value === framework.value
+                                value === customer.id?.toString()
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}
                             />
-                            {framework.label}
+                            {`${customer.full_name} - ${customer.classroom}`}
                           </CommandItem>
                         ))}
                       </CommandGroup>

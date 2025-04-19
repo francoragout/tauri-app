@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { ProductsTableRowActions } from "./products-table-row-actions";
 import { Product } from "@/lib/zod";
+import { Badge } from "../ui/badge";
 
 export const ProductsColumns: ColumnDef<Product>[] = [
   {
@@ -53,16 +54,9 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     cell: ({ row }) => <div>{row.getValue("weight")}</div>,
   },
   {
-    accessorKey: "unit",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Unidad" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("unit")}</div>,
-  },
-  {
     accessorKey: "category",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Categorías" />
+      <DataTableColumnHeader column={column} title="Categoría" />
     ),
     filterFn: (row, columnId, filterValue) => {
       return filterValue.includes(row.getValue(columnId));
@@ -80,7 +74,34 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Stock" />
     ),
-    cell: ({ row }) => <div>{row.getValue("stock")}</div>,
+    cell: ({ row }) => {
+      const stock = row.getValue("stock") as number;
+      return stock < 1 ? (
+        <Badge variant="secondary">
+          Sin stock
+        </Badge>
+      ) : (
+        <div>{stock}</div>
+      );
+    },
+  },
+  {
+    accessorKey: "times_sold",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Ventas" />
+    ),
+    cell: ({ row }) => <div>{row.getValue("times_sold")}</div>,
+  },
+  {
+    accessorKey: "combined_filter",
+    accessorFn: (row) => `${row.name} ${row.variant}`,
+    filterFn: (row, columnId, filterValue) => {
+      const value = row.getValue(columnId) as string;
+      return value.toLowerCase().includes(filterValue.toLowerCase());
+    },
+    enableHiding: true,
+    header: undefined,
+    cell: undefined,
   },
   {
     id: "actions",

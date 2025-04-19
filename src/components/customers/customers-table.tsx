@@ -26,14 +26,14 @@ import {
 } from "@/components/ui/table"
 
 import { DataTablePagination } from "@/components/data-table-pagination"
-import { SalesTableToolbar } from "./sales-table-toolbar"
+import { CustomersTableToolbar } from "./customers-table-toolbar"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
 }
 
-export function SalesTable<TData, TValue>({
+export function CustomersTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -43,12 +43,7 @@ export function SalesTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
-  const [sorting, setSorting] = React.useState<SortingState>([
-    {
-      id: "sale_date",
-      desc: true,
-    },
-  ])
+  const [sorting, setSorting] = React.useState<SortingState>([])
 
   const table = useReactTable({
     data,
@@ -74,7 +69,7 @@ export function SalesTable<TData, TValue>({
 
   return (
     <div className="space-y-4 pt-4">
-      <SalesTableToolbar table={table} />
+      <CustomersTableToolbar table={table} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -101,7 +96,6 @@ export function SalesTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="h-13"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

@@ -7,13 +7,19 @@ pub fn run() {
             version: 1,
             description: "create_initial_tables",
             sql: "
+                CREATE TABLE IF NOT EXISTS customers (
+                    id INTEGER PRIMARY KEY,
+                    full_name TEXT NOT NULL,
+                    classroom TEXT NOT NULL,
+                    phone TEXT
+                );
+
                 CREATE TABLE IF NOT EXISTS products (
                     id INTEGER PRIMARY KEY,
                     name TEXT NOT NULL,
                     variant TEXT,
-                    weight REAL,
-                    unit TEXT,
-                    category TEXT,
+                    weight TEXT,
+                    category TEXT NOT NULL,
                     price REAL NOT NULL,
                     stock INTEGER NOT NULL
                 );
@@ -21,7 +27,10 @@ pub fn run() {
                 CREATE TABLE IF NOT EXISTS sales (
                     id INTEGER PRIMARY KEY,
                     date TEXT DEFAULT CURRENT_TIMESTAMP,
-                    total REAL NOT NULL
+                    total REAL NOT NULL,
+                    is_paid INTEGER DEFAULT 0,
+                    customer_id INTEGER,
+                    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
                 );
 
                 CREATE TABLE IF NOT EXISTS sale_items (
@@ -31,6 +40,14 @@ pub fn run() {
                     FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
                     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
                     PRIMARY KEY (sale_id, product_id)
+                );
+                
+                CREATE TABLE IF NOT EXISTS expenses (
+                    id INTEGER PRIMARY KEY,
+                    date TEXT DEFAULT CURRENT_TIMESTAMP,
+                    amount REAL NOT NULL,
+                    category TEXT NOT NULL,
+                    description TEXT
                 );
             ",
             kind: MigrationKind::Up,

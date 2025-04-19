@@ -3,8 +3,11 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/data-table-column-header";
-import { SalessTableRowActions } from "./sales-table-row-actions";
 import { SaleItems } from "@/lib/zod";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import clsx from "clsx";
+import { Badge } from "../ui/badge";
 
 export const SalesColumns: ColumnDef<SaleItems>[] = [
   {
@@ -32,18 +35,41 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "sale_id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Venta" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("sale_id")}</div>,
-  },
-  {
     accessorKey: "sale_date",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Fecha" />
     ),
-    cell: ({ row }) => <div>{row.getValue("sale_date")}</div>,
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("sale_date") + "Z");
+      return <div>{format(date, "PPP", { locale: es })}</div>; // Solo la fecha
+    },
+  },
+  {
+    accessorKey: "sale_time",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Hora" />
+    ),
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("sale_date") + "Z");
+      return <div>{format(date, "p", { locale: es })}</div>; // Solo la hora
+    },
+  },
+  {
+    accessorKey: "products_summary",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Productos" />
+    ),
+    cell: ({ row }) => {
+      const products =
+        (row.getValue("products_summary") as string)?.split(", ") || [];
+      return (
+        <div>
+          {products.map((product, index) => (
+            <div key={index}>{product}</div>
+          ))}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "sale_total",
@@ -53,14 +79,41 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
     cell: ({ row }) => <div>${row.getValue("sale_total")}</div>,
   },
   {
-    accessorKey: "products_summary",
+    accessorKey: "payment_method",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="productos" />
+      <DataTableColumnHeader column={column} title="Pago" />
     ),
-    cell: ({ row }) => <div>{row.getValue("products_summary")}</div>,
+    cell: ({ row }) => {
+      const customer_id = row.getValue("customer_info");
+      return (
+        <Badge variant="secondary">
+          {customer_id === null ? "Efectivo" : "Credito"}
+        </Badge>
+      );
+    },
   },
   {
-    id: "actions",
-    cell: ({ row }) => <SalessTableRowActions row={row} />,
+    accessorKey: "customer_info",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Alumno" />
+    ),
+    cell: ({ row }) => {
+      const customer_info = row.getValue("customer_info") as string;
+      return <div>{customer_info === null ? "-" : customer_info}</div>;
+    },
   },
+  // {
+  //   accessorKey: "payment_method",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Metodo de pago" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const paymentMethod = row.getValue("payment_method");
+  //     return <div>{paymentMethod === "cash" ? "Efectivo" : "Tarjeta"}</div>;
+  //   },
+  // }
+  // {
+  //   id: "actions",
+  //   cell: ({ row }) => <SalessTableRowActions row={row} />,
+  // },
 ];

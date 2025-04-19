@@ -7,10 +7,25 @@ import { Bell } from "lucide-react";
 import { Badge } from "./components/ui/badge";
 import { NavLink, Outlet, useLocation } from "react-router";
 import Cart from "./components/cart";
+import { Customer, CustomerSchema } from "./lib/zod";
+import Database from "@tauri-apps/plugin-sql";
+import { useQuery } from "@tanstack/react-query";
+
+async function GetCustomers(): Promise<Customer[]> {
+  const db = await Database.load("sqlite:mydatabase.db");
+  const result = await db.select("SELECT * FROM customers");
+  return CustomerSchema.array().parse(result);
+}
 
 export default function App() {
   const location = useLocation();
   const currentTab = location.pathname.replace("/", "") || "dashboard";
+
+  const { data: customers = [] } = useQuery({
+    queryKey: ["customers"],
+    queryFn: GetCustomers,
+  });
+
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Card className="@container/main flex flex-1 flex-col gap-2 m-3">
@@ -26,13 +41,13 @@ export default function App() {
               <TabsTrigger asChild value="sales" className="cursor-default">
                 <NavLink to="/sales">Ventas</NavLink>
               </TabsTrigger>
-              <TabsTrigger asChild value="clients" className="cursor-default">
-                <NavLink to="/clients">Clientes</NavLink>
+              <TabsTrigger asChild value="customers" className="cursor-default">
+                <NavLink to="/customers">Clientes</NavLink>
               </TabsTrigger>
             </TabsList>
 
             <div className="flex items-center space-x-4">
-              <Cart />
+              <Cart customers={customers}/>
               <Button
                 variant="outline"
                 size="icon"

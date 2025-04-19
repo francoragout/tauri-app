@@ -2,31 +2,47 @@
 
 import { Table } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
+import { DataTableFacetedFilter } from "../data-table-faceted-filter";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
+import CustomerCreateForm from "./customer-create-form";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
 }
 
-export function SalesTableToolbar<TData>({
+export function CustomersTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
+
+  
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-4">
         <Input
-          placeholder="Filtrar ventas..."
-          value={
-            (table.getColumn("sale_date")?.getFilterValue() as string) ?? ""
-          }
+          placeholder="Filtrar clientes..."
+          value={(table.getColumn("full_name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("sale_date")?.setFilterValue(event.target.value)
+            table.getColumn("full_name")?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
+        {table.getColumn("classroom") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("classroom")}
+            title="Aula"
+            options={
+              Array.from(
+                table.getColumn("classroom")?.getFacetedUniqueValues()?.entries() ?? []
+              ).map(([key, _]) => ({
+                label: String(key),
+                value: String(key),
+              }))
+            }
+          />
+        )}
 
         {isFiltered && (
           <Button
@@ -39,6 +55,7 @@ export function SalesTableToolbar<TData>({
           </Button>
         )}
       </div>
+      <CustomerCreateForm />
     </div>
   );
 }
