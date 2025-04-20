@@ -27,3 +27,49 @@ export function CreateProduct() {
     },
   });
 }
+
+export function UpdateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (values: Product) => {
+      const db = await Database.load("sqlite:mydatabase.db");
+
+      console.log(values)
+
+      await db.execute(
+        `UPDATE products SET brand = $1, variant = $2, weight = $3, category = $4, price = $5, stock = $6 WHERE id = $7`,
+        [
+          values.brand,
+          values.variant,
+          values.weight,
+          values.category,
+          values.price,
+          values.stock,
+          values.id,
+        ]
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
+export function DeleteProducts() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: number[]) => {
+      const db = await Database.load("sqlite:mydatabase.db");
+
+      await db.execute(
+        `DELETE FROM products WHERE id IN (${ids.map(() => "?").join(",")})`,
+        ids
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}

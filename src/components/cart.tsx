@@ -141,7 +141,7 @@ export default function Cart({ customers }: { customers: Customer[] }) {
         ) : (
           <>
             <Table>
-              <TableHeader className="bg-accent">
+              <TableHeader>
                 <TableRow>
                   <TableHead>Producto</TableHead>
                   <TableHead>Cantidad</TableHead>

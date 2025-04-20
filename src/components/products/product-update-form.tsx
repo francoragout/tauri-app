@@ -15,40 +15,53 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ProductSchema } from "@/lib/zod";
-import { useState } from "react";
+import { Product, ProductSchema } from "@/lib/zod";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { CreateProduct } from "@/lib/mutations/useProduct";
+import { UpdateProduct } from "@/lib/mutations/useProduct";
+import { Pencil } from "lucide-react";
 
-export default function ProductUpdateForm() {
+export default function ProductUpdateForm({ product }: { product: Product }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
     defaultValues: {
-      brand: "",
-      variant: "",
-      weight: "",
-      category: "",
-      price: undefined,
-      stock: undefined,
+      brand: product.brand,
+      variant: product.variant,
+      weight: product.weight,
+      category: product.category,
+      price: product.price,
+      stock: product.stock,
     },
   });
 
-  const { mutate, isPending } = CreateProduct();
+  const { mutate, isPending } = UpdateProduct();
+
+  useEffect(() => {
+    form.reset({
+      brand: product.brand,
+      variant: product.variant,
+      weight: product.weight,
+      category: product.category,
+      price: product.price,
+      stock: product.stock,
+    });
+  }, [product, form]);
 
   function onSubmit(values: z.infer<typeof ProductSchema>) {
+    values.id = product.id; // Set the id of the product to be updated
     mutate(values, {
       onSuccess: () => {
         setIsOpen(false);
-        form.reset();
-        toast.success("Producto creado exitosamente.");
+
+        toast.success("Producto editado exitosamente.");
       },
       onError: () => {
-        toast.error("Error al crear el producto.");
+        toast.error("Error al editar el producto.");
       },
     });
   }
@@ -56,13 +69,17 @@ export default function ProductUpdateForm() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button variant="outline" size="sm">
+          <Pencil />
           Editar
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
         <DialogHeader>
-          <DialogTitle>Agregar producto</DialogTitle>
+          <DialogTitle>Editar producto</DialogTitle>
           <DialogDescription>
             Use tabs para navegar mas rapido entre los diferentes campos.
           </DialogDescription>
@@ -171,8 +188,21 @@ export default function ProductUpdateForm() {
               )}
             />
 
-            <div className="flex justify-end">
-              <Button type="submit" size="sm" disabled={isPending}>
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+                disabled={isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isPending || !form.formState.isDirty}
+              >
                 Guardar
               </Button>
             </div>

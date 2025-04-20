@@ -17,6 +17,7 @@ export function CreateCustomer() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["customers"] });
+
     },
   });
 }

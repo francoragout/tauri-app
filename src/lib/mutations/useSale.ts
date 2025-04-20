@@ -21,19 +21,18 @@ export function CreateSale() {
         if (stock < item.quantity) {
           // Obtener detalles del producto
           const productResult = await db.select<
-            { name: string; variant: string; weight: number }[]
-          >(`SELECT name, variant, weight FROM products WHERE id = $1`, [
+            { brand: string; variant: string; weight: string }[]
+          >(`SELECT brand, variant, weight FROM products WHERE id = $1`, [
             item.product_id,
           ]);
 
-          const productName = productResult[0]?.name || "Producto desconocido";
+          const productBrand = productResult[0]?.brand || "Producto desconocido";
           const productVariant =
             productResult[0]?.variant || "Variante desconocida";
           const productWeight = productResult[0]?.weight || 0;
 
           throw new Error(
-            `Stock insuficiente: ${productName} ${productVariant} ${productWeight} 
-            Disponible: ${stock}, requerido: ${item.quantity}`
+            `Stock insuficiente: ${productBrand} ${productVariant} ${productWeight}`
           );
         }
       }

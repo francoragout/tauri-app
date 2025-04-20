@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-// 📦 Esquema para crear y leer un producto
-
 export const ProductSchema = z.object({
   id: z.number().optional(),
   brand: z.string().nonempty({
@@ -28,6 +26,8 @@ export const ProductSchema = z.object({
     }),
   times_sold: z.number().optional(),
 });
+
+export type Product = z.infer<typeof ProductSchema>;
 
 // 📤 Esquema para crear una venta con productos
 
@@ -66,11 +66,10 @@ export const CustomerSchema = z.object({
     }),
   reference: z.string().optional(),
   phone: z.string().optional(),
-  total_sales_amount: z.number().default(0),
-  sales_details: z.string().default(""),
+  total_sales_amount: z.number().optional(),
+  sales_details: z.string().optional(),
 });
 
 export type SaleItems = z.infer<typeof SaleItemsSchema>;
-export type Product = z.infer<typeof ProductSchema>;
 export type Sale = z.infer<typeof SaleSchema>;
 export type Customer = z.infer<typeof CustomerSchema>;

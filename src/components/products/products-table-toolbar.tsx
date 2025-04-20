@@ -17,6 +17,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { DeleteProducts } from "@/lib/mutations/useProduct";
+import { toast } from "sonner";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -28,11 +30,24 @@ export function ProductsTableToolbar<TData>({
   const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
 
+  const { mutate: deleteProducts } = DeleteProducts();
+
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
     const productsIds = selectedRows.map(
-      (row) => (row.original as { id: string }).id
+      (row) => (row.original as { id: number }).id
     );
+
+    deleteProducts(productsIds, {
+      onSuccess: () => {
+        toast.success(
+          `Se han eliminado ${productsIds.length} productos seleccionados.`
+        );
+      },
+      onError: () => {
+        toast.error("Error al eliminar los productos seleccionados.");
+      },
+    });
   };
 
   return (
@@ -99,8 +114,8 @@ export function ProductsTableToolbar<TData>({
                 <AlertDialogDescription className="flex flex-col space-y-3">
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente los administradores seleccionados y todos
-                    los datos asociados de nuestros servidores.
+                    permanentemente los productos seleccionados aunque no
+                    afectará a las ventas asociadas con los mismos.
                   </span>
 
                   <span className="flex flex-col">
@@ -110,9 +125,9 @@ export function ProductsTableToolbar<TData>({
                         {
                           (
                             row.original as {
-                              name: string;
+                              brand: string;
                             }
-                          ).name
+                          ).brand
                         }{" "}
                         {
                           (
@@ -120,6 +135,13 @@ export function ProductsTableToolbar<TData>({
                               variant: string;
                             }
                           ).variant
+                        }{" "}
+                        {
+                          (
+                            row.original as {
+                              weight: string;
+                            }
+                          ).weight
                         }
                       </span>
                     ))}

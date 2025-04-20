@@ -3,7 +3,7 @@
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { CustomerSchema } from "@/lib/zod";
-import { MoreHorizontal, Pencil, Trash } from "lucide-react";
+import { MoreHorizontal, Trash } from "lucide-react";
 
 import {
   AlertDialog,
@@ -22,6 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import CustomerUpdateForm from "./customer-update-form";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -45,11 +46,7 @@ export function CustomersTableRowActions<TData>({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
         <div className="flex flex-col">
-          <Button variant="ghost" className="flex justify-start pl-2" size="sm">
-            <Pencil className="h-4 w-4" />
-            Editar
-          </Button>
-
+          <CustomerUpdateForm customer={customer} />
           <AlertDialog>
             <AlertDialogTrigger>
               <Button
@@ -72,8 +69,7 @@ export function CustomersTableRowActions<TData>({
                   {
                     <span className="text-primary">
                       {" "}
-                      &apos;{customer.full_name} {customer.reference}&apos;
-                      &apos;
+                      &apos;{customer.full_name}&apos; &apos;
                     </span>
                   }
                   {". "}
