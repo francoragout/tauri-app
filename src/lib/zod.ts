@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const ProductSchema = z.object({
   id: z.number().optional(),
-  name: z.string().nonempty({
+  brand: z.string().nonempty({
     message: "Ingrese el nombre del producto",
   }),
   variant: z.string().optional(),
@@ -35,10 +35,7 @@ export const SaleSchema = z.object({
   total: z.number(),
   date: z.string().optional(),
   customer_id: z.number().optional(),
-  is_paid: z
-    .number()
-    .default(0)
-    .optional(),
+  is_paid: z.number().default(0).optional(),
   items: z.array(
     z.object({
       product_id: z.number().int(),
@@ -67,17 +64,10 @@ export const CustomerSchema = z.object({
     .nonempty({
       message: "Ingrese el nombre completo del cliente",
     }),
-  classroom: z
-    .string({
-      required_error: "Ingrese el aula del cliente",
-    })
-    .nonempty({
-      message: "Ingrese el aula del cliente",
-    }),
+  reference: z.string().optional(),
   phone: z.string().optional(),
-  total_sales_count: z.number().optional(),
-  total_sales_amount: z.number().optional(),
-  sales_details: z.string().optional(),
+  total_sales_amount: z.number().default(0),
+  sales_details: z.string().default(""),
 });
 
 export type SaleItems = z.infer<typeof SaleItemsSchema>;

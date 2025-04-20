@@ -10,10 +10,10 @@ export function CreateProduct() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
-        `INSERT INTO products (name, variant, weight, category, price, stock)
+        `INSERT INTO products (brand, variant, weight, category, price, stock)
          VALUES ($1, $2, $3, $4, $5, $6)`,
         [
-          values.name,
+          values.brand,
           values.variant,
           values.weight,
           values.category,

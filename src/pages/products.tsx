@@ -10,7 +10,7 @@ async function GetProducts(): Promise<Product[]> {
   const query = `
     SELECT 
       products.id,
-      products.name,
+      products.brand,
       products.variant,
       products.weight,
       products.category,

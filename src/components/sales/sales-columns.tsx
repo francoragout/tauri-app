@@ -6,7 +6,6 @@ import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { SaleItems } from "@/lib/zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import clsx from "clsx";
 import { Badge } from "../ui/badge";
 
 export const SalesColumns: ColumnDef<SaleItems>[] = [
@@ -95,7 +94,7 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
   {
     accessorKey: "customer_info",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Alumno" />
+      <DataTableColumnHeader column={column} title="Cliente" />
     ),
     cell: ({ row }) => {
       const customer_info = row.getValue("customer_info") as string;

@@ -11,13 +11,12 @@ async function GetCustomers(): Promise<Customer[]> {
   SELECT 
     customers.id,
     customers.full_name,
-    customers.classroom,
+    customers.reference,
     customers.phone,
-    COUNT(sales.id) AS total_sales_count,
-    COALESCE(SUM(sales.total), 0) AS total_sales_amount,
+    COALESCE(SUM(CAST(sales.total AS INTEGER)), 0) AS total_sales_amount,
     COALESCE(
       GROUP_CONCAT(
-        strftime('%d-%m-%Y', sales.date) || ' ($' || sales.total || ')', 
+        strftime('%d-%m-%Y', sales.date) || ' ($' || CAST(sales.total AS INTEGER) || ')', 
         ', '
       ), ''
     ) AS sales_details
@@ -26,7 +25,7 @@ FROM
 LEFT JOIN
     sales ON sales.customer_id = customers.id
 GROUP BY 
-    customers.id, customers.full_name, customers.classroom;
+    customers.id, customers.full_name, customers.reference;
   `;
   const result = await db.select(query);
   return CustomerSchema.array().parse(result);

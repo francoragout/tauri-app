@@ -3,19 +3,23 @@
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { ProductSchema } from "@/lib/zod";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -40,14 +44,49 @@ export function ProductsTableRowActions<TData>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
-        <DropdownMenuItem>Edit</DropdownMenuItem>
-        <DropdownMenuItem>Make a copy</DropdownMenuItem>
-        <DropdownMenuItem>Favorite</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          Delete
-          <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-        </DropdownMenuItem>
+        <div className="flex flex-col">
+          <Button variant="ghost" className="flex justify-start pl-2" size="sm">
+            <Pencil className="h-4 w-4" />
+            Editar
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex justify-start pl-2 w-full"
+              >
+                <Trash className="h-4 w-4" />
+                Eliminar
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  ¿Estas completamente seguro?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer. Esto eliminará
+                  permanentemente el producto
+                  {
+                    <span className="text-primary">
+                      {" "}
+                      &apos;{product.brand} {product.variant} {product.weight}
+                      &apos;
+                    </span>
+                  }
+                  {". "}
+                  Las ventas asociadas a este producto no se verán afectadas.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction>Continuar</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );

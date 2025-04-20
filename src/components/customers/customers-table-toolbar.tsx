@@ -2,7 +2,6 @@
 
 import { Table } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
-import { DataTableFacetedFilter } from "../data-table-faceted-filter";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 import CustomerCreateForm from "./customer-create-form";
@@ -29,21 +28,6 @@ export function CustomersTableToolbar<TData>({
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("classroom") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("classroom")}
-            title="Aula"
-            options={
-              Array.from(
-                table.getColumn("classroom")?.getFacetedUniqueValues()?.entries() ?? []
-              ).map(([key, _]) => ({
-                label: String(key),
-                value: String(key),
-              }))
-            }
-          />
-        )}
-
         {isFiltered && (
           <Button
             variant="ghost"

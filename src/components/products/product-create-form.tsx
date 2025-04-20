@@ -30,7 +30,7 @@ export default function ProductCreateForm() {
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
     defaultValues: {
-      name: "",
+      brand: "",
       variant: "",
       weight: "",
       category: "",
@@ -73,14 +73,14 @@ export default function ProductCreateForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="name"
+              name="brand"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={isPending}
-                      placeholder="Nombre (requerido)"
+                      placeholder="Marca (requerido)"
                     />
                   </FormControl>
                   <FormMessage />

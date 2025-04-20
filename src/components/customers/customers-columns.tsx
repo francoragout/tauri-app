@@ -39,11 +39,11 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
     cell: ({ row }) => <div>{row.getValue("full_name")}</div>,
   },
   {
-    accessorKey: "classroom",
+    accessorKey: "reference",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Aula" />
+      <DataTableColumnHeader column={column} title="Referencia" />
     ),
-    cell: ({ row }) => <div>{row.getValue("classroom")}</div>,
+    cell: ({ row }) => <div>{row.getValue("reference")}</div>,
   },
   {
     accessorKey: "phone",
@@ -58,13 +58,6 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
       <DataTableColumnHeader column={column} title="Cuenta" />
     ),
     cell: ({ row }) => <div>${row.getValue("total_sales_amount")}</div>,
-  },
-  {
-    accessorKey: "total_sales_count",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Ventas" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("total_sales_count")}</div>,
   },
   {
     accessorKey: "sales_details",

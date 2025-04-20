@@ -31,7 +31,7 @@ export default function CustomerCreateForm() {
     resolver: zodResolver(CustomerSchema),
     defaultValues: {
       full_name: "",
-      classroom: "",
+      reference: "",
       phone: "",
     },
   });
@@ -85,14 +85,14 @@ export default function CustomerCreateForm() {
 
               <FormField
                 control={form.control}
-                name="classroom"
+                name="reference"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <Input
                         {...field}
                         disabled={isPending}
-                        placeholder="Aula (requerido)"
+                        placeholder="Referencia (opcional)"
                       />
                     </FormControl>
                     <FormMessage />

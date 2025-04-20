@@ -33,11 +33,11 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: "brand",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nombre" />
+      <DataTableColumnHeader column={column} title="Marca" />
     ),
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    cell: ({ row }) => <div>{row.getValue("brand")}</div>,
   },
   {
     accessorKey: "variant",
@@ -94,7 +94,7 @@ export const ProductsColumns: ColumnDef<Product>[] = [
   },
   {
     accessorKey: "combined_filter",
-    accessorFn: (row) => `${row.name} ${row.variant}`,
+    accessorFn: (row) => `${row.brand} ${row.variant}`,
     filterFn: (row, columnId, filterValue) => {
       const value = row.getValue(columnId) as string;
       return value.toLowerCase().includes(filterValue.toLowerCase());

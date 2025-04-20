@@ -76,7 +76,7 @@ export function ProductsTable<TData, TValue>({
     dispatch(
       addToCart({
         id: product.id,
-        name: product.name + " " + product.variant + " " + product.weight,
+        name: product.brand + " " + product.variant + " " + product.weight,
         price: product.price,
         quantity: 1,
       })

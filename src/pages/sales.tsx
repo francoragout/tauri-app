@@ -13,13 +13,13 @@ async function GetSales(): Promise<SaleItems[]> {
       sales.date AS sale_date,
       sales.total AS sale_total,
       GROUP_CONCAT(
-        products.name || 
+        products.brand || 
         ' ' || IFNULL(products.variant, '') || 
         ' ' || IFNULL(products.weight, '') || 
         ' (x' || sale_items.quantity || ')', 
         ', '
       ) AS products_summary,
-      (customers.full_name || ' - ' || customers.classroom) AS customer_info
+      (customers.full_name || ' - ' || customers.reference) AS customer_info
     FROM 
       sales
     LEFT JOIN 

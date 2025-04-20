@@ -112,7 +112,7 @@ export default function Cart({ customers }: { customers: Customer[] }) {
           </Badge>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-100">
+      <DropdownMenuContent align="end" className="w-120">
         <div className="flex justify-between items-center">
           <DropdownMenuLabel>Carrito de compras</DropdownMenuLabel>
           <TooltipProvider>
@@ -209,7 +209,7 @@ export default function Cart({ customers }: { customers: Customer[] }) {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="w-100 p-0 -translate-x-[5px] rounded-t-none"
+                  className="w-120 p-0 -translate-x-[5px] rounded-t-none"
                   align="start"
                 >
                   <Command>
@@ -245,7 +245,7 @@ export default function Cart({ customers }: { customers: Customer[] }) {
                                   : "opacity-0"
                               )}
                             />
-                            {`${customer.full_name} - ${customer.classroom}`}
+                            {`${customer.full_name} - ${customer.reference}`}
                           </CommandItem>
                         ))}
                       </CommandGroup>
