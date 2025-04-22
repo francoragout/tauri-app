@@ -1,11 +1,11 @@
 import Database from "@tauri-apps/plugin-sql";
 import "../App.css";
-import { Customer, CustomerSchema } from "@/lib/zod";
+import { ExtendedCustomer, ExtendedCustomerSchema } from "@/lib/zod";
 import { useQuery } from "@tanstack/react-query";
 import { CustomersTable } from "@/components/customers/customers-table";
 import { CustomersColumns } from "@/components/customers/customers-columns";
 
-async function GetCustomers(): Promise<Customer[]> {
+async function GetCustomers(): Promise<ExtendedCustomer[]> {
   const db = await Database.load("sqlite:mydatabase.db");
   const query = `
   SELECT 
@@ -13,22 +13,20 @@ async function GetCustomers(): Promise<Customer[]> {
     customers.full_name,
     customers.reference,
     customers.phone,
-    COALESCE(SUM(CAST(sales.total AS INTEGER)), 0) AS total_sales_amount,
-    COALESCE(
-      GROUP_CONCAT(
-        strftime('%d-%m-%Y', sales.date) || ' ($' || CAST(sales.total AS INTEGER) || ')', 
-        ', '
-      ), ''
-    ) AS sales_details
+    SUM(CAST(sales.total AS INTEGER)) AS total_sales_amount,
+    GROUP_CONCAT(
+      strftime('%d-%m-%Y', sales.date) || ' ($' || CAST(sales.total AS INTEGER) || ')', 
+            ', '
+      ) AS sales_details
 FROM 
     customers
 LEFT JOIN
     sales ON sales.customer_id = customers.id
 GROUP BY 
-    customers.id, customers.full_name, customers.reference;
+    customers.id;
   `;
   const result = await db.select(query);
-  return CustomerSchema.array().parse(result);
+  return ExtendedCustomerSchema.array().parse(result);
 }
 
 export default function Customers() {

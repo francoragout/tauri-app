@@ -26,6 +26,7 @@ import { Pencil } from "lucide-react";
 
 export default function ProductUpdateForm({ product }: { product: Product }) {
   const [isOpen, setIsOpen] = useState(false);
+  const { mutate, isPending } = UpdateProduct();
 
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
@@ -39,8 +40,6 @@ export default function ProductUpdateForm({ product }: { product: Product }) {
     },
   });
 
-  const { mutate, isPending } = UpdateProduct();
-
   useEffect(() => {
     form.reset({
       brand: product.brand,
@@ -50,18 +49,17 @@ export default function ProductUpdateForm({ product }: { product: Product }) {
       price: product.price,
       stock: product.stock,
     });
-  }, [product, form]);
+  }, [product, form, isOpen]);
 
   function onSubmit(values: z.infer<typeof ProductSchema>) {
-    values.id = product.id; // Set the id of the product to be updated
+    values.id = product.id;
     mutate(values, {
       onSuccess: () => {
         setIsOpen(false);
-
-        toast.success("Producto editado exitosamente.");
+        toast.success("Producto actualizado.");
       },
       onError: () => {
-        toast.error("Error al editar el producto.");
+        toast.error("Error al actualizar producto.");
       },
     });
   }

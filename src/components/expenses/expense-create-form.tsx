@@ -15,41 +15,38 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ProductSchema } from "@/lib/zod";
+import { ExpenseSchema } from "@/lib/zod";
 import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { CreateProduct } from "@/lib/mutations/useProduct";
+import { CreateExpense } from "@/lib/mutations/useExpense";
 import { PlusCircle } from "lucide-react";
 
-export default function ProductCreateForm() {
+export default function ExpenseCreateForm() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof ProductSchema>>({
-    resolver: zodResolver(ProductSchema),
+  const form = useForm<z.infer<typeof ExpenseSchema>>({
+    resolver: zodResolver(ExpenseSchema),
     defaultValues: {
-      brand: "",
-      variant: "",
-      weight: "",
+      amount: undefined,
       category: "",
-      price: undefined,
-      stock: undefined,
+      description: "",
     },
   });
 
-  const { mutate, isPending } = CreateProduct();
+  const { mutate, isPending } = CreateExpense();
 
-  function onSubmit(values: z.infer<typeof ProductSchema>) {
+  function onSubmit(values: z.infer<typeof ExpenseSchema>) {
     mutate(values, {
       onSuccess: () => {
         setIsOpen(false);
         form.reset();
-        toast.success("Producto registrado.");
+        toast.success("Gasto registrado.");
       },
       onError: () => {
-        toast.error("Error al registrar producto.");
+        toast.error("Error al registrar gasto.");
       },
     });
   }
@@ -64,7 +61,7 @@ export default function ProductCreateForm() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Agregar producto</DialogTitle>
+          <DialogTitle>Agregar gasto</DialogTitle>
           <DialogDescription>
             Use tabs para navegar mas rapido entre los diferentes campos.
           </DialogDescription>
@@ -73,48 +70,14 @@ export default function ProductCreateForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="brand"
+              name="amount"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={isPending}
-                      placeholder="Marca (requerido)"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="variant"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="Variante (opcional)"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="weight"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="Peso (opcional)"
+                      placeholder="Monto (requerido)"
                     />
                   </FormControl>
                   <FormMessage />
@@ -141,14 +104,14 @@ export default function ProductCreateForm() {
 
             <FormField
               control={form.control}
-              name="price"
+              name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={isPending}
-                      placeholder="Precio (requerido)"
+                      placeholder="Descripción (opcional)"
                     />
                   </FormControl>
                   <FormMessage />
@@ -156,33 +119,7 @@ export default function ProductCreateForm() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="stock"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="Stock (requerido)"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsOpen(false)}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
+            <div className="flex justify-end">
               <Button type="submit" size="sm" disabled={isPending}>
                 Guardar
               </Button>

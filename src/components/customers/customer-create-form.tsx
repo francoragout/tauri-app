@@ -23,6 +23,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { CreateCustomer } from "@/lib/mutations/useCustomer";
+import { PlusCircle } from "lucide-react";
 
 export default function CustomerCreateForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,8 +34,6 @@ export default function CustomerCreateForm() {
       full_name: "",
       reference: "",
       phone: "",
-      sales_details: "",
-      total_sales_amount: 0,
     },
   });
 
@@ -56,7 +55,8 @@ export default function CustomerCreateForm() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="secondary">
+        <Button size="sm" variant="outline">
+          <PlusCircle className="h-4 w-4" />
           Agregar
         </Button>
       </DialogTrigger>

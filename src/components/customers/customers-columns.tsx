@@ -2,11 +2,11 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Customer } from "@/lib/zod";
+import { Customer, ExtendedCustomer } from "@/lib/zod";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { CustomersTableRowActions } from "./customers-table-row-actions";
 
-export const CustomersColumns: ColumnDef<Customer>[] = [
+export const CustomersColumns: ColumnDef<ExtendedCustomer>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -43,39 +43,51 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Referencia" />
     ),
-    cell: ({ row }) => <div>{row.getValue("reference")}</div>,
+    cell: ({ row }) => {
+      const reference = row.getValue("reference") as string;
+      return <div>{reference ? reference : "-"}</div>;
+    },
   },
   {
     accessorKey: "phone",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Teléfono" />
     ),
-    cell: ({ row }) => <div>{row.getValue("phone")}</div>,
+    cell: ({ row }) => {
+      const phone = row.getValue("phone") as string;
+      return <div>{phone ? phone : "-"}</div>;
+    },
   },
   {
     accessorKey: "total_sales_amount",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Cuenta" />
     ),
-    cell: ({ row }) => <div>${row.getValue("total_sales_amount")}</div>,
-  },
-  {
-    accessorKey: "sales_details",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Detalles" />
-    ),
     cell: ({ row }) => {
-      const sales =
-        (row.getValue("sales_details") as string)?.split(", ") || [];
-      return (
-        <div>
-          {sales.map((sale, index) => (
-            <div key={index}>{sale}</div>
-          ))}
-        </div>
-      );
+      const totalSalesAmount = row.getValue("total_sales_amount") as string;
+      return <div>{totalSalesAmount ? `$${totalSalesAmount}` : "-"}</div>;
     },
   },
+  {
+      accessorKey: "sales_details",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Detalles" />
+      ),
+      cell: ({ row }) => {
+        const salesDetails = row.getValue("sales_details") as string | null;
+        if (!salesDetails) {
+          return <div className="item-center">-</div>;
+        }
+        const products = salesDetails.split(", ");
+        return (
+          <div>
+            {products.map((product, index) => (
+              <div key={index}>{product}</div>
+            ))}
+          </div>
+        );
+      },
+    },
   {
     id: "actions",
     cell: ({ row }) => <CustomersTableRowActions row={row} />,

@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { store } from "./store";
 import { Provider } from "react-redux";
+import Expenses from "./pages/expenses";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
               <Route path="products" element={<Products />} />
               <Route path="sales" element={<Sales />} />
               <Route path="customers" element={<Customers />} />
+              <Route path="expenses" element={<Expenses />} />
             </Route>
           </Routes>
         </HashRouter>

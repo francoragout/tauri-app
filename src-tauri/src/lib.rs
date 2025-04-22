@@ -27,7 +27,7 @@ pub fn run() {
                     id INTEGER PRIMARY KEY,
                     date TEXT DEFAULT CURRENT_TIMESTAMP,
                     total REAL NOT NULL,
-                    is_paid INTEGER DEFAULT 0,
+                    is_paid INTEGER NOT NULL DEFAULT 0,
                     customer_id INTEGER,
                     FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
                 );

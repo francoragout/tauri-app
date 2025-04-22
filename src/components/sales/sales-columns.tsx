@@ -59,8 +59,11 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
       <DataTableColumnHeader column={column} title="Productos" />
     ),
     cell: ({ row }) => {
-      const products =
-        (row.getValue("products_summary") as string)?.split(", ") || [];
+      const productsSummary = row.getValue("products_summary") as string | null;
+      if (!productsSummary) {
+        return <div className="item-center">-</div>; // Mostrar "-" si es null o vacío
+      }
+      const products = productsSummary.split(", ");
       return (
         <div>
           {products.map((product, index) => (

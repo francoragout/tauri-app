@@ -35,8 +35,6 @@ export function UpdateProduct() {
     mutationFn: async (values: Product) => {
       const db = await Database.load("sqlite:mydatabase.db");
 
-      console.log(values)
-
       await db.execute(
         `UPDATE products SET brand = $1, variant = $2, weight = $3, category = $4, price = $5, stock = $6 WHERE id = $7`,
         [

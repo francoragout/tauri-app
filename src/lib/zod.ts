@@ -51,7 +51,7 @@ export const SaleItemsSchema = z.object({
   sale_id: z.number(),
   sale_date: z.string(),
   sale_total: z.number(),
-  products_summary: z.string(), // Nuevo campo para los productos combinados
+  products_summary: z.string().nullable(), // Nuevo campo para los productos combinados
   customer_info: z.string().nullable(), // Nuevo campo para la información del cliente
 });
 
@@ -66,10 +66,35 @@ export const CustomerSchema = z.object({
     }),
   reference: z.string().optional(),
   phone: z.string().optional(),
-  total_sales_amount: z.number().optional(),
-  sales_details: z.string().optional(),
 });
 
+export const ExtendedCustomerSchema = CustomerSchema.extend({
+  total_sales_amount: z.number().nullable(),
+  sales_details: z.string().nullable(),
+});
+
+export const ExpenseSchema = z.object({
+  id: z.number().optional(),
+  date: z.string().optional(),
+  amount: z.coerce
+    .number({
+      invalid_type_error: "Ingrese el monto del gasto",
+    })
+    .min(1, {
+      message: "El monto debe ser mayor a 0",
+    }),
+  category: z
+    .string({
+      required_error: "Ingrese la categoría del gasto",
+    })
+    .nonempty({
+      message: "Ingrese la categoría del gasto",
+    }),
+  description: z.string().optional(),
+});
+
+export type Expense = z.infer<typeof ExpenseSchema>;
 export type SaleItems = z.infer<typeof SaleItemsSchema>;
 export type Sale = z.infer<typeof SaleSchema>;
 export type Customer = z.infer<typeof CustomerSchema>;
+export type ExtendedCustomer = z.infer<typeof ExtendedCustomerSchema>;
