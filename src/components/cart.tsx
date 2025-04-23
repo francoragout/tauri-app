@@ -1,11 +1,4 @@
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
-import {
   Table,
   TableBody,
   TableCell,
@@ -14,22 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
@@ -45,14 +22,13 @@ import {
   removeFromCart,
   updateQuantity,
 } from "@/features/cart/cartSlice";
-import { CreateSale } from "@/lib/mutations/useSale";
-import { toast } from "sonner";
-import { useState } from "react";
+
 import { Customer } from "@/lib/zod";
+import { SaleCreateForm } from "./sales/sale-create-form";
+import { useState } from "react";
 
 export default function Cart({ customers }: { customers: Customer[] }) {
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
+  const [openPopover, setOpenPopover] = useState(false);
   const items = useSelector((state: RootState) => state.cart.items);
   const totalCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const totalPrice = items.reduce(
@@ -74,35 +50,9 @@ export default function Cart({ customers }: { customers: Customer[] }) {
     }
   };
 
-  const { mutate, isPending } = CreateSale();
-
-  const handleConfirmPurchase = () => {
-    const values = {
-      total: totalPrice,
-      items: items.map((item) => ({
-        product_id: item.id!,
-        quantity: item.quantity,
-      })),
-      customer_id: value ? +value : undefined,
-      is_paid: value ? 0 : 1,
-    };
-
-    mutate(values, {
-      onSuccess: () => {
-        dispatch(clearCart());
-        setValue("");
-        toast.success("Venta realizada exitosamente.");
-      },
-      onError: (error: any) => {
-        const errorMessage = error?.message || "Error al realizar la venta.";
-        toast.error(errorMessage);
-      },
-    });
-  };
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <Popover open={openPopover} onOpenChange={setOpenPopover}>
+      <PopoverTrigger asChild>
         <Button variant="outline" size="icon" className="relative rounded-full">
           <ShoppingCart className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <ShoppingCart className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -111,29 +61,19 @@ export default function Cart({ customers }: { customers: Customer[] }) {
             <span>{totalCount}</span>
           </Badge>
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-120">
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-120">
         <div className="flex justify-between items-center">
-          <DropdownMenuLabel>Carrito de compras</DropdownMenuLabel>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="me-1"
-                  onClick={handleClearCart}
-                >
-                  <ListRestart />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Limpiar carrito</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          Carrito de ventas
+          <Button
+            variant="ghost"
+            size="icon"
+            className="me-1"
+            onClick={handleClearCart}
+          >
+            <ListRestart />
+          </Button>
         </div>
-        <DropdownMenuSeparator />
         {items.length === 0 ? (
           <div className="p-4 text-center text-sm text-muted-foreground">
             Tu carrito está vacío.
@@ -190,80 +130,15 @@ export default function Cart({ customers }: { customers: Customer[] }) {
                 </TableRow>
               </TableFooter>
             </Table>
-            <DropdownMenuSeparator />
-            <div className="grid grid-cols-2 gap-2 items-center mt-3 mb-2">
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    size="sm"
-                    aria-expanded={open}
-                    className="justify-between"
-                  >
-                    {value
-                      ? customers.find((customer) => customer.id === +value)
-                          ?.full_name
-                      : "Cliente (opcional)"}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-120 p-0 -translate-x-[5px] rounded-t-none"
-                  align="start"
-                >
-                  <Command>
-                    <CommandInput placeholder="Buscar cliente..." />
-                    <CommandList>
-                      <CommandEmpty>No se encontró cliente.</CommandEmpty>
-                      <CommandGroup>
-                        {customers.map((customer) => (
-                          <CommandItem
-                            key={customer.id}
-                            value={customer.full_name}
-                            onSelect={(currentValue) => {
-                              const selectedCustomer = customers.find(
-                                (c) => c.full_name === currentValue
-                              );
-
-                              if (!selectedCustomer?.id) return;
-
-                              if (value === selectedCustomer.id.toString()) {
-                                setValue("");
-                              } else {
-                                setValue(selectedCustomer.id.toString());
-                              }
-
-                              setOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                value === customer.id?.toString()
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            {`${customer.full_name} - ${customer.reference}`}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <Button
-                size="sm"
-                onClick={handleConfirmPurchase}
-                disabled={isPending}
-              >
-                <span className="text-sm">Confirmar compra</span>
-              </Button>
-            </div>
+            <SaleCreateForm
+              items={items}
+              totalPrice={totalPrice}
+              customers={customers}
+              onOpenChange={setOpenPopover}
+            />
           </>
         )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </PopoverContent>
+    </Popover>
   );
 }

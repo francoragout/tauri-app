@@ -81,7 +81,7 @@ export function ProductsTable<TData, TValue>({
         quantity: 1,
       })
     );
-    toast.success("Agregado al carrito");
+    toast.success("Agregado al carrito.");
   };
 
   return (
@@ -113,7 +113,7 @@ export function ProductsTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onDoubleClick={() => handleAddToCart(row.original)}
+                  onClick={() => handleAddToCart(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

@@ -27,6 +27,7 @@ export const ProductsColumns: ColumnDef<Product>[] = [
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
         className="translate-y-[2px]"
+        onClick={(event) => event.stopPropagation()}
       />
     ),
     enableSorting: false,
@@ -77,9 +78,7 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     cell: ({ row }) => {
       const stock = row.getValue("stock") as number;
       return stock < 1 ? (
-        <Badge variant="secondary">
-          Sin stock
-        </Badge>
+        <Badge variant="secondary">Sin stock</Badge>
       ) : (
         <div>{stock}</div>
       );

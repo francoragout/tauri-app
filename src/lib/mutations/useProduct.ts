@@ -54,6 +54,21 @@ export function UpdateProduct() {
   });
 }
 
+export function DeleteProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const db = await Database.load("sqlite:mydatabase.db");
+
+      await db.execute(`DELETE FROM products WHERE id = $1`, [id]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
 export function DeleteProducts() {
   const queryClient = useQueryClient();
 

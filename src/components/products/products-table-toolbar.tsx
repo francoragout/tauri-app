@@ -40,6 +40,7 @@ export function ProductsTableToolbar<TData>({
 
     deleteProducts(productsIds, {
       onSuccess: () => {
+        table.resetRowSelection();
         toast.success(
           `Se han eliminado ${productsIds.length} productos seleccionados.`
         );
@@ -88,13 +89,13 @@ export function ProductsTableToolbar<TData>({
             onClick={() => table.resetColumnFilters()}
             className="h-8 px-2 lg:px-3"
           >
-            Resetear
+            Limpiar
             <X />
           </Button>
         )}
       </div>
       <div className="flex space-x-2">
-        {selectedRowsCount > 0 && (
+        {selectedRowsCount > 1 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button

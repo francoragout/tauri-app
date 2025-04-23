@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { useState } from "react";
 import { DeleteExpenses } from "@/lib/mutations/useExpense";
+import { DataTableFacetedFilter } from "../data-table-faceted-filter";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -101,6 +102,22 @@ export function ExpensesTableToolbar<TData>({
             />
           </PopoverContent>
         </Popover>
+
+        {table.getColumn("category") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("category")}
+            title="Categoría"
+            options={Array.from(
+              table
+                .getColumn("category")
+                ?.getFacetedUniqueValues()
+                ?.entries() ?? []
+            ).map(([key, _]) => ({
+              label: String(key),
+              value: String(key),
+            }))}
+          />
+        )}
 
         {isFiltered && (
           <Button

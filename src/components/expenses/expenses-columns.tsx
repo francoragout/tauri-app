@@ -58,7 +58,9 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Categoría" />
     ),
-    cell: ({ row }) => <div>{row.getValue("category")}</div>,
+    filterFn: (row, columnId, filterValue) => {
+      return filterValue.includes(row.getValue(columnId));
+    },
   },
   {
     accessorKey: "description",

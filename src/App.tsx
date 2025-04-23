@@ -1,15 +1,13 @@
 import { Card } from "./components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "./components/ui/button";
 import { ThemeProvider } from "./components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
-import { Bell } from "lucide-react";
-import { Badge } from "./components/ui/badge";
 import { NavLink, Outlet, useLocation } from "react-router";
-import Cart from "./components/cart";
 import { Customer, CustomerSchema } from "./lib/zod";
 import Database from "@tauri-apps/plugin-sql";
 import { useQuery } from "@tanstack/react-query";
+import Cart from "./components/cart";
+import Notifications from "./components/notifications";
 
 async function GetCustomers(): Promise<Customer[]> {
   const db = await Database.load("sqlite:mydatabase.db");
@@ -50,19 +48,8 @@ export default function App() {
             </TabsList>
 
             <div className="flex items-center space-x-4">
-              <Cart customers={customers}/>
-              <Button
-                variant="outline"
-                size="icon"
-                className="relative rounded-full"
-              >
-                <Bell className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Bell className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-                <Badge className="absolute top-0 right-[-0.6rem] inline-flex items-center justify-center h-4 min-w-[1rem] px-1 text-xs font-bold leading-none rounded-full">
-                  <span>3</span>
-                </Badge>
-              </Button>
+              <Cart customers={customers} />
+              <Notifications />
               <ModeToggle />
             </div>
           </div>
