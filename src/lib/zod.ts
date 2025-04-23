@@ -32,6 +32,7 @@ export type Product = z.infer<typeof ProductSchema>;
 // 📤 Esquema para crear una venta con productos
 
 export const SaleSchema = z.object({
+  id: z.number().optional(),
   total: z.number(),
   date: z.string().optional(),
   customer_id: z.number().optional(),

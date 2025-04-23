@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import Cart from "./components/cart";
 import Notifications from "./components/notifications";
 
-async function GetCustomers(): Promise<Customer[]> {
+export async function GetCustomers(): Promise<Customer[]> {
   const db = await Database.load("sqlite:mydatabase.db");
   const result = await db.select("SELECT * FROM customers");
   return CustomerSchema.array().parse(result);

@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { SaleItems } from "@/lib/zod";
-import { format, formatDate } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "../ui/badge";
 import { SalesTableRowActions } from "./sales-table-row-actions";
@@ -41,10 +41,7 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
     ),
     cell: ({ row }) => {
       const date = new Date(row.getValue("sale_date"));
-      const localDate = new Date(
-        date.getTime() + date.getTimezoneOffset() * 60000
-      );
-      return <div>{formatDate(localDate, "PPP", { locale: es })}</div>;
+      return <div>{format(date, "PPP", { locale: es })}</div>;
     },
   },
   {
@@ -108,16 +105,6 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
       return <div>{customer_info === null ? "-" : customer_info}</div>;
     },
   },
-  // {
-  //   accessorKey: "payment_method",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Metodo de pago" />
-  //   ),
-  //   cell: ({ row }) => {
-  //     const paymentMethod = row.getValue("payment_method");
-  //     return <div>{paymentMethod === "cash" ? "Efectivo" : "Tarjeta"}</div>;
-  //   },
-  // }
   {
     id: "actions",
     cell: ({ row }) => <SalesTableRowActions row={row} />,

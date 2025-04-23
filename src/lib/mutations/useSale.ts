@@ -26,7 +26,8 @@ export function CreateSale() {
             item.product_id,
           ]);
 
-          const productBrand = productResult[0]?.brand || "Producto desconocido";
+          const productBrand =
+            productResult[0]?.brand || "Producto desconocido";
           const productVariant =
             productResult[0]?.variant || "Variante desconocida";
           const productWeight = productResult[0]?.weight || 0;
@@ -68,6 +69,35 @@ export function CreateSale() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
+export function DeleteSale() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const db = await Database.load("sqlite:mydatabase.db");
+
+      // 1. Recuperar los productos y cantidades de la venta
+      const saleItems = await db.select<
+        { product_id: number; quantity: number }[]
+      >(`SELECT product_id, quantity FROM sale_items WHERE sale_id = $1`, [id]);
+
+      // 2. Revertir el stock de los productos
+      for (const item of saleItems) {
+        await db.execute(
+          `UPDATE products SET stock = stock + $1 WHERE id = $2`,
+          [item.quantity, item.product_id]
+        );
+      }
+
+      // 3. Eliminar la venta
+      await db.execute(`DELETE FROM sales WHERE id = $1`, [id]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
     },
   });
 }

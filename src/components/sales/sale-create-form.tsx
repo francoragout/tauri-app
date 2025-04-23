@@ -61,16 +61,26 @@ export function SaleCreateForm({
   const { mutate, isPending } = CreateSale();
 
   function onSubmit(values: z.infer<typeof SaleSchema>) {
-    mutate(values, {
+    const updatedItems = items.map((item) => ({
+      product_id: item.id,
+      quantity: item.quantity,
+    }));
+
+    const updatedValues = {
+      ...values,
+      items: updatedItems,
+    };
+
+    mutate(updatedValues, {
       onSuccess: () => {
         onOpenChange(false);
 
         dispatch(clearCart());
         setValue("");
-        toast.success("Venta realizada exitosamente.");
+        toast.success("Venta registrada");
       },
       onError: (error: any) => {
-        const errorMessage = error?.message || "Error al realizar la venta.";
+        const errorMessage = error?.message || "Error al registrar venta";
         toast.error(errorMessage);
       },
     });
@@ -130,13 +140,13 @@ export function SaleCreateForm({
 
                               if (value === selectedCustomer.id.toString()) {
                                 setValue("");
-                                form.setValue("customer_id", undefined); // Limpia el campo en el formulario
+                                form.setValue("customer_id", undefined);
                               } else {
                                 setValue(selectedCustomer.id.toString());
                                 form.setValue(
                                   "customer_id",
                                   selectedCustomer.id
-                                ); // Actualiza el campo en el formulario
+                                );
                               }
 
                               setOpen(false);

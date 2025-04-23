@@ -81,7 +81,7 @@ export function ProductsTable<TData, TValue>({
         quantity: 1,
       })
     );
-    toast.success("Agregado al carrito.");
+    toast.success("Agregado al carrito");
   };
 
   return (
