@@ -39,11 +39,12 @@ export function CustomersTableToolbar<TData>({
     deleteCustomers(customersIds, {
       onSuccess: () => {
         toast.success(
-          `Se han eliminado ${customersIds.length} clientes seleccionados.`
+          `Se han eliminado ${customersIds.length} clientes seleccionados`
         );
       },
-      onError: () => {
-        toast.error("Error al eliminar los clientes seleccionados.");
+      onError: (error: any) => {
+        const errorMessage = error?.message || "Error al eliminar cliente";
+        toast.error(errorMessage);
       },
     });
   };
@@ -54,10 +55,13 @@ export function CustomersTableToolbar<TData>({
         <Input
           placeholder="Filtrar clientes..."
           value={
-            (table.getColumn("full_name")?.getFilterValue() as string) ?? ""
+            (table.getColumn("combined_filter")?.getFilterValue() as string) ??
+            ""
           }
           onChange={(event) =>
-            table.getColumn("full_name")?.setFilterValue(event.target.value)
+            table
+              .getColumn("combined_filter")
+              ?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
@@ -73,7 +77,7 @@ export function CustomersTableToolbar<TData>({
         )}
       </div>
       <div className="flex space-x-2">
-        {selectedRowsCount > 0 && (
+        {selectedRowsCount > 1 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button

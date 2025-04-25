@@ -14,6 +14,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { UpdateProduct } from "@/lib/mutations/useProduct";
+import { clearCart } from "@/features/cart/cartSlice";
+import { useDispatch } from "react-redux";
 
 interface ProductUpdateFormProps {
   product: Product;
@@ -25,6 +27,7 @@ export default function ProductUpdateForm({
   onOpenChange,
 }: ProductUpdateFormProps) {
   const { mutate, isPending } = UpdateProduct();
+  const dispatch = useDispatch();
 
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
@@ -56,10 +59,11 @@ export default function ProductUpdateForm({
     mutate(values, {
       onSuccess: () => {
         onOpenChange(false);
-        toast.success("Producto actualizado.");
+        dispatch(clearCart());
+        toast.success("Producto actualizado");
       },
       onError: () => {
-        toast.error("Error al actualizar producto.");
+        toast.error("Error al actualizar producto");
       },
     });
   }

@@ -47,6 +47,15 @@ export function UpdateProduct() {
           values.id,
         ]
       );
+
+      // Actualizar el precio en la tabla sale_items para ventas no pagadas (is_paid = 0)
+      await db.execute(
+        `UPDATE sale_items
+         SET price = (SELECT price FROM products WHERE products.id = sale_items.product_id)
+         WHERE sale_id IN (
+           SELECT id FROM sales WHERE is_paid = 0
+         )`
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });

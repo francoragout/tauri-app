@@ -27,9 +27,6 @@ export const ProductSchema = z.object({
   times_sold: z.number().optional(),
 });
 
-export type Product = z.infer<typeof ProductSchema>;
-
-// 📤 Esquema para crear una venta con productos
 
 export const SaleSchema = z.object({
   id: z.number().optional(),
@@ -37,23 +34,20 @@ export const SaleSchema = z.object({
   date: z.string().optional(),
   customer_id: z.number().optional(),
   is_paid: z.number().default(0).optional(),
-  items: z.array(
+  products: z.array(
     z.object({
-      product_id: z.number().int(),
+      id: z.number().int(),
       quantity: z.number().int().positive(),
     })
   ),
 });
 
-// 📥 Esquemas de respuesta para JOIN plano
-// Basado en tu SQL JOIN entre sales, sale_items y products
-
 export const SaleItemsSchema = z.object({
-  sale_id: z.number(),
-  sale_date: z.string(),
-  sale_total: z.number(),
-  products_summary: z.string().nullable(), // Nuevo campo para los productos combinados
-  customer_info: z.string().nullable(), // Nuevo campo para la información del cliente
+  id: z.number(),
+  date: z.string(),
+  total: z.number(),
+  is_paid: z.number(),
+  products: z.string(),
 });
 
 export const CustomerSchema = z.object({
@@ -78,22 +72,23 @@ export const ExpenseSchema = z.object({
   id: z.number().optional(),
   date: z.string().optional(),
   amount: z.coerce
-    .number({
-      invalid_type_error: "Ingrese el monto del gasto",
-    })
-    .min(1, {
-      message: "El monto debe ser mayor a 0",
-    }),
+  .number({
+    invalid_type_error: "Ingrese el monto del gasto",
+  })
+  .min(1, {
+    message: "El monto debe ser mayor a 0",
+  }),
   category: z
-    .string({
-      required_error: "Ingrese la categoría del gasto",
-    })
-    .nonempty({
-      message: "Ingrese la categoría del gasto",
-    }),
+  .string({
+    required_error: "Ingrese la categoría del gasto",
+  })
+  .nonempty({
+    message: "Ingrese la categoría del gasto",
+  }),
   description: z.string().optional(),
 });
 
+export type Product = z.infer<typeof ProductSchema>;
 export type Expense = z.infer<typeof ExpenseSchema>;
 export type SaleItems = z.infer<typeof SaleItemsSchema>;
 export type Sale = z.infer<typeof SaleSchema>;

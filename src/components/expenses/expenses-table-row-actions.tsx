@@ -44,18 +44,18 @@ export function ExpensesTableRowActions<TData>({
   const expense = ExpenseSchema.parse(row.original);
   const [isOpen, setIsOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const { mutate: deleteExpense } = DeleteExpense();
+  const { mutate } = DeleteExpense();
   const expenseId = expense.id as number;
 
   function handleDelete() {
-    deleteExpense(expenseId, {
+    mutate(expenseId, {
       onSuccess: () => {
         setIsAlertOpen(false);
-        toast.success("Gasto eliminado.");
+        toast.success("Gasto eliminado");
       },
       onError: () => {
         setIsAlertOpen(false);
-        toast.error("Error al eliminar gasto.");
+        toast.error("Error al eliminar gasto");
       },
     });
   }

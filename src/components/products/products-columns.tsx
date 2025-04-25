@@ -46,6 +46,7 @@ export const ProductsColumns: ColumnDef<Product>[] = [
       <DataTableColumnHeader column={column} title="Variante" />
     ),
     cell: ({ row }) => <div>{row.getValue("variant")}</div>,
+    enableSorting: false,
   },
   {
     accessorKey: "weight",
@@ -53,6 +54,7 @@ export const ProductsColumns: ColumnDef<Product>[] = [
       <DataTableColumnHeader column={column} title="Peso" />
     ),
     cell: ({ row }) => <div>{row.getValue("weight")}</div>,
+    enableSorting: false,
   },
   {
     accessorKey: "category",
@@ -89,7 +91,14 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Ventas" />
     ),
-    cell: ({ row }) => <div>{row.getValue("times_sold")}</div>,
+    cell: ({ row }) => {
+      const timesSold = row.getValue("times_sold") as number;
+      return timesSold < 1 ? (
+        <Badge variant="secondary">Sin ventas</Badge>
+      ) : (
+        <div>{timesSold}</div>
+      );
+    },
   },
   {
     accessorKey: "combined_filter",

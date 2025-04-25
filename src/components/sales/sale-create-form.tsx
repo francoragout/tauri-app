@@ -31,17 +31,17 @@ import { clearCart } from "@/features/cart/cartSlice";
 interface SaleCreateFormProps {
   customers: Customer[];
   totalPrice: number;
-  items: any[];
+  products: any[];
   onOpenChange?: (open: boolean) => void;
 }
 
 export function SaleCreateForm({
   customers,
   totalPrice,
-  items,
+  products,
   onOpenChange = () => {},
 }: SaleCreateFormProps) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState<number | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
 
@@ -50,9 +50,9 @@ export function SaleCreateForm({
     defaultValues: {
       customer_id: value ? +value : undefined,
       total: totalPrice,
-      items: items.map((item) => ({
-        product_id: item.id,
-        quantity: item.quantity,
+      products: products.map((product) => ({
+        id: product.id,
+        quantity: product.quantity,
       })),
       is_paid: value ? 0 : 1,
     },
@@ -61,14 +61,15 @@ export function SaleCreateForm({
   const { mutate, isPending } = CreateSale();
 
   function onSubmit(values: z.infer<typeof SaleSchema>) {
-    const updatedItems = items.map((item) => ({
-      product_id: item.id,
-      quantity: item.quantity,
+    const updatedProducts = products.map((product) => ({
+      id: product.id,
+      quantity: product.quantity,
     }));
 
     const updatedValues = {
       ...values,
-      items: updatedItems,
+      products: updatedProducts,
+      is_paid: value ? 0 : 1,
     };
 
     mutate(updatedValues, {
@@ -76,7 +77,7 @@ export function SaleCreateForm({
         onOpenChange(false);
 
         dispatch(clearCart());
-        setValue("");
+        setValue(undefined);
         toast.success("Venta registrada");
       },
       onError: (error: any) => {
@@ -111,7 +112,7 @@ export function SaleCreateForm({
                       )}
                     >
                       {value
-                        ? customers.find((customer) => customer.id === +value)
+                        ? customers.find((customer) => customer.id === value)
                             ?.full_name
                         : "Cliente (opcional)"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -130,32 +131,20 @@ export function SaleCreateForm({
                         {customers.map((customer) => (
                           <CommandItem
                             key={customer.id}
-                            value={customer.full_name}
-                            onSelect={(currentValue) => {
-                              const selectedCustomer = customers.find(
-                                (c) => c.full_name === currentValue
-                              );
+                            value={`${customer.full_name} ${customer.reference}`}
+                            onSelect={() => {
+                              const same = value === customer.id;
+                              const newValue = same ? undefined : customer.id;
 
-                              if (!selectedCustomer?.id) return;
-
-                              if (value === selectedCustomer.id.toString()) {
-                                setValue("");
-                                form.setValue("customer_id", undefined);
-                              } else {
-                                setValue(selectedCustomer.id.toString());
-                                form.setValue(
-                                  "customer_id",
-                                  selectedCustomer.id
-                                );
-                              }
-
+                              setValue(newValue);
+                              form.setValue("customer_id", newValue);
                               setOpen(false);
                             }}
                           >
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                value === customer.id?.toString()
+                                value === customer.id
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}

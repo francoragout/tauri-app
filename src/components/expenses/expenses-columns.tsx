@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Expense } from "@/lib/zod";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { ExpensesTableRowActions } from "./expenses-table-row-actions";
-import { formatDate } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 export const ExpensesColumns: ColumnDef<Expense>[] = [
@@ -39,12 +39,20 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
       <DataTableColumnHeader column={column} title="Fecha" />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue("date"));
-      const localDate = new Date(
-        date.getTime() + date.getTimezoneOffset() * 60000
-      );
-      return <div>{formatDate(localDate, "PPP", { locale: es })}</div>;
+      const date = new Date(row.getValue("date") + "Z");
+      return <div>{format(date, "PPP", { locale: es })}</div>;
     },
+  },
+  {
+    accessorKey: "time",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Hora" />
+    ),
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("date") + "Z");
+      return <div>{format(date, "p", { locale: es })}</div>;
+    },
+    enableSorting: false,
   },
   {
     accessorKey: "amount",
@@ -71,6 +79,7 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
       const description = row.getValue("description") as string;
       return <div>{description ? description : "-"}</div>;
     },
+    enableSorting: false,
   },
   {
     id: "actions",

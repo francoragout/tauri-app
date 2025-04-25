@@ -2,9 +2,10 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Customer, ExtendedCustomer } from "@/lib/zod";
+import { ExtendedCustomer } from "@/lib/zod";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { CustomersTableRowActions } from "./customers-table-row-actions";
+import { Badge } from "../ui/badge";
 
 export const CustomersColumns: ColumnDef<ExtendedCustomer>[] = [
   {
@@ -45,7 +46,7 @@ export const CustomersColumns: ColumnDef<ExtendedCustomer>[] = [
     ),
     cell: ({ row }) => {
       const reference = row.getValue("reference") as string;
-      return <div>{reference ? reference : "-"}</div>;
+      return <div>{reference}</div>;
     },
   },
   {
@@ -55,8 +56,9 @@ export const CustomersColumns: ColumnDef<ExtendedCustomer>[] = [
     ),
     cell: ({ row }) => {
       const phone = row.getValue("phone") as string;
-      return <div>{phone ? phone : "-"}</div>;
+      return <div>{phone}</div>;
     },
+    enableSorting: false,
   },
   {
     accessorKey: "total_sales_amount",
@@ -64,30 +66,47 @@ export const CustomersColumns: ColumnDef<ExtendedCustomer>[] = [
       <DataTableColumnHeader column={column} title="Cuenta" />
     ),
     cell: ({ row }) => {
-      const totalSalesAmount = row.getValue("total_sales_amount") as string;
-      return <div>{totalSalesAmount ? `$${totalSalesAmount}` : "-"}</div>;
+      const totalSalesAmount = row.getValue("total_sales_amount") as
+        | string
+        | null;
+      if (totalSalesAmount === null) {
+        return <Badge variant="secondary">Sin deudas</Badge>;
+      }
+      return <div>${totalSalesAmount}</div>;
     },
   },
   {
-      accessorKey: "sales_details",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Detalles" />
-      ),
-      cell: ({ row }) => {
-        const salesDetails = row.getValue("sales_details") as string | null;
-        if (!salesDetails) {
-          return <div className="item-center">-</div>;
-        }
-        const products = salesDetails.split(", ");
-        return (
-          <div>
-            {products.map((product, index) => (
-              <div key={index}>{product}</div>
-            ))}
-          </div>
-        );
-      },
+    accessorKey: "sales_details",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Detalles" />
+    ),
+    cell: ({ row }) => {
+      const salesDetails = row.getValue("sales_details") as string | null;
+      if (!salesDetails) {
+        return null;
+      }
+      const products = salesDetails.split(", ");
+      return (
+        <div>
+          {products.map((product, index) => (
+            <div key={index}>{product}</div>
+          ))}
+        </div>
+      );
     },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "combined_filter",
+    accessorFn: (row) => `${row.full_name} ${row.reference}`,
+    filterFn: (row, columnId, filterValue) => {
+      const value = row.getValue(columnId) as string;
+      return value.toLowerCase().includes(filterValue.toLowerCase());
+    },
+    enableHiding: true,
+    header: undefined,
+    cell: undefined,
+  },
   {
     id: "actions",
     cell: ({ row }) => <CustomersTableRowActions row={row} />,

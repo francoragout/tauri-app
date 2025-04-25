@@ -10,27 +10,25 @@ export function CreateSale() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       // 1. Verificar stock de los productos
-      for (const item of values.items) {
+      for (const product of values.products) {
         const stockResult = await db.select<{ stock: number }[]>(
           `SELECT stock FROM products WHERE id = $1`,
-          [item.product_id]
+          [product.id]
         );
 
         const stock = stockResult[0]?.stock ?? 0;
 
-        if (stock < item.quantity) {
+        if (stock < product.quantity) {
           // Obtener detalles del producto
           const productResult = await db.select<
             { brand: string; variant: string; weight: string }[]
           >(`SELECT brand, variant, weight FROM products WHERE id = $1`, [
-            item.product_id,
+            product.id,
           ]);
 
-          const productBrand =
-            productResult[0]?.brand || "Producto desconocido";
-          const productVariant =
-            productResult[0]?.variant || "Variante desconocida";
-          const productWeight = productResult[0]?.weight || 0;
+          const productBrand = productResult[0]?.brand;
+          const productVariant = productResult[0]?.variant;
+          const productWeight = productResult[0]?.weight;
 
           throw new Error(
             `Stock insuficiente: ${productBrand} ${productVariant} ${productWeight}`
@@ -51,18 +49,18 @@ export function CreateSale() {
 
       const saleId = saleIdResult[0].id;
 
-      // 4. Insertar items y actualizar stock
-      for (const item of values.items) {
+      // 4. Insertar products y actualizar stock
+      for (const product of values.products) {
         // Insertar en sale_items
         await db.execute(
           `INSERT INTO sale_items (sale_id, product_id, quantity) VALUES ($1, $2, $3)`,
-          [saleId, item.product_id, item.quantity]
+          [saleId, product.id, product.quantity]
         );
 
         // Actualizar el stock del producto
         await db.execute(
           `UPDATE products SET stock = stock - $1 WHERE id = $2`,
-          [item.quantity, item.product_id]
+          [product.quantity, product.id]
         );
       }
     },
@@ -81,20 +79,53 @@ export function DeleteSale() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       // 1. Recuperar los productos y cantidades de la venta
-      const saleItems = await db.select<
+      const saleProducts = await db.select<
         { product_id: number; quantity: number }[]
       >(`SELECT product_id, quantity FROM sale_items WHERE sale_id = $1`, [id]);
 
       // 2. Revertir el stock de los productos
-      for (const item of saleItems) {
+      for (const product of saleProducts) {
         await db.execute(
           `UPDATE products SET stock = stock + $1 WHERE id = $2`,
-          [item.quantity, item.product_id]
+          [product.quantity, product.product_id]
         );
       }
 
       // 3. Eliminar la venta
       await db.execute(`DELETE FROM sales WHERE id = $1`, [id]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
+    },
+  });
+}
+
+export function DeleteSales() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: number[]) => {
+      const db = await Database.load("sqlite:mydatabase.db");
+
+      // 1. Recuperar los productos y cantidades de las ventas
+      const saleProducts = await db.select<
+        { product_id: number; quantity: number }[]
+      >(
+        `SELECT product_id, quantity FROM sale_items WHERE sale_id IN (${ids.join(
+          ","
+        )})`
+      );
+
+      // 2. Revertir el stock de los productos
+      for (const product of saleProducts) {
+        await db.execute(
+          `UPDATE products SET stock = stock + $1 WHERE id = $2`,
+          [product.quantity, product.product_id]
+        );
+      }
+
+      // 3. Eliminar las ventas
+      await db.execute(`DELETE FROM sales WHERE id IN (${ids.join(",")})`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });

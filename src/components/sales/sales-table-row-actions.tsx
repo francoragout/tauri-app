@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DeleteSale } from "@/lib/mutations/useSale";
 import { toast } from "sonner";
-import { format, formatDate } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 interface DataTableRowActionsProps<TData> {
@@ -40,7 +40,7 @@ export function SalesTableRowActions<TData>({
   const { mutate } = DeleteSale();
 
   function handleDelete() {
-    mutate(sale.sale_id, {
+    mutate(sale.id, {
       onSuccess: () => {
         setIsAlertOpen(false);
         toast.success("Venta eliminada");
@@ -88,14 +88,14 @@ export function SalesTableRowActions<TData>({
               Esta acción no se puede deshacer. Esto eliminará permanentemente
               la venta del dia{" "}
               <span className="text-foreground">
-                {format(new Date(sale.sale_date), "PPP", { locale: es })}
+                {format(new Date(sale.date), "PPP", { locale: es })}
               </span>{" "}
               a las{" "}
               <span className="text-foreground">
-                {format(new Date(sale.sale_date) + "z", "p", { locale: es })}
+                {format(new Date(sale.date) + "z", "p", { locale: es })}
               </span>{" "}
               con el total de{" "}
-              <span className="text-foreground">${sale.sale_total}</span>{" "}
+              <span className="text-foreground">${sale.total}</span>{" "}
               resgresando los productos vendidos al stock.
             </AlertDialogDescription>
           </AlertDialogHeader>

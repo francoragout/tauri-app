@@ -50,10 +50,10 @@ export default function ExpenseUpdateForm({
     mutate(values, {
       onSuccess: () => {
         onOpenChange(false);
-        toast.success("Gasto registrado.");
+        toast.success("Gasto actualizado");
       },
       onError: () => {
-        toast.error("Error al registrar gasto.");
+        toast.error("Error al actualizar gasto");
       },
     });
   }

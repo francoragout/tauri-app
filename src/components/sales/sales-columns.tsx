@@ -35,35 +35,33 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "sale_date",
+    accessorKey: "date",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Fecha" />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue("sale_date"));
+      const date = new Date(row.getValue("date") + "Z");
       return <div>{format(date, "PPP", { locale: es })}</div>;
     },
   },
   {
-    accessorKey: "sale_time",
+    accessorKey: "time",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Hora" />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue("sale_date") + "Z");
-      return <div>{format(date, "p", { locale: es })}</div>; // Solo la hora
+      const date = new Date(row.getValue("date") + "Z");
+      return <div>{format(date, "p", { locale: es })}</div>;
     },
+    enableSorting: false,
   },
   {
-    accessorKey: "products_summary",
+    accessorKey: "products",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Productos" />
     ),
     cell: ({ row }) => {
-      const productsSummary = row.getValue("products_summary") as string | null;
-      if (!productsSummary) {
-        return <div className="item-center">-</div>; // Mostrar "-" si es null o vacío
-      }
+      const productsSummary = row.getValue("products") as string;
       const products = productsSummary.split(", ");
       return (
         <div>
@@ -73,36 +71,28 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
         </div>
       );
     },
+    enableSorting: false,
   },
   {
-    accessorKey: "sale_total",
+    accessorKey: "total",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Total" />
     ),
-    cell: ({ row }) => <div>${row.getValue("sale_total")}</div>,
+    cell: ({ row }) => <div>${row.getValue("total")}</div>,
   },
   {
-    accessorKey: "payment_method",
+    accessorKey: "is_paid",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Pago" />
     ),
     cell: ({ row }) => {
-      const customer_id = row.getValue("customer_info");
-      return (
-        <Badge variant="secondary">
-          {customer_id === null ? "Efectivo" : "Credito"}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "customer_info",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Cliente" />
-    ),
-    cell: ({ row }) => {
-      const customer_info = row.getValue("customer_info") as string;
-      return <div>{customer_info === null ? "-" : customer_info}</div>;
+      const is_paid = row.getValue("is_paid");
+      
+      if (is_paid === 1) {
+        return <Badge variant="outline">Efectivo</Badge>;
+      } else {
+        return <Badge variant="secondary">Credito</Badge>;
+      }
     },
   },
   {

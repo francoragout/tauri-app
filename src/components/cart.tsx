@@ -29,10 +29,10 @@ import { useState } from "react";
 
 export default function Cart({ customers }: { customers: Customer[] }) {
   const [openPopover, setOpenPopover] = useState(false);
-  const items = useSelector((state: RootState) => state.cart.items);
-  const totalCount = items.reduce((acc, item) => acc + item.quantity, 0);
-  const totalPrice = items.reduce(
-    (acc, item) => acc + item.price * item.quantity,
+  const products = useSelector((state: RootState) => state.cart.products);
+  const totalCount = products.reduce((acc, product) => acc + product.quantity, 0);
+  const totalPrice = products.reduce(
+    (acc, product) => acc + product.price * product.quantity,
     0
   );
 
@@ -74,7 +74,7 @@ export default function Cart({ customers }: { customers: Customer[] }) {
             <ListRestart />
           </Button>
         </div>
-        {items.length === 0 ? (
+        {products.length === 0 ? (
           <div className="p-4 text-center text-sm text-muted-foreground">
             Tu carrito está vacío.
           </div>
@@ -89,9 +89,9 @@ export default function Cart({ customers }: { customers: Customer[] }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.name}</TableCell>
+                {products.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>{product.name}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-1">
                         <Button
@@ -99,18 +99,18 @@ export default function Cart({ customers }: { customers: Customer[] }) {
                           size="icon"
                           className="rounded-full"
                           onClick={() =>
-                            handleQuantityChange(item.id!, item.quantity - 1)
+                            handleQuantityChange(product.id!, product.quantity - 1)
                           }
                         >
                           -
                         </Button>
-                        <span className="w-8 text-center">{item.quantity}</span>
+                        <span className="w-8 text-center">{product.quantity}</span>
                         <Button
                           variant="outline"
                           size="icon"
                           className="rounded-full"
                           onClick={() =>
-                            handleQuantityChange(item.id!, item.quantity + 1)
+                            handleQuantityChange(product.id!, product.quantity + 1)
                           }
                         >
                           +
@@ -118,7 +118,7 @@ export default function Cart({ customers }: { customers: Customer[] }) {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      ${item.price * item.quantity}
+                      ${product.price * product.quantity}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -131,7 +131,7 @@ export default function Cart({ customers }: { customers: Customer[] }) {
               </TableFooter>
             </Table>
             <SaleCreateForm
-              items={items}
+              products={products}
               totalPrice={totalPrice}
               customers={customers}
               onOpenChange={setOpenPopover}

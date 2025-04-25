@@ -44,10 +44,10 @@ export default function CustomerCreateForm() {
       onSuccess: () => {
         setIsOpen(false);
         form.reset();
-        toast.success("Cliente creado exitosamente.");
+        toast.success("Cliente registrado");
       },
       onError: () => {
-        toast.error("Error al crear el cliente.");
+        toast.error("Error al registrar cliente");
       },
     });
   }

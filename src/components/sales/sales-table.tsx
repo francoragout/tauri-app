@@ -45,7 +45,7 @@ export function SalesTable<TData, TValue>({
   )
   const [sorting, setSorting] = React.useState<SortingState>([
     {
-      id: "sale_date",
+      id: "date",
       desc: true,
     },
   ])

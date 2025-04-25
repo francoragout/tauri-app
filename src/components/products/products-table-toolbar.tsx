@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DeleteProducts } from "@/lib/mutations/useProduct";
 import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { clearCart } from "@/features/cart/cartSlice";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -29,7 +31,7 @@ export function ProductsTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
-
+  const dispatch = useDispatch();
   const { mutate: deleteProducts } = DeleteProducts();
 
   const handleDeleteSelected = () => {
@@ -41,12 +43,14 @@ export function ProductsTableToolbar<TData>({
     deleteProducts(productsIds, {
       onSuccess: () => {
         table.resetRowSelection();
+        dispatch(clearCart());
+
         toast.success(
-          `Se han eliminado ${productsIds.length} productos seleccionados.`
+          `Se han eliminado ${productsIds.length} productos seleccionados`
         );
       },
       onError: () => {
-        toast.error("Error al eliminar los productos seleccionados.");
+        toast.error("Error al eliminar los productos seleccionados");
       },
     });
   };

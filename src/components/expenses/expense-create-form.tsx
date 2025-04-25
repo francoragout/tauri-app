@@ -43,10 +43,10 @@ export default function ExpenseCreateForm() {
       onSuccess: () => {
         setIsOpen(false);
         form.reset();
-        toast.success("Gasto registrado.");
+        toast.success("Gasto registrado");
       },
       onError: () => {
-        toast.error("Error al registrar gasto.");
+        toast.error("Error al registrar gasto");
       },
     });
   }

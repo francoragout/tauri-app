@@ -26,7 +26,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useState } from "react";
-import { DeleteExpenses } from "@/lib/mutations/useExpense";
+import { DeleteSales } from "@/lib/mutations/useSale";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -38,23 +38,23 @@ export function SalesTableToolbar<TData>({
   const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
   const [date, setDate] = useState<Date>();
-  const { mutate: deleteExpenses } = DeleteExpenses();
+  const { mutate } = DeleteSales();
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
-    const expensesIds = selectedRows.map(
+    const salesIds = selectedRows.map(
       (row) => (row.original as { id: number }).id
     );
 
-    deleteExpenses(expensesIds, {
+    mutate(salesIds, {
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
-          `Se han eliminado ${expensesIds.length} gastos seleccionados.`
+          `Se han eliminado ${salesIds.length} ventas seleccionadas`
         );
       },
       onError: () => {
-        toast.error("Error al eliminar gastos seleccionados.");
+        toast.error("Error al eliminar ventas seleccionadas");
       },
     });
   };
@@ -92,7 +92,7 @@ export function SalesTableToolbar<TData>({
                 ) {
                   setDate(selectedDate);
                   table
-                    .getColumn("sale_date")
+                    .getColumn("date")
                     ?.setFilterValue(selectedDate?.toISOString().split("T")[0]);
                 }
               }}
@@ -132,25 +132,26 @@ export function SalesTableToolbar<TData>({
                 <AlertDialogDescription className="flex flex-col space-y-3">
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente los productos seleccionados.
+                    permanentemente las ventas seleccionadas.
                   </span>
 
                   <span className="flex flex-col">
                     Items seleccionados:
                     {table.getSelectedRowModel().rows.map((row) => {
-                      const expense = row.original as {
+                      const sale = row.original as {
                         date: string;
-                        amount: number;
-                        category: string;
+                        time: string;
+                        total: number;
                       };
                       return (
                         <span key={row.id} className="text-foreground">
-                          {expense.date
-                            ? formatDate(new Date(expense.date), "PPP", {
-                                locale: es,
-                              })
-                            : "Fecha no disponible"}{" "}
-                          ${expense.amount} {expense.category}
+                          {formatDate(new Date(sale.date + "Z"), "PPP", {
+                            locale: es,
+                          })}{" "}
+                          {formatDate(new Date(sale.date + "Z"), "p", {
+                            locale: es,
+                          })}{" "}
+                          ${sale.total}
                         </span>
                       );
                     })}

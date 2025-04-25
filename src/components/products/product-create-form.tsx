@@ -46,10 +46,10 @@ export default function ProductCreateForm() {
       onSuccess: () => {
         setIsOpen(false);
         form.reset();
-        toast.success("Producto registrado.");
+        toast.success("Producto registrado");
       },
       onError: () => {
-        toast.error("Error al registrar producto.");
+        toast.error("Error al registrar producto");
       },
     });
   }

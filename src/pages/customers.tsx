@@ -31,7 +31,7 @@ GROUP BY
 
 export default function Customers() {
   const { data = [] } = useQuery({
-    queryKey: ["customers"],
+    queryKey: ["customers", "sales"],
     queryFn: GetCustomers,
   });
 

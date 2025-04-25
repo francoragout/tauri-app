@@ -31,6 +31,8 @@ import {
 import { toast } from "sonner";
 import { DeleteProduct } from "@/lib/mutations/useProduct";
 import ProductUpdateForm from "./product-update-form";
+import { useDispatch } from "react-redux";
+import { clearCart } from "@/features/cart/cartSlice";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -43,17 +45,19 @@ export function ProductsTableRowActions<TData>({
   const [isOpen, setIsOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { mutate: deleteProduct } = DeleteProduct();
+  const dispatch = useDispatch();
   const productId = product.id as number;
 
   function handleDelete() {
     deleteProduct(productId, {
       onSuccess: () => {
         setIsAlertOpen(false);
-        toast.success("Producto eliminado.");
+        dispatch(clearCart());
+        toast.success("Producto eliminado");
       },
       onError: () => {
         setIsAlertOpen(false);
-        toast.error("Error al eliminar producto.");
+        toast.error("Error al eliminar producto");
       },
     });
   }
@@ -62,15 +66,16 @@ export function ProductsTableRowActions<TData>({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="h-8 w-8 p-0"
-          >
+          <Button variant="ghost" className="h-8 w-8 p-0">
             <span className="sr-only">Open menu</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[160px] z-50" onClick={(event) => event.stopPropagation()}>
+        <DropdownMenuContent
+          align="end"
+          className="w-[160px] z-50"
+          onClick={(event) => event.stopPropagation()}
+        >
           <div className="flex flex-col w-full">
             <DropdownMenuItem asChild>
               <Button

@@ -52,11 +52,11 @@ export function ExpensesTableToolbar<TData>({
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
-          `Se han eliminado ${expensesIds.length} gastos seleccionados.`
+          `Se han eliminado ${expensesIds.length} gastos seleccionados`
         );
       },
       onError: () => {
-        toast.error("Error al eliminar gastos seleccionados.");
+        toast.error("Error al eliminar gastos seleccionados");
       },
     });
   };

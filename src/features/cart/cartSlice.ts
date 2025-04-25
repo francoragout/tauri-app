@@ -8,11 +8,11 @@ export interface CartItem {
 }
 
 export interface CartState {
-  items: CartItem[]
+  products: CartItem[]
 }
 
 const initialState: CartState = {
-  items: [],
+  products: [],
 }
 
 export const cartSlice = createSlice({
@@ -20,27 +20,27 @@ export const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action: PayloadAction<CartItem>) => {
-      const item = state.items.find(i => i.id === action.payload.id)
-      if (item) {
-        item.quantity += action.payload.quantity
+      const product = state.products.find(p => p.id === action.payload.id)
+      if (product) {
+        product.quantity += action.payload.quantity
       } else {
-        state.items.push(action.payload)
+        state.products.push(action.payload)
       }
     },
     removeFromCart: (state, action: PayloadAction<number>) => {  // Cambié 'string' a 'number'
-      state.items = state.items.filter(i => i.id !== action.payload)
+      state.products = state.products.filter(p => p.id !== action.payload)
     },
     updateQuantity: (
       state,
       action: PayloadAction<{ id: number; quantity: number }>  // Cambié 'string' a 'number'
     ) => {
-      const item = state.items.find(i => i.id === action.payload.id)
-      if (item) {
-        item.quantity = action.payload.quantity
+      const product = state.products.find(p => p.id === action.payload.id)
+      if (product) {
+        product.quantity = action.payload.quantity
       }
     },
     clearCart: (state) => {
-      state.items = []
+      state.products = []
     },
   },
 })
