@@ -1,24 +1,3 @@
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Expense, ExpenseSchema } from "@/lib/zod";
-import { useEffect, useState } from "react";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { UpdateExpense } from "@/lib/mutations/useExpense";
-import {
-  PopoverDialog,
-  PopoverDialogContent,
-  PopoverDialogTrigger,
-} from "../ui/popover-dialog";
 import {
   Command,
   CommandEmpty,
@@ -27,58 +6,81 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { useQuery } from "@tanstack/react-query";
-import { GetProducts } from "@/pages/expenses";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-interface ExpenseUpdateFormProps {
-  expense: Expense;
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+
+import {
+  PopoverDialog,
+  PopoverDialogContent,
+  PopoverDialogTrigger,
+} from "../ui/popover-dialog";
+
+import { Purchase, PurchaseSchema } from "@/lib/zod";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { UpdatePurchase } from "@/lib/mutations/usePurchase";
+import { useQuery } from "@tanstack/react-query";
+import { GetProducts } from "@/lib/mutations/useProduct";
+
+interface ExpenseCreateFormProps {
+  purchase: Purchase;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function ExpenseUpdateForm({
-  expense,
+export default function PurchaseUpdateForm({
+  purchase,
   onOpenChange,
-}: ExpenseUpdateFormProps) {
-  const { mutate, isPending } = UpdateExpense();
+}: ExpenseCreateFormProps) {
   const [displayValue, setDisplayValue] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const { data: products = [] } = useQuery({
-    queryKey: ["products"],
-    queryFn: GetProducts,
-  });
+  const { mutate, isPending } = UpdatePurchase();
 
-  const form = useForm<z.infer<typeof ExpenseSchema>>({
-    resolver: zodResolver(ExpenseSchema),
+  const form = useForm<z.infer<typeof PurchaseSchema>>({
+    resolver: zodResolver(PurchaseSchema),
     defaultValues: {
-      category: expense.category,
-      total: expense.total,
-      quantity: expense.quantity,
-      product_id: expense.product_id,
+      product_id: purchase.product_id,
+      total: purchase.total,
+      quantity: purchase.quantity,
     },
   });
 
   useEffect(() => {
     if (!onOpenChange) {
       form.reset({
-        category: expense.category,
-        total: expense.total,
-        quantity: expense.quantity,
-        product_id: expense.product_id,
+        product_id: purchase.product_id,
+        total: purchase.total,
+        quantity: purchase.quantity,
       });
     }
-  }, [expense, form, onOpenChange]);
+  }, [purchase, form, onOpenChange]);
 
-  function onSubmit(values: z.infer<typeof ExpenseSchema>) {
-    values.id = expense.id;
+  const { data: products = [] } = useQuery({
+    queryKey: ["products"],
+    queryFn: GetProducts,
+  });
+
+  function onSubmit(values: z.infer<typeof PurchaseSchema>) {
     mutate(values, {
       onSuccess: () => {
+        form.reset();
+        toast.success("Compra actualizada");
         onOpenChange(false);
-        toast.success("Gasto actualizado");
       },
       onError: () => {
-        toast.error("Error al actualizar gasto");
+        toast.error("Error al actualizar compra");
       },
     });
   }
@@ -97,28 +99,10 @@ export default function ExpenseUpdateForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isPending}
-                  placeholder="Categoría (requerido)"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="product_id"
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <PopoverDialog
-                modal={true}
                 open={isPopoverOpen}
                 onOpenChange={setIsPopoverOpen}
               >
@@ -135,32 +119,23 @@ export default function ExpenseUpdateForm({
                       {field.value
                         ? products.find((product) => product.id === field.value)
                             ?.name
-                        : "Producto (opcional)"}
+                        : "Producto (requerido)"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverDialogTrigger>
-                <PopoverDialogContent className="w-[462px]">
+                <PopoverDialogContent className="w-[462px] p-0">
                   <Command>
-                    <CommandInput placeholder="Buscar producto..." />
+                    <CommandInput placeholder="Search language..." />
                     <CommandList>
-                      <CommandEmpty>Sin resultados.</CommandEmpty>
+                      <CommandEmpty>No language found.</CommandEmpty>
                       <CommandGroup>
                         {products.map((product) => (
                           <CommandItem
                             value={product.name}
                             key={product.id}
                             onSelect={() => {
-                              const currentValue = form.getValues("product_id");
-
-                              if (currentValue === product.id) {
-                                form.setValue("product_id", null);
-                              } else {
-                                form.setValue("product_id", product.id, {
-                                  shouldDirty: true,
-                                });
-                              }
-
+                              form.setValue("product_id", product.id as number);
                               setIsPopoverOpen(false);
                             }}
                           >

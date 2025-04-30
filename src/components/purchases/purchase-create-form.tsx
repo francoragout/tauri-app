@@ -21,8 +21,7 @@ import {
   PopoverDialogTrigger,
 } from "../ui/popover-dialog";
 
-import { CreateExpense } from "@/lib/mutations/useExpense";
-import { ExpenseSchema, Product } from "@/lib/zod";
+import { Product, PurchaseSchema } from "@/lib/zod";
 import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,31 +39,32 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import { CreatePurchase } from "@/lib/mutations/usePurchase";
 
 interface ExpenseCreateFormProps {
   products: Product[];
 }
 
-export default function ExpenseCreateForm({
+export default function PurchaseCreateForm({
   products,
 }: ExpenseCreateFormProps) {
   const [displayValue, setDisplayValue] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const { mutate, isPending } = CreateExpense();
-  const form = useForm<z.infer<typeof ExpenseSchema>>({
-    resolver: zodResolver(ExpenseSchema),
+  const { mutate, isPending } = CreatePurchase();
+  const form = useForm<z.infer<typeof PurchaseSchema>>({
+    resolver: zodResolver(PurchaseSchema),
   });
 
-  function onSubmit(values: z.infer<typeof ExpenseSchema>) {
+  function onSubmit(values: z.infer<typeof PurchaseSchema>) {
     mutate(values, {
       onSuccess: () => {
         form.reset();
-        toast.success("Gasto registrado");
+        toast.success("Compra registrada");
         setIsOpen(false);
       },
       onError: () => {
-        toast.error("Error al registrar gasto");
+        toast.error("Error al registrar compra");
       },
     });
   }
@@ -88,7 +88,7 @@ export default function ExpenseCreateForm({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Registrar gasto</DialogTitle>
+          <DialogTitle>Registrar compra</DialogTitle>
           <DialogDescription>
             Use tabs para navegar mas rapido entre los diferentes campos.
           </DialogDescription>
@@ -97,20 +97,71 @@ export default function ExpenseCreateForm({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="category"
+              name="product_id"
               render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="Categoría (requerido)"
-                    />
-                  </FormControl>
+                <FormItem className="flex flex-col">
+                  <PopoverDialog
+                    open={isPopoverOpen}
+                    onOpenChange={setIsPopoverOpen}
+                  >
+                    <PopoverDialogTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value
+                            ? products.find(
+                                (product) => product.id === field.value
+                              )?.name
+                            : "Producto (requerido)"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverDialogTrigger>
+                    <PopoverDialogContent className="w-[462px] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search language..." />
+                        <CommandList>
+                          <CommandEmpty>No language found.</CommandEmpty>
+                          <CommandGroup>
+                            {products.map((product) => (
+                              <CommandItem
+                                value={product.name}
+                                key={product.id}
+                                onSelect={() => {
+                                  form.setValue(
+                                    "product_id",
+                                    product.id as number
+                                  );
+                                  setIsPopoverOpen(false);
+                                }}
+                              >
+                                {product.name}
+                                <Check
+                                  className={cn(
+                                    "ml-auto",
+                                    product.id === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverDialogContent>
+                  </PopoverDialog>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="total"
@@ -153,89 +204,14 @@ export default function ExpenseCreateForm({
 
             <FormField
               control={form.control}
-              name="product_id"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <PopoverDialog
-                    modal={true}
-                    open={isPopoverOpen}
-                    onOpenChange={setIsPopoverOpen}
-                  >
-                    <PopoverDialogTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className={cn(
-                            "justify-between",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value
-                            ? products.find(
-                                (product) => product.id === field.value
-                              )?.name
-                            : "Producto (opcional)"}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverDialogTrigger>
-                    <PopoverDialogContent className="w-[462px]">
-                      <Command>
-                        <CommandInput placeholder="Buscar producto..." />
-                        <CommandList>
-                          <CommandEmpty>Sin resultados.</CommandEmpty>
-                          <CommandGroup>
-                            {products.map((product) => (
-                              <CommandItem
-                                value={product.name}
-                                key={product.id}
-                                onSelect={() => {
-                                  const currentValue =
-                                    form.getValues("product_id");
-
-                                  if (currentValue === product.id) {
-                                    form.setValue("product_id", null);
-                                    form.setValue("quantity", undefined);
-                                  } else {
-                                    form.setValue("product_id", product.id);
-                                  }
-
-                                  setIsPopoverOpen(false);
-                                }}
-                              >
-                                {product.name}
-                                <Check
-                                  className={cn(
-                                    "ml-auto",
-                                    product.id === field.value
-                                      ? "opacity-100"
-                                      : "opacity-0"
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverDialogContent>
-                  </PopoverDialog>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="quantity"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={isPending || !form.getValues("product_id")}
+                      disabled={isPending}
                       placeholder="Cantidad (opcional)"
-                      value={field.value ?? undefined}
                     />
                   </FormControl>
                   <FormMessage />

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
-import { Sale } from "../zod";
+import { Sale, SaleItemsSchema } from "../zod";
 
 export function CreateSale() {
   const queryClient = useQueryClient();
@@ -38,8 +38,8 @@ export function CreateSale() {
 
       // 2. Insertar en sales
       await db.execute(
-        `INSERT INTO sales (total, customer_id, is_paid) VALUES ($1, $2, $3)`,
-        [values.total, values.customer_id, values.is_paid]
+        `INSERT INTO sales (surcharge_percent, customer_id, is_paid) VALUES ($1, $2, $3)`,
+        [values.surcharge_percent, values.customer_id, values.is_paid]
       );
 
       // 3. Obtener el ID de la venta recién insertada
@@ -51,10 +51,18 @@ export function CreateSale() {
 
       // 4. Insertar products y actualizar stock
       for (const product of values.products) {
-        // Insertar en sale_items
+        // Obtener el precio actual del producto
+        const priceResult = await db.select<{ price: number }[]>(
+          `SELECT price FROM products WHERE id = $1`,
+          [product.id]
+        );
+
+        const productPrice = priceResult[0].price;
+
+        // Insertar en sale_items con el precio actual
         await db.execute(
-          `INSERT INTO sale_items (sale_id, product_id, quantity) VALUES ($1, $2, $3)`,
-          [saleId, product.id, product.quantity]
+          `INSERT INTO sale_items (sale_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)`,
+          [saleId, product.id, product.quantity, productPrice]
         );
 
         // Actualizar el stock del producto
@@ -126,6 +134,44 @@ export function DeleteSales() {
 
       // 3. Eliminar las ventas
       await db.execute(`DELETE FROM sales WHERE id IN (${ids.join(",")})`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
+    },
+  });
+}
+
+export function GetSalesByCutomerId() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (customerId: number) => {
+      const db = await Database.load("sqlite:mydatabase.db");
+
+      const query = `
+          SELECT
+          sales.id,
+          sales.date,
+          sales.is_paid,
+          sales.surcharge_percent,
+          sales.customer_id,
+          GROUP_CONCAT(
+            products.brand || ' ' || products.variant || ' ' || products.weight || 
+            ' (x' || sale_items.quantity || ')',
+            ', '
+          ) AS products,
+          SUM(sale_items.price * sale_items.quantity) * (1 + IFNULL(sales.surcharge_percent, 0) / 100.0) AS total
+        FROM
+          sales
+        LEFT JOIN sale_items ON sale_items.sale_id = sales.id
+        LEFT JOIN products ON products.id = sale_items.product_id
+        WHERE sales.customer_id = $1
+        GROUP BY
+        sales.id;
+        `;
+
+      const result = await db.select(query, [customerId]);
+      return SaleItemsSchema.array().parse(result);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });

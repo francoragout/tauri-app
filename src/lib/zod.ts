@@ -1,12 +1,33 @@
 import { z } from "zod";
 
+export const PurchaseSchema = z.object({
+  id: z.number().optional(),
+  date: z.string().optional(),
+  product_id: z.number(),
+  product_name: z.string().optional(),
+  total: z.coerce
+    .number({
+      invalid_type_error: "Ingrese el total de la compra",
+    })
+    .min(1, {
+      message: "El total de la compra debe ser mayor a 0",
+    }),
+  quantity: z.coerce
+    .number({
+      invalid_type_error: "Ingrese la cantidad del producto",
+    })
+    .min(1, {
+      message: "La cantidad de compra debe ser mayor a 0",
+    }),
+});
+
+export type Purchase = z.infer<typeof PurchaseSchema>;
+
 export const ProductSchema = z.object({
   id: z.number().optional(),
-  brand: z.string().nonempty({
+  name: z.string().nonempty({
     message: "Ingrese el nombre del producto",
   }),
-  variant: z.string().optional(),
-  weight: z.string().optional(),
   category: z.string().nonempty({
     message: "Ingrese la categoría del producto",
   }),
@@ -14,8 +35,8 @@ export const ProductSchema = z.object({
     .number({
       invalid_type_error: "Ingrese el precio del producto",
     })
-    .min(1, {
-      message: "El precio de venta debe ser mayor a 0",
+    .int({
+      message: "El precio debe ser un número entero",
     }),
   stock: z.coerce
     .number({
@@ -24,16 +45,17 @@ export const ProductSchema = z.object({
     .int({
       message: "El stock debe ser un número entero",
     }),
+  unit_price: z.number().optional(),
   times_sold: z.number().optional(),
 });
 
-
 export const SaleSchema = z.object({
   id: z.number().optional(),
-  total: z.number(),
   date: z.string().optional(),
+  surcharge_percent: z.number().optional(),
+  amount_paid: z.number().default(0),
+  payment_status: z.enum(["paid", "pending"]),
   customer_id: z.number().optional(),
-  is_paid: z.number().default(0).optional(),
   products: z.array(
     z.object({
       id: z.number().int(),
@@ -45,9 +67,11 @@ export const SaleSchema = z.object({
 export const SaleItemsSchema = z.object({
   id: z.number(),
   date: z.string(),
-  total: z.number(),
-  is_paid: z.number(),
   products: z.string(),
+  surcharge_percent: z.number(),
+  total: z.number(),
+  customer_id: z.number().nullable(),
+  is_paid: z.number(),
 });
 
 export const CustomerSchema = z.object({
@@ -61,31 +85,35 @@ export const CustomerSchema = z.object({
     }),
   reference: z.string().optional(),
   phone: z.string().optional(),
+  debt: z.number().optional(),
 });
-
-export const ExtendedCustomerSchema = CustomerSchema.extend({
-  total_sales_amount: z.number().nullable(),
-  sales_details: z.string().nullable(),
-});
-
 export const ExpenseSchema = z.object({
   id: z.number().optional(),
+  product_id: z.number().nullish(),
+  product_name: z.string().nullish(),
   date: z.string().optional(),
-  amount: z.coerce
-  .number({
-    invalid_type_error: "Ingrese el monto del gasto",
-  })
-  .min(1, {
-    message: "El monto debe ser mayor a 0",
-  }),
   category: z
-  .string({
-    required_error: "Ingrese la categoría del gasto",
-  })
-  .nonempty({
-    message: "Ingrese la categoría del gasto",
-  }),
-  description: z.string().optional(),
+    .string({
+      required_error: "Ingrese la categoría del gasto",
+    })
+    .nonempty({
+      message: "Ingrese la categoría del gasto",
+    }),
+  total: z.coerce
+    .number({
+      invalid_type_error: "Ingrese el total del gasto",
+    })
+    .min(1, {
+      message: "El total del gasto debe ser mayor a 0",
+    }),
+  quantity: z.coerce
+    .number({
+      invalid_type_error: "Ingrese la cantidad del producto",
+    })
+    .int({
+      message: "La cantidad debe ser un número entero",
+    })
+    .nullish(),
 });
 
 export type Product = z.infer<typeof ProductSchema>;
@@ -93,4 +121,3 @@ export type Expense = z.infer<typeof ExpenseSchema>;
 export type SaleItems = z.infer<typeof SaleItemsSchema>;
 export type Sale = z.infer<typeof SaleSchema>;
 export type Customer = z.infer<typeof CustomerSchema>;
-export type ExtendedCustomer = z.infer<typeof ExtendedCustomerSchema>;

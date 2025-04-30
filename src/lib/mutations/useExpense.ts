@@ -10,10 +10,17 @@ export function CreateExpense() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
-        `INSERT INTO expenses (amount, category, description)
-           VALUES ($1, $2, $3)`,
-        [values.amount, values.category, values.description]
+        `INSERT INTO expenses (category, product_id, total, quantity)
+           VALUES ($1, $2, $3, $4)`,
+        [values.category, values.product_id, values.total, values.quantity]
       );
+
+      if (values.product_id) {
+        await db.execute(
+          `UPDATE products SET stock = stock + $1 WHERE id = $2`,
+          [values.quantity, values.product_id]
+        );
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
@@ -29,8 +36,16 @@ export function UpdateExpense() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
-        `UPDATE expenses SET amount = $1, category = $2, description = $3 WHERE id = $4`,
-        [values.amount, values.category, values.description, values.id]
+        `UPDATE expenses
+           SET category = $1, product_id = $2, total = $3, quantity = $4
+           WHERE id = $6`,
+        [
+          values.category,
+          values.product_id,
+          values.total,
+          values.quantity,
+          values.id,
+        ]
       );
     },
     onSuccess: () => {

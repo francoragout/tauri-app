@@ -26,19 +26,19 @@ import {
 } from "@/components/ui/table";
 
 import { DataTablePagination } from "@/components/data-table-pagination";
-import { ProductsTableToolbar } from "./products-table-toolbar";
-import { toast } from "sonner";
-import { useDispatch } from "react-redux";
-import { addToCart } from "@/features/cart/cartSlice";
+import { PurchasesTableToolbar } from "./purchases-table-toolbar";
+import { Product } from "@/lib/zod";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  products: Product[];
 }
 
-export function ProductsTable<TData, TValue>({
+export function PurchasesTable<TData, TValue>({
   columns,
   data,
+  products,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -46,7 +46,12 @@ export function ProductsTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    {
+      id: "date",
+      desc: true,
+    },
+  ]);
 
   const table = useReactTable({
     data,
@@ -70,24 +75,9 @@ export function ProductsTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
-  const dispatch = useDispatch();
-
-  const handleAddToCart = (product: any) => {
-    dispatch(
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-        originalPrice: product.originalPrice || product.price,
-      })
-    );
-    toast.success("Agregado al carrito");
-  };
-
   return (
     <div className="space-y-4 pt-4">
-      <ProductsTableToolbar table={table} />
+      <PurchasesTableToolbar table={table} products={products} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -114,7 +104,6 @@ export function ProductsTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => handleAddToCart(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

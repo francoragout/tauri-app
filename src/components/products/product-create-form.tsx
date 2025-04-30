@@ -30,9 +30,7 @@ export default function ProductCreateForm() {
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
     defaultValues: {
-      brand: "",
-      variant: "",
-      weight: "",
+      name: "",
       category: "",
       price: undefined,
       stock: undefined,
@@ -64,7 +62,7 @@ export default function ProductCreateForm() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Agregar producto</DialogTitle>
+          <DialogTitle>Registrar producto</DialogTitle>
           <DialogDescription>
             Use tabs para navegar mas rapido entre los diferentes campos.
           </DialogDescription>
@@ -73,48 +71,14 @@ export default function ProductCreateForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="brand"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={isPending}
-                      placeholder="Marca (requerido)"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="variant"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="Variante (opcional)"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="weight"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="Peso (opcional)"
+                      placeholder="Nombre (requerido)"
                     />
                   </FormControl>
                   <FormMessage />

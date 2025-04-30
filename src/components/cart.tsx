@@ -18,19 +18,32 @@ import { Badge } from "./ui/badge";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
 import {
+  applySurcharge,
   clearCart,
   removeFromCart,
   updateQuantity,
 } from "@/features/cart/cartSlice";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { Customer } from "@/lib/zod";
 import { SaleCreateForm } from "./sales/sale-create-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Cart({ customers }: { customers: Customer[] }) {
   const [openPopover, setOpenPopover] = useState(false);
+  const [surcharge, setSurcharge] = useState(0);
   const products = useSelector((state: RootState) => state.cart.products);
-  const totalCount = products.reduce((acc, product) => acc + product.quantity, 0);
+  const totalCount = products.reduce(
+    (acc, product) => acc + product.quantity,
+    0
+  );
   const totalPrice = products.reduce(
     (acc, product) => acc + product.price * product.quantity,
     0
@@ -42,6 +55,10 @@ export default function Cart({ customers }: { customers: Customer[] }) {
     dispatch(clearCart());
   };
 
+  const handleSurchargeChange = (surcharge: number) => {
+    dispatch(applySurcharge(surcharge));
+  };
+
   const handleQuantityChange = (id: number, quantity: number) => {
     if (quantity < 1) {
       dispatch(removeFromCart(id));
@@ -49,6 +66,12 @@ export default function Cart({ customers }: { customers: Customer[] }) {
       dispatch(updateQuantity({ id, quantity }));
     }
   };
+
+  useEffect(() => {
+    if (products.length === 0) {
+      setSurcharge(0);
+    }
+  }, [products]);
 
   return (
     <Popover open={openPopover} onOpenChange={setOpenPopover}>
@@ -99,18 +122,26 @@ export default function Cart({ customers }: { customers: Customer[] }) {
                           size="icon"
                           className="rounded-full"
                           onClick={() =>
-                            handleQuantityChange(product.id!, product.quantity - 1)
+                            handleQuantityChange(
+                              product.id!,
+                              product.quantity - 1
+                            )
                           }
                         >
                           -
                         </Button>
-                        <span className="w-8 text-center">{product.quantity}</span>
+                        <span className="w-8 text-center">
+                          {product.quantity}
+                        </span>
                         <Button
                           variant="outline"
                           size="icon"
                           className="rounded-full"
                           onClick={() =>
-                            handleQuantityChange(product.id!, product.quantity + 1)
+                            handleQuantityChange(
+                              product.id!,
+                              product.quantity + 1
+                            )
                           }
                         >
                           +
@@ -125,16 +156,44 @@ export default function Cart({ customers }: { customers: Customer[] }) {
               </TableBody>
               <TableFooter>
                 <TableRow>
-                  <TableCell colSpan={2}>Total</TableCell>
+                  <TableCell>Total</TableCell>
+                  <TableCell>
+                    <Select
+                      value={surcharge.toString()}
+                      onValueChange={(value) => {
+                        const numericValue = Number(value);
+                        setSurcharge(numericValue);
+                        handleSurchargeChange(numericValue);
+                      }}
+                    >
+                      <SelectTrigger size="sm" className="bg-background">
+                        <SelectValue>{surcharge}%</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={"0"}>0%</SelectItem>
+                        <SelectItem value={"1"}>1%</SelectItem>
+                        <SelectItem value={"2"}>2%</SelectItem>
+                        <SelectItem value={"3"}>3%</SelectItem>
+                        <SelectItem value={"4"}>4%</SelectItem>
+                        <SelectItem value={"5"}>5%</SelectItem>
+                        <SelectItem value={"6"}>6%</SelectItem>
+                        <SelectItem value={"7"}>7%</SelectItem>
+                        <SelectItem value={"8"}>8%</SelectItem>
+                        <SelectItem value={"9"}>9%</SelectItem>
+                        <SelectItem value={"10"}>10%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
                   <TableCell className="text-right">${totalPrice}</TableCell>
                 </TableRow>
               </TableFooter>
             </Table>
             <SaleCreateForm
               products={products}
-              totalPrice={totalPrice}
               customers={customers}
               onOpenChange={setOpenPopover}
+              surcharge={surcharge}
+              totalPrice={totalPrice}
             />
           </>
         )}

@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Row } from "@tanstack/react-table";
-import { ExpenseSchema } from "@/lib/zod";
-import ExpenseUpdateForm from "./expense-update-from";
+import { PurchaseSchema } from "@/lib/zod";
 import {
   Dialog,
   DialogContent,
@@ -31,31 +30,32 @@ import {
 } from "@/components/ui/alert-dialog";
 import { formatDate } from "date-fns";
 import { es } from "date-fns/locale";
-import { DeleteExpense } from "@/lib/mutations/useExpense";
 import { toast } from "sonner";
+import PurchaseUpdateForm from "./purchase-update-form";
+import { DeletePurchase } from "@/lib/mutations/usePurchase";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
 }
 
-export function ExpensesTableRowActions<TData>({
+export function PurchasesTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const expense = ExpenseSchema.parse(row.original);
+  const purchase = PurchaseSchema.parse(row.original);
   const [isOpen, setIsOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const { mutate } = DeleteExpense();
-  const expenseId = expense.id as number;
+  const { mutate } = DeletePurchase();
+  const purchaseId = purchase.id as number;
 
   function handleDelete() {
-    mutate(expenseId, {
+    mutate(purchaseId, {
       onSuccess: () => {
         setIsAlertOpen(false);
-        toast.success("Gasto eliminado");
+        toast.success("Compra eliminada");
       },
       onError: () => {
         setIsAlertOpen(false);
-        toast.error("Error al eliminar gasto");
+        toast.error("Error al eliminar compra");
       },
     });
   }
@@ -109,7 +109,7 @@ export function ExpensesTableRowActions<TData>({
               Use tabs para navegar mas rapido entre los diferentes campos.
             </DialogDescription>
           </DialogHeader>
-          <ExpenseUpdateForm expense={expense} onOpenChange={setIsOpen} />
+          <PurchaseUpdateForm purchase={purchase} onOpenChange={setIsOpen} />
         </DialogContent>
       </Dialog>
 
@@ -121,12 +121,12 @@ export function ExpensesTableRowActions<TData>({
               Esta acción no se puede deshacer. Esto eliminará permanentemente
               el gasto del dia{" "}
               <span className="text-foreground">
-                {expense.date
-                  ? formatDate(expense.date, "PPP", { locale: es })
+                {purchase.date
+                  ? formatDate(purchase.date, "PPP", { locale: es })
                   : "Fecha no disponible"}
               </span>{" "}
               con el monto de{" "}
-              <span className="text-foreground">${expense.total}</span>
+              <span className="text-foreground">${purchase.total}</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

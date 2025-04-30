@@ -2,6 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
 import { Product } from "../zod";
 
+export function GetProducts(): Promise<Product[]> {
+  return Database.load("sqlite:mydatabase.db").then((db) =>
+    db.select(`SELECT * FROM products`)
+  );
+}
+
 export function CreateProduct() {
   const queryClient = useQueryClient();
 
@@ -10,16 +16,9 @@ export function CreateProduct() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
-        `INSERT INTO products (brand, variant, weight, category, price, stock)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [
-          values.brand,
-          values.variant,
-          values.weight,
-          values.category,
-          values.price,
-          values.stock,
-        ]
+        `INSERT INTO products (name, category, price, stock)
+         VALUES ($1, $2, $3, $4)`,
+        [values.name, values.category, values.price, values.stock]
       );
     },
     onSuccess: () => {
@@ -36,25 +35,10 @@ export function UpdateProduct() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
-        `UPDATE products SET brand = $1, variant = $2, weight = $3, category = $4, price = $5, stock = $6 WHERE id = $7`,
-        [
-          values.brand,
-          values.variant,
-          values.weight,
-          values.category,
-          values.price,
-          values.stock,
-          values.id,
-        ]
-      );
-
-      // Actualizar el precio en la tabla sale_items para ventas no pagadas (is_paid = 0)
-      await db.execute(
-        `UPDATE sale_items
-         SET price = (SELECT price FROM products WHERE products.id = sale_items.product_id)
-         WHERE sale_id IN (
-           SELECT id FROM sales WHERE is_paid = 0
-         )`
+        `UPDATE products
+         SET name = $1, category = $2, price = $3, stock = $4
+         WHERE id = $5`,
+        [values.name, values.category, values.price, values.stock, values.id]
       );
     },
     onSuccess: () => {

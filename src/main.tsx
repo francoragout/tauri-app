@@ -11,6 +11,7 @@ import { Toaster } from "sonner";
 import { store } from "./store";
 import { Provider } from "react-redux";
 import Expenses from "./pages/expenses";
+import Purchases from "./pages/purchases";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             <Route path="/" element={<App />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="purchases" element={<Purchases />} />
               <Route path="products" element={<Products />} />
               <Route path="sales" element={<Sales />} />
               <Route path="customers" element={<Customers />} />

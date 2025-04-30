@@ -61,12 +61,12 @@ export function ProductsTableToolbar<TData>({
         <Input
           placeholder="Filtrar productos..."
           value={
-            (table.getColumn("combined_filter")?.getFilterValue() as string) ??
+            (table.getColumn("name")?.getFilterValue() as string) ??
             ""
           }
           onChange={(event) =>
             table
-              .getColumn("combined_filter")
+              .getColumn("name")
               ?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"

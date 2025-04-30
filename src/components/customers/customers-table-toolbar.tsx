@@ -38,6 +38,7 @@ export function CustomersTableToolbar<TData>({
 
     deleteCustomers(customersIds, {
       onSuccess: () => {
+        table.resetRowSelection();
         toast.success(
           `Se han eliminado ${customersIds.length} clientes seleccionados`
         );

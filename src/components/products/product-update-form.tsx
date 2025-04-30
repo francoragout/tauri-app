@@ -32,9 +32,7 @@ export default function ProductUpdateForm({
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
     defaultValues: {
-      brand: product.brand,
-      variant: product.variant,
-      weight: product.weight,
+      name: product.name,
       category: product.category,
       price: product.price,
       stock: product.stock,
@@ -44,9 +42,7 @@ export default function ProductUpdateForm({
   useEffect(() => {
     if (!onOpenChange) {
       form.reset({
-        brand: product.brand,
-        variant: product.variant,
-        weight: product.weight,
+        name: product.name,
         category: product.category,
         price: product.price,
         stock: product.stock,
@@ -73,48 +69,14 @@ export default function ProductUpdateForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="brand"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormControl>
                 <Input
                   {...field}
                   disabled={isPending}
-                  placeholder="Marca (requerido)"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="variant"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isPending}
-                  placeholder="Variante (opcional)"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="weight"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isPending}
-                  placeholder="Peso (opcional)"
+                  placeholder="Nombre (requerido)"
                 />
               </FormControl>
               <FormMessage />

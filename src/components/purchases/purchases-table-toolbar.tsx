@@ -2,7 +2,7 @@
 
 import { Table } from "@tanstack/react-table";
 import { Button } from "../ui/button";
-import { PlusCircle, Trash, X } from "lucide-react";
+import { Trash, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,8 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import ExpenseCreateForm from "./expense-create-form";
-import { formatDate } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,36 +26,35 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useState } from "react";
-import { DeleteExpenses } from "@/lib/mutations/useExpense";
-import { DataTableFacetedFilter } from "../data-table-faceted-filter";
-
 import { Product } from "@/lib/zod";
+import PurchaseCreateForm from "./purchase-create-form";
+import { DeletePurchases } from "@/lib/mutations/usePurchase";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
   products: Product[];
 }
 
-export function ExpensesTableToolbar<TData>({
+export function PurchasesTableToolbar<TData>({
   table,
   products,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
   const [date, setDate] = useState<Date>();
-  const { mutate } = DeleteExpenses();
+  const { mutate } = DeletePurchases();
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
-    const expensesIds = selectedRows.map(
+    const purchasesIds = selectedRows.map(
       (row) => (row.original as { id: number }).id
     );
 
-    mutate(expensesIds, {
+    mutate(purchasesIds, {
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
-          `Se han eliminado ${expensesIds.length} gastos seleccionados`
+          `Se han eliminado ${purchasesIds.length} gastos seleccionados`
         );
       },
       onError: () => {
@@ -80,9 +78,9 @@ export function ExpensesTableToolbar<TData>({
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {date ? (
-                formatDate(date, "PPP", { locale: es })
+                format(date, "PP", { locale: es })
               ) : (
-                <span>Filtrar gastos...</span>
+                <span>Filtrar compras...</span>
               )}
             </Button>
           </PopoverTrigger>
@@ -107,28 +105,12 @@ export function ExpensesTableToolbar<TData>({
           </PopoverContent>
         </Popover>
 
-        {table.getColumn("category") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("category")}
-            title="Categoría"
-            options={Array.from(
-              table
-                .getColumn("category")
-                ?.getFacetedUniqueValues()
-                ?.entries() ?? []
-            ).map(([key, _]) => ({
-              label: String(key),
-              value: String(key),
-            }))}
-          />
-        )}
-
         {isFiltered && (
           <Button
             variant="ghost"
             onClick={() => {
               table.resetColumnFilters();
-              setDate(undefined); // Restablecer la fecha seleccionada
+              setDate(undefined);
             }}
             className="h-8 px-2 lg:px-3"
           >
@@ -162,17 +144,20 @@ export function ExpensesTableToolbar<TData>({
                     {table.getSelectedRowModel().rows.map((row) => {
                       const expense = row.original as {
                         date: string;
-                        amount: number;
-                        category: string;
+                        time: string;
                       };
                       return (
                         <span key={row.id} className="text-foreground">
                           {expense.date
-                            ? formatDate(new Date(expense.date), "PPP", {
+                            ? format(new Date(expense.date) + "Z", "PP", {
                                 locale: es,
                               })
                             : "Fecha no disponible"}{" "}
-                          ${expense.amount} {expense.category}
+                          {expense.date
+                            ? format(new Date(expense.date) + "Z", "p", {
+                                locale: es,
+                              })
+                            : "Fecha no disponible"}{" "}
                         </span>
                       );
                     })}
@@ -189,11 +174,8 @@ export function ExpensesTableToolbar<TData>({
           </AlertDialog>
         )}
 
-        
+        <PurchaseCreateForm products={products} />
       </div>
-      <ExpenseCreateForm
-        products={products}
-        />
     </div>
   );
 }

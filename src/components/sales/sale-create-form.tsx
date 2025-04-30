@@ -23,23 +23,26 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { Customer, SaleSchema } from "@/lib/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CreateSale } from "@/lib/mutations/useSale";
 import { useDispatch } from "react-redux";
 import { clearCart } from "@/features/cart/cartSlice";
 
 interface SaleCreateFormProps {
   customers: Customer[];
-  totalPrice: number;
   products: any[];
+  surcharge: number;
+  totalPrice: number;
   onOpenChange?: (open: boolean) => void;
 }
 
 export function SaleCreateForm({
   customers,
-  totalPrice,
   products,
+  surcharge,
+  totalPrice,
   onOpenChange = () => {},
+  
 }: SaleCreateFormProps) {
   const [value, setValue] = useState<number | undefined>(undefined);
   const [open, setOpen] = useState(false);
@@ -49,14 +52,20 @@ export function SaleCreateForm({
     resolver: zodResolver(SaleSchema),
     defaultValues: {
       customer_id: value ? +value : undefined,
-      total: totalPrice,
+      amount_paid: totalPrice,
+      surcharge_percent: surcharge,
       products: products.map((product) => ({
         id: product.id,
         quantity: product.quantity,
       })),
-      is_paid: value ? 0 : 1,
+      payment_status: value ? "pending" : "paid",
+      
     },
   });
+
+  useEffect(() => {
+    form.setValue("surcharge_percent", surcharge);
+  }, [surcharge, form]);
 
   const { mutate, isPending } = CreateSale();
 
@@ -70,6 +79,7 @@ export function SaleCreateForm({
       ...values,
       products: updatedProducts,
       is_paid: value ? 0 : 1,
+      surcharge_percent: values.surcharge_percent,
     };
 
     mutate(updatedValues, {
@@ -126,7 +136,7 @@ export function SaleCreateForm({
                   <Command>
                     <CommandInput placeholder="Filtrar clientes..." />
                     <CommandList>
-                      <CommandEmpty>No language found.</CommandEmpty>
+                      <CommandEmpty>Sin resultados.</CommandEmpty>
                       <CommandGroup>
                         {customers.map((customer) => (
                           <CommandItem

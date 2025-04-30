@@ -6,18 +6,18 @@ pub fn run() {
         version: 1,
         description: "create_initial_tables",
         sql: "
-                CREATE TABLE IF NOT EXISTS customers (
-                    id INTEGER PRIMARY KEY,
-                    full_name TEXT NOT NULL,
-                    reference TEXT,
-                    phone TEXT
+                CREATE TABLE IF NOT EXISTS purchases (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    product_id INTEGER NOT NULL,
+                    date TEXT DEFAULT CURRENT_TIMESTAMP,                   
+                    total REAL NOT NULL,
+                    quantity INTEGER NOT NULL,
+                    FOREIGN KEY (product_id) REFERENCES products(id)
                 );
-
+                
                 CREATE TABLE IF NOT EXISTS products (
                     id INTEGER PRIMARY KEY,
-                    brand TEXT NOT NULL,
-                    variant TEXT,
-                    weight TEXT,
+                    name TEXT NOT NULL,
                     category TEXT NOT NULL,
                     price REAL NOT NULL,
                     stock INTEGER NOT NULL
@@ -25,29 +25,29 @@ pub fn run() {
 
                 CREATE TABLE IF NOT EXISTS sales (
                     id INTEGER PRIMARY KEY,
-                    date TEXT DEFAULT CURRENT_TIMESTAMP,
-                    total REAL NOT NULL,
-                    is_paid INTEGER NOT NULL DEFAULT 0,
                     customer_id INTEGER,
+                    date TEXT DEFAULT CURRENT_TIMESTAMP,
+                    surcharge_percent REAL DEFAULT 0,
+                    is_paid INTEGER DEFAULT 0,                  
                     FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
                 );
 
                 CREATE TABLE IF NOT EXISTS sale_items (
                     sale_id INTEGER NOT NULL,
                     product_id INTEGER NOT NULL,
-                    quantity INTEGER NOT NULL,
                     price REAL NOT NULL,
+                    quantity INTEGER NOT NULL,
                     FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
                     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
                     PRIMARY KEY (sale_id, product_id)
-                );
-                
-                CREATE TABLE IF NOT EXISTS expenses (
+                );             
+
+                CREATE TABLE IF NOT EXISTS customers (
                     id INTEGER PRIMARY KEY,
-                    date TEXT DEFAULT CURRENT_TIMESTAMP,
-                    amount REAL NOT NULL,
-                    category TEXT NOT NULL,
-                    description TEXT
+                    first_name TEXT NOT NULL,
+                    last_name TEXT NOT NULL,
+                    reference TEXT,
+                    phone TEXT
                 );
             ",
         kind: MigrationKind::Up,

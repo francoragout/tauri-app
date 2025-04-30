@@ -40,15 +40,15 @@ export function CustomersTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
   const customer = CustomerSchema.parse(row.original);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const { mutate } = DeleteCustomer();
   const customerId = customer.id as number;
 
   function handleDelete() {
     mutate(customerId, {
       onSuccess: () => {
-        setIsAlertOpen(false);
+        setDeleteOpen(false);
         toast.success("Cliente eliminado");
       },
       onError: (error: any) => {
@@ -75,7 +75,7 @@ export function CustomersTableRowActions<TData>({
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setTimeout(() => setIsOpen(true), 0);
+                  setTimeout(() => setEditOpen(true), 0);
                 }}
               >
                 <Pencil className="text-primary" />
@@ -88,7 +88,7 @@ export function CustomersTableRowActions<TData>({
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setTimeout(() => setIsAlertOpen(true), 0);
+                  setTimeout(() => setDeleteOpen(true), 0);
                 }}
               >
                 <Trash className="text-primary" />
@@ -99,7 +99,7 @@ export function CustomersTableRowActions<TData>({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Editar producto</DialogTitle>
@@ -107,11 +107,11 @@ export function CustomersTableRowActions<TData>({
               Use tabs para navegar mas rapido entre los diferentes campos.
             </DialogDescription>
           </DialogHeader>
-          <CustomerUpdateForm customer={customer} onOpenChange={setIsOpen} />
+          <CustomerUpdateForm customer={customer} onOpenChange={setEditOpen} />
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estas completamente seguro?</AlertDialogTitle>

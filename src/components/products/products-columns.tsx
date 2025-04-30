@@ -34,27 +34,11 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "brand",
+    accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Marca" />
+      <DataTableColumnHeader column={column} title="Nombre" />
     ),
-    cell: ({ row }) => <div>{row.getValue("brand")}</div>,
-  },
-  {
-    accessorKey: "variant",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Variante" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("variant")}</div>,
-    enableSorting: false,
-  },
-  {
-    accessorKey: "weight",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Peso" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("weight")}</div>,
-    enableSorting: false,
+    cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
     accessorKey: "category",
@@ -66,11 +50,32 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     },
   },
   {
+    accessorKey: "unit_price",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Precio unitario" />
+    ),
+    cell: ({ row }) => {
+      const unitPrice = row.getValue("unit_price") as number | null;
+      return unitPrice && unitPrice > 0 ? (
+        <div>${unitPrice.toFixed(0)}</div>
+      ) : (
+        <Badge variant="secondary">Sin precio</Badge>
+      );
+    },
+  },
+  {
     accessorKey: "price",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Precio" />
+      <DataTableColumnHeader column={column} title="Precio venta" />
     ),
-    cell: ({ row }) => <div>${row.getValue("price")}</div>,
+    cell: ({ row }) => {
+      const price = row.getValue("price") as number | null;
+      return price && price > 0 ? (
+        <div>${price.toFixed(0)}</div>
+      ) : (
+        <Badge variant="secondary">Sin precio</Badge>
+      );
+    },
   },
   {
     accessorKey: "stock",
@@ -99,17 +104,6 @@ export const ProductsColumns: ColumnDef<Product>[] = [
         <div>{timesSold}</div>
       );
     },
-  },
-  {
-    accessorKey: "combined_filter",
-    accessorFn: (row) => `${row.brand} ${row.variant}`,
-    filterFn: (row, columnId, filterValue) => {
-      const value = row.getValue(columnId) as string;
-      return value.toLowerCase().includes(filterValue.toLowerCase());
-    },
-    enableHiding: true,
-    header: undefined,
-    cell: undefined,
   },
   {
     id: "actions",

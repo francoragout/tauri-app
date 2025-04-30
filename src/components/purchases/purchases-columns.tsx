@@ -2,13 +2,13 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Expense } from "@/lib/zod";
+import { Purchase } from "@/lib/zod";
 import { DataTableColumnHeader } from "../data-table-column-header";
-import { ExpensesTableRowActions } from "./expenses-table-row-actions";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { PurchasesTableRowActions } from "./purchases-table-row-actions";
 
-export const ExpensesColumns: ColumnDef<Expense>[] = [
+export const PurchasesColumns: ColumnDef<Purchase>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -40,7 +40,7 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
     ),
     cell: ({ row }) => {
       const date = new Date(row.getValue("date") + "Z");
-      return <div>{format(date, "PPP", { locale: es })}</div>;
+      return <div>{format(date, "PP", { locale: es })}</div>;
     },
   },
   {
@@ -55,22 +55,11 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "category",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Categoría" />
-    ),
-    filterFn: (row, columnId, filterValue) => {
-      return filterValue.includes(row.getValue(columnId));
-    },
-  },
-  {
     accessorKey: "product_name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Producto" />
     ),
-    cell: ({ row }) => (
-      <div>{row.getValue("product_name") as string | null}</div>
-    ),
+    cell: ({ row }) => <div>{row.getValue("product_name")}</div>,
   },
 
   {
@@ -94,8 +83,8 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
       return <div>{quantity !== null ? quantity : ""}</div>;
     },
   },
-  {
-    id: "actions",
-    cell: ({ row }) => <ExpensesTableRowActions row={row} />,
-  },
+    {
+      id: "actions",
+      cell: ({ row }) => <PurchasesTableRowActions row={row} />,
+    },
 ];

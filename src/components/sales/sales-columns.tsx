@@ -74,26 +74,35 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
     enableSorting: false,
   },
   {
+    accessorKey: "payment_method",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Metodo de pago" />
+    ),
+    cell: ({ row }) => {
+      const getPaymentMethodBadge = () => {
+        const surcharge_percent = row.original.surcharge_percent as number;
+        const customer_id = row.original.customer_id as number;
+
+        if (customer_id) {
+          return <Badge variant="outline">Fiado</Badge>;
+        }
+
+        if (surcharge_percent > 0) {
+          return <Badge variant="outline">{surcharge_percent}%</Badge>;
+        }
+
+        return <Badge variant="outline">Efectivo</Badge>;
+      };
+
+      return getPaymentMethodBadge();
+    },
+},
+  {
     accessorKey: "total",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Total" />
     ),
     cell: ({ row }) => <div>${row.getValue("total")}</div>,
-  },
-  {
-    accessorKey: "is_paid",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Pago" />
-    ),
-    cell: ({ row }) => {
-      const is_paid = row.getValue("is_paid");
-      
-      if (is_paid === 1) {
-        return <Badge variant="outline">Efectivo</Badge>;
-      } else {
-        return <Badge variant="secondary">Credito</Badge>;
-      }
-    },
   },
   {
     id: "actions",

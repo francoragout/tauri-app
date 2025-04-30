@@ -33,8 +33,8 @@ export default function App() {
               <TabsTrigger asChild value="dashboard" className="cursor-default">
                 <NavLink to="/dashboard">Tablero</NavLink>
               </TabsTrigger>
-              <TabsTrigger asChild value="expenses" className="cursor-default">
-                <NavLink to="/expenses">Gastos</NavLink>
+              <TabsTrigger asChild value="purchases" className="cursor-default">
+                <NavLink to="/purchases">Compras</NavLink>
               </TabsTrigger>
               <TabsTrigger asChild value="products" className="cursor-default">
                 <NavLink to="/products">Productos</NavLink>
@@ -44,6 +44,9 @@ export default function App() {
               </TabsTrigger>
               <TabsTrigger asChild value="customers" className="cursor-default">
                 <NavLink to="/customers">Clientes</NavLink>
+              </TabsTrigger>
+              <TabsTrigger asChild value="expenses" className="cursor-default">
+                <NavLink to="/expenses">Gastos</NavLink>
               </TabsTrigger>
             </TabsList>
 

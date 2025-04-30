@@ -8,26 +8,24 @@ import { SaleItems, SaleItemsSchema } from "@/lib/zod";
 async function GetSales(): Promise<SaleItems[]> {
   const db = await Database.load("sqlite:mydatabase.db");
   const query = `
-    SELECT 
-      sales.id,
-      sales.date,
-      sales.total,
-      sales.is_paid,
-      GROUP_CONCAT(
-        products.brand || 
-        ' ' || products.variant || 
-        ' ' || products.weight || 
-        ' (x' || sale_items.quantity || ')', 
-        ', '
-      ) AS products
-    FROM 
-      sales
-    LEFT JOIN 
-      sale_items ON sales.id = sale_items.sale_id
-    LEFT JOIN 
-      products ON sale_items.product_id = products.id
-    GROUP BY 
-      sales.id, sales.date, sales.total;
+  SELECT
+  sales.id,
+  sales.date,
+  sales.is_paid,
+  sales.surcharge_percent,
+  sales.customer_id,
+  GROUP_CONCAT(
+    products.brand || ' ' || products.variant || ' ' || products.weight || 
+    ' (x' || sale_items.quantity || ')',
+    ', '
+  ) AS products,
+  SUM(sale_items.price * sale_items.quantity) * (1 + IFNULL(sales.surcharge_percent, 0) / 100.0) AS total
+FROM
+  sales
+LEFT JOIN sale_items ON sale_items.sale_id = sales.id
+LEFT JOIN products ON products.id = sale_items.product_id
+GROUP BY
+  sales.id;
   `;
   const result = await db.select(query);
   return SaleItemsSchema.array().parse(result);

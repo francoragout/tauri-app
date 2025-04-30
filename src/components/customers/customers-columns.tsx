@@ -2,12 +2,12 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ExtendedCustomer } from "@/lib/zod";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { CustomersTableRowActions } from "./customers-table-row-actions";
 import { Badge } from "../ui/badge";
+import { Customer } from "@/lib/zod";
 
-export const CustomersColumns: ColumnDef<ExtendedCustomer>[] = [
+export const CustomersColumns: ColumnDef<Customer>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -61,40 +61,17 @@ export const CustomersColumns: ColumnDef<ExtendedCustomer>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "total_sales_amount",
+    accessorKey: "debt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Cuenta" />
     ),
     cell: ({ row }) => {
-      const totalSalesAmount = row.getValue("total_sales_amount") as
-        | string
-        | null;
-      if (totalSalesAmount === null) {
+      const current_debt = row.getValue("debt") as number;
+      if (current_debt === 0) {
         return <Badge variant="secondary">Sin deudas</Badge>;
       }
-      return <div>${totalSalesAmount}</div>;
+      return <div>${current_debt}</div>;
     },
-  },
-  {
-    accessorKey: "sales_details",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Detalles" />
-    ),
-    cell: ({ row }) => {
-      const salesDetails = row.getValue("sales_details") as string | null;
-      if (!salesDetails) {
-        return null;
-      }
-      const products = salesDetails.split(", ");
-      return (
-        <div>
-          {products.map((product, index) => (
-            <div key={index}>{product}</div>
-          ))}
-        </div>
-      );
-    },
-    enableSorting: false,
   },
   {
     accessorKey: "combined_filter",
