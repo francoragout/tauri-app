@@ -14,9 +14,9 @@ async function GetSales(): Promise<SaleItems[]> {
   sales.is_paid,
   sales.surcharge_percent,
   sales.customer_id,
+  sales.payment_method,
   GROUP_CONCAT(
-    products.brand || ' ' || products.variant || ' ' || products.weight || 
-    ' (x' || sale_items.quantity || ')',
+    products.name || ' (x' || sale_items.quantity || ')',
     ', '
   ) AS products,
   SUM(sale_items.price * sale_items.quantity) * (1 + IFNULL(sales.surcharge_percent, 0) / 100.0) AS total

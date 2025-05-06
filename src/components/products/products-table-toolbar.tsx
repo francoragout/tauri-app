@@ -60,14 +60,9 @@ export function ProductsTableToolbar<TData>({
       <div className="flex flex-1 items-center space-x-4">
         <Input
           placeholder="Filtrar productos..."
-          value={
-            (table.getColumn("name")?.getFilterValue() as string) ??
-            ""
-          }
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table
-              .getColumn("name")
-              ?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
@@ -119,37 +114,8 @@ export function ProductsTableToolbar<TData>({
                 <AlertDialogDescription className="flex flex-col space-y-3">
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente los productos seleccionados aunque no
-                    afectará a las ventas asociadas con los mismos.
-                  </span>
-
-                  <span className="flex flex-col">
-                    Items seleccionados:
-                    {table.getSelectedRowModel().rows.map((row) => (
-                      <span key={row.id} className="text-foreground">
-                        {
-                          (
-                            row.original as {
-                              brand: string;
-                            }
-                          ).brand
-                        }{" "}
-                        {
-                          (
-                            row.original as {
-                              variant: string;
-                            }
-                          ).variant
-                        }{" "}
-                        {
-                          (
-                            row.original as {
-                              weight: string;
-                            }
-                          ).weight
-                        }
-                      </span>
-                    ))}
+                    permanentemente los productos seleccionados de la base de
+                    datos.
                   </span>
                 </AlertDialogDescription>
               </AlertDialogHeader>

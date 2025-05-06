@@ -125,19 +125,16 @@ export default function PurchaseCreateForm({
                     </PopoverDialogTrigger>
                     <PopoverDialogContent className="w-[462px] p-0">
                       <Command>
-                        <CommandInput placeholder="Search language..." />
+                        <CommandInput placeholder="Buscar producto..." />
                         <CommandList>
-                          <CommandEmpty>No language found.</CommandEmpty>
+                          <CommandEmpty>Sin resutados.</CommandEmpty>
                           <CommandGroup>
                             {products.map((product) => (
                               <CommandItem
                                 value={product.name}
                                 key={product.id}
                                 onSelect={() => {
-                                  form.setValue(
-                                    "product_id",
-                                    product.id as number
-                                  );
+                                  form.setValue("product_id", product.id as number, { shouldValidate: true });
                                   setIsPopoverOpen(false);
                                 }}
                               >
@@ -223,7 +220,10 @@ export default function PurchaseCreateForm({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                  form.reset();
+                }}
                 disabled={isPending}
               >
                 Cancelar

@@ -3,7 +3,10 @@ import { z } from "zod";
 export const PurchaseSchema = z.object({
   id: z.number().optional(),
   date: z.string().optional(),
-  product_id: z.number(),
+  product_id: z.number({
+    required_error: "Seleccione un producto",
+  }),
+
   product_name: z.string().optional(),
   total: z.coerce
     .number({
@@ -35,8 +38,11 @@ export const ProductSchema = z.object({
     .number({
       invalid_type_error: "Ingrese el precio del producto",
     })
-    .int({
-      message: "El precio debe ser un número entero",
+    .min(1, {
+      message: "El precio del producto debe ser mayor a 0",
+    })
+    .positive({
+      message: "El precio del producto debe ser mayor a 0",
     }),
   stock: z.coerce
     .number({
@@ -51,11 +57,11 @@ export const ProductSchema = z.object({
 
 export const SaleSchema = z.object({
   id: z.number().optional(),
-  date: z.string().optional(),
-  surcharge_percent: z.number().optional(),
-  amount_paid: z.number().default(0),
-  payment_status: z.enum(["paid", "pending"]),
   customer_id: z.number().optional(),
+  date: z.string().optional(),
+  payment_method: z.string(),
+  surcharge_percent: z.number().optional(),
+  is_paid: z.number().optional(),
   products: z.array(
     z.object({
       id: z.number().int(),
@@ -68,6 +74,7 @@ export const SaleItemsSchema = z.object({
   id: z.number(),
   date: z.string(),
   products: z.string(),
+  payment_method: z.string(),
   surcharge_percent: z.number(),
   total: z.number(),
   customer_id: z.number().nullable(),

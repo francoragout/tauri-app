@@ -49,7 +49,6 @@ export default function App() {
                 <NavLink to="/expenses">Gastos</NavLink>
               </TabsTrigger>
             </TabsList>
-
             <div className="flex items-center space-x-4">
               <Cart customers={customers} />
               <Notifications />

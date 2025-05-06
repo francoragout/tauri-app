@@ -16,7 +16,7 @@ pub fn run() {
                 );
                 
                 CREATE TABLE IF NOT EXISTS products (
-                    id INTEGER PRIMARY KEY,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     category TEXT NOT NULL,
                     price REAL NOT NULL,
@@ -24,11 +24,12 @@ pub fn run() {
                 );
 
                 CREATE TABLE IF NOT EXISTS sales (
-                    id INTEGER PRIMARY KEY,
-                    customer_id INTEGER,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     date TEXT DEFAULT CURRENT_TIMESTAMP,
+                    payment_method TEXT NOT NULL,
                     surcharge_percent REAL DEFAULT 0,
-                    is_paid INTEGER DEFAULT 0,                  
+                    customer_id INTEGER,
+                    is_paid INTEGER DEFAULT 0 CHECK (is_paid IN (0, 1)),                 
                     FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
                 );
 
@@ -43,9 +44,8 @@ pub fn run() {
                 );             
 
                 CREATE TABLE IF NOT EXISTS customers (
-                    id INTEGER PRIMARY KEY,
-                    first_name TEXT NOT NULL,
-                    last_name TEXT NOT NULL,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    full_name TEXT NOT NULL,
                     reference TEXT,
                     phone TEXT
                 );

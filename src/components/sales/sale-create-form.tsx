@@ -15,7 +15,13 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Popover,
   PopoverContent,
@@ -27,12 +33,18 @@ import { useEffect, useState } from "react";
 import { CreateSale } from "@/lib/mutations/useSale";
 import { useDispatch } from "react-redux";
 import { clearCart } from "@/features/cart/cartSlice";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SaleCreateFormProps {
   customers: Customer[];
   products: any[];
   surcharge: number;
-  totalPrice: number;
   onOpenChange?: (open: boolean) => void;
 }
 
@@ -40,9 +52,7 @@ export function SaleCreateForm({
   customers,
   products,
   surcharge,
-  totalPrice,
   onOpenChange = () => {},
-  
 }: SaleCreateFormProps) {
   const [value, setValue] = useState<number | undefined>(undefined);
   const [open, setOpen] = useState(false);
@@ -52,14 +62,13 @@ export function SaleCreateForm({
     resolver: zodResolver(SaleSchema),
     defaultValues: {
       customer_id: value ? +value : undefined,
-      amount_paid: totalPrice,
       surcharge_percent: surcharge,
+      payment_method: "efectivo",
       products: products.map((product) => ({
         id: product.id,
         quantity: product.quantity,
       })),
-      payment_status: value ? "pending" : "paid",
-      
+      is_paid: value ? 0 : 1,
     },
   });
 
@@ -99,10 +108,34 @@ export function SaleCreateForm({
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="grid grid-cols-2 gap-2 items-center mt-4 mb-2"
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+        <FormField
+          control={form.control}
+          name="payment_method"
+          render={({ field }) => (
+            <FormItem>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value || "efectivo"}
+              >
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="efectivo">Efectivo</SelectItem>
+                  <SelectItem value="transferencia">Transferencia</SelectItem>
+                  <SelectItem value="mercadopago">Mercado Pago</SelectItem>
+                  <SelectItem value="fiado">Fiado</SelectItem>
+                  <SelectItem value="debito">Débito</SelectItem>
+                  <SelectItem value="credito">Crédito</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="customer_id"
@@ -130,8 +163,8 @@ export function SaleCreateForm({
                   </FormControl>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="w-120 p-0 -translate-x-[17px] rounded-t-none mt-3"
-                  align="start"
+                  className="w-[446px] p-0"
+                  
                 >
                   <Command>
                     <CommandInput placeholder="Filtrar clientes..." />
@@ -170,9 +203,12 @@ export function SaleCreateForm({
             </FormItem>
           )}
         />
-        <Button type="submit" size="sm" disabled={isPending}>
-          Confirmar venta
-        </Button>
+
+        <div className="flex justify-end">
+          <Button type="submit" size="sm" disabled={isPending}>
+            Confirmar venta
+          </Button>
+        </div>
       </form>
     </Form>
   );

@@ -119,14 +119,16 @@ export function PurchasesTableRowActions<TData>({
             <AlertDialogTitle>¿Estas completamente seguro?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta acción no se puede deshacer. Esto eliminará permanentemente
-              el gasto del dia{" "}
+              la compra del día{" "}
               <span className="text-foreground">
-                {purchase.date
-                  ? formatDate(purchase.date, "PPP", { locale: es })
-                  : "Fecha no disponible"}
+                {formatDate(purchase.date + "Z", "PPP", { locale: es })}
               </span>{" "}
-              con el monto de{" "}
-              <span className="text-foreground">${purchase.total}</span>
+              a las{" "}
+              <span className="text-foreground">
+                {formatDate(purchase.date + "Z", "p", { locale: es })}
+              </span>{" "}
+              del producto{" "}
+              <span className="text-foreground">{purchase.product_name}</span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

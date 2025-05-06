@@ -2,7 +2,7 @@
 
 import { Table } from "@tanstack/react-table";
 import { Button } from "../ui/button";
-import { Trash, X } from "lucide-react";
+import { Trash } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,7 +39,6 @@ export function PurchasesTableToolbar<TData>({
   table,
   products,
 }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
   const [date, setDate] = useState<Date>();
   const { mutate } = DeletePurchases();
@@ -54,7 +53,7 @@ export function PurchasesTableToolbar<TData>({
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
-          `Se han eliminado ${purchasesIds.length} gastos seleccionados`
+          `Se han eliminado ${purchasesIds.length} compras seleccionadas`
         );
       },
       onError: () => {
@@ -104,20 +103,6 @@ export function PurchasesTableToolbar<TData>({
             />
           </PopoverContent>
         </Popover>
-
-        {isFiltered && (
-          <Button
-            variant="ghost"
-            onClick={() => {
-              table.resetColumnFilters();
-              setDate(undefined);
-            }}
-            className="h-8 px-2 lg:px-3"
-          >
-            Limpiar
-            <X />
-          </Button>
-        )}
       </div>
       <div className="flex space-x-2">
         {selectedRowsCount > 1 && (
@@ -136,31 +121,8 @@ export function PurchasesTableToolbar<TData>({
                 <AlertDialogDescription className="flex flex-col space-y-3">
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente los productos seleccionados.
-                  </span>
-
-                  <span className="flex flex-col">
-                    Items seleccionados:
-                    {table.getSelectedRowModel().rows.map((row) => {
-                      const expense = row.original as {
-                        date: string;
-                        time: string;
-                      };
-                      return (
-                        <span key={row.id} className="text-foreground">
-                          {expense.date
-                            ? format(new Date(expense.date) + "Z", "PP", {
-                                locale: es,
-                              })
-                            : "Fecha no disponible"}{" "}
-                          {expense.date
-                            ? format(new Date(expense.date) + "Z", "p", {
-                                locale: es,
-                              })
-                            : "Fecha no disponible"}{" "}
-                        </span>
-                      );
-                    })}
+                    permanentemente las compras seleccionadas de la base de
+                    datos.
                   </span>
                 </AlertDialogDescription>
               </AlertDialogHeader>

@@ -35,6 +35,7 @@ import {
 import { Customer } from "@/lib/zod";
 import { SaleCreateForm } from "./sales/sale-create-form";
 import { useEffect, useState } from "react";
+import { Separator } from "./ui/separator";
 
 export default function Cart({ customers }: { customers: Customer[] }) {
   const [openPopover, setOpenPopover] = useState(false);
@@ -188,12 +189,13 @@ export default function Cart({ customers }: { customers: Customer[] }) {
                 </TableRow>
               </TableFooter>
             </Table>
+            <Separator className="my-4" />
+            <div className="text-lg font-semibold">Registrar venta</div>
             <SaleCreateForm
               products={products}
               customers={customers}
               onOpenChange={setOpenPopover}
               surcharge={surcharge}
-              totalPrice={totalPrice}
             />
           </>
         )}

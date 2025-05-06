@@ -14,6 +14,13 @@ export function CreatePurchase() {
            VALUES ($1, $2, $3)`,
         [values.product_id, values.total, values.quantity]
       );
+
+      await db.execute(
+        `UPDATE products
+             SET stock = stock + $1
+             WHERE id = $2`,
+        [values.quantity, values.product_id]
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchases"] });

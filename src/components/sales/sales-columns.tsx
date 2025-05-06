@@ -6,8 +6,8 @@ import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { SaleItems } from "@/lib/zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Badge } from "../ui/badge";
 import { SalesTableRowActions } from "./sales-table-row-actions";
+import { Badge } from "../ui/badge";
 
 export const SalesColumns: ColumnDef<SaleItems>[] = [
   {
@@ -79,24 +79,34 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
       <DataTableColumnHeader column={column} title="Metodo de pago" />
     ),
     cell: ({ row }) => {
-      const getPaymentMethodBadge = () => {
-        const surcharge_percent = row.original.surcharge_percent as number;
-        const customer_id = row.original.customer_id as number;
-
-        if (customer_id) {
-          return <Badge variant="outline">Fiado</Badge>;
-        }
-
-        if (surcharge_percent > 0) {
-          return <Badge variant="outline">{surcharge_percent}%</Badge>;
-        }
-
-        return <Badge variant="outline">Efectivo</Badge>;
+      const paymentMethod = row.getValue("payment_method");
+      const translatedPaymentMethod = {
+        efectivo: "Efectivo",
+        transferencia: "Transferencia",
+        mercadopago: "Mercado Pago",
+        fiado: "Fiado",
+        debito: "Débito",
+        credito: "Crédito",
       };
-
-      return getPaymentMethodBadge();
+      return (
+        <div>{translatedPaymentMethod[paymentMethod as keyof typeof translatedPaymentMethod]}</div>
+      );
     },
-},
+  },
+  {
+    accessorKey: "surcharge_percent",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Recargo" />
+    ),
+    cell: ({ row }) => {
+      const surcharge = row.getValue("surcharge_percent") as number;
+      return surcharge > 0 ? (
+        <div>{surcharge}%</div>
+      ) : (
+        <Badge variant="secondary">Sin recargo</Badge>
+      );
+    },
+  },
   {
     accessorKey: "total",
     header: ({ column }) => (

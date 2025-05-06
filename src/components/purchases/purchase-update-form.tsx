@@ -51,6 +51,7 @@ export default function PurchaseUpdateForm({
   const form = useForm<z.infer<typeof PurchaseSchema>>({
     resolver: zodResolver(PurchaseSchema),
     defaultValues: {
+      id: purchase.id,
       product_id: purchase.product_id,
       total: purchase.total,
       quantity: purchase.quantity,
@@ -135,7 +136,12 @@ export default function PurchaseUpdateForm({
                             value={product.name}
                             key={product.id}
                             onSelect={() => {
-                              form.setValue("product_id", product.id as number);
+                              form.setValue(
+                                "product_id",
+                                product.id as number,
+                                { shouldDirty: true }
+                              );
+
                               setIsPopoverOpen(false);
                             }}
                           >
