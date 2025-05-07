@@ -89,9 +89,22 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
         credito: "Crédito",
       };
       return (
-        <div>{translatedPaymentMethod[paymentMethod as keyof typeof translatedPaymentMethod]}</div>
+        <div>
+          {
+            translatedPaymentMethod[
+              paymentMethod as keyof typeof translatedPaymentMethod
+            ]
+          }
+        </div>
       );
     },
+  },
+  {
+    accessorKey: "subtotal",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Subtotal" />
+    ),
+    cell: ({ row }) => <div>${row.getValue("subtotal")}</div>,
   },
   {
     accessorKey: "surcharge_percent",

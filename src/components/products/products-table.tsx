@@ -79,7 +79,6 @@ export function ProductsTable<TData, TValue>({
         name: product.name,
         price: product.price,
         quantity: 1,
-        originalPrice: product.originalPrice || product.price,
       })
     );
     toast.success("Agregado al carrito");

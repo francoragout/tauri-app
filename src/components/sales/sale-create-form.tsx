@@ -40,19 +40,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "../ui/input";
 
 interface SaleCreateFormProps {
   customers: Customer[];
   products: any[];
-  surcharge: number;
-  onOpenChange?: (open: boolean) => void;
+  onOpenChange: (open: boolean) => void;
+  totalPrice: number;
 }
 
 export function SaleCreateForm({
   customers,
   products,
-  surcharge,
   onOpenChange = () => {},
+  totalPrice,
 }: SaleCreateFormProps) {
   const [value, setValue] = useState<number | undefined>(undefined);
   const [open, setOpen] = useState(false);
@@ -62,8 +63,9 @@ export function SaleCreateForm({
     resolver: zodResolver(SaleSchema),
     defaultValues: {
       customer_id: value ? +value : undefined,
-      surcharge_percent: surcharge,
       payment_method: "efectivo",
+      total: totalPrice,
+      surcharge_percent: undefined,
       products: products.map((product) => ({
         id: product.id,
         quantity: product.quantity,
@@ -72,9 +74,14 @@ export function SaleCreateForm({
     },
   });
 
+  const surchargePercent = form.watch("surcharge_percent") || 0;
+
   useEffect(() => {
-    form.setValue("surcharge_percent", surcharge);
-  }, [surcharge, form]);
+    const surcharge = (totalPrice * surchargePercent) / 100;
+    const updatedTotal = totalPrice + surcharge;
+
+    form.setValue("total", updatedTotal);
+  }, [surchargePercent, totalPrice, form]);
 
   const { mutate, isPending } = CreateSale();
 
@@ -117,6 +124,7 @@ export function SaleCreateForm({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value || "efectivo"}
+                disabled={isPending}
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -136,6 +144,42 @@ export function SaleCreateForm({
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="surcharge_percent"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input
+                  {...field}
+                  disabled={isPending}
+                  placeholder="Recargo (opcional)"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="total"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input
+                  {...field}
+                  disabled={isPending}
+                  readOnly
+                  placeholder="Recargo (opcional)"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="customer_id"
@@ -150,8 +194,8 @@ export function SaleCreateForm({
                       role="combobox"
                       disabled={isPending}
                       className={cn(
-                        "justify-between",
-                        !field.value && "text-foreground"
+                        "justify-between hover:text-muted-foreground",
+                        !field.value && "text-muted-foreground"
                       )}
                     >
                       {value
@@ -162,10 +206,7 @@ export function SaleCreateForm({
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent
-                  className="w-[446px] p-0"
-                  
-                >
+                <PopoverContent className="w-[446px] p-0">
                   <Command>
                     <CommandInput placeholder="Filtrar clientes..." />
                     <CommandList>

@@ -20,28 +20,26 @@ export function CreateSale() {
 
         if (stock < product.quantity) {
           // Obtener detalles del producto
-          const productResult = await db.select<
-            { name: string }[]
-          >(`SELECT name FROM products WHERE id = $1`, [
-            product.id,
-          ]);
+          const productResult = await db.select<{ name: string }[]>(
+            `SELECT name FROM products WHERE id = $1`,
+            [product.id]
+          );
 
           const productBrand = productResult[0]?.name;
 
-          throw new Error(
-            `Stock insuficiente: ${productBrand}`
-          );
+          throw new Error(`Stock insuficiente: ${productBrand}`);
         }
       }
 
       // 2. Insertar en sales
       await db.execute(
-        `INSERT INTO sales (payment_method, surcharge_percent, customer_id, is_paid) VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO sales (payment_method, surcharge_percent, customer_id, is_paid, total) VALUES ($1, $2, $3, $4, $5)`,
         [
           values.payment_method,
           values.surcharge_percent,
           values.customer_id,
           values.is_paid,
+          values.total,
         ]
       );
 

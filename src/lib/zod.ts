@@ -59,8 +59,11 @@ export const SaleSchema = z.object({
   id: z.number().optional(),
   customer_id: z.number().optional(),
   date: z.string().optional(),
+  total: z.number(),
   payment_method: z.string(),
-  surcharge_percent: z.number().optional(),
+  surcharge_percent: z.coerce.number({
+    invalid_type_error: "Ingrese el porcentaje de recargo",
+  }).optional(),
   is_paid: z.number().optional(),
   products: z.array(
     z.object({
@@ -75,7 +78,8 @@ export const SaleItemsSchema = z.object({
   date: z.string(),
   products: z.string(),
   payment_method: z.string(),
-  surcharge_percent: z.number(),
+  surcharge_percent: z.number().nullable(),
+  subtotal: z.number(),
   total: z.number(),
   customer_id: z.number().nullable(),
   is_paid: z.number(),

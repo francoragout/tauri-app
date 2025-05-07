@@ -26,6 +26,7 @@ pub fn run() {
                 CREATE TABLE IF NOT EXISTS sales (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     date TEXT DEFAULT CURRENT_TIMESTAMP,
+                    total REAL NOT NULL,
                     payment_method TEXT NOT NULL,
                     surcharge_percent REAL DEFAULT 0,
                     customer_id INTEGER,
