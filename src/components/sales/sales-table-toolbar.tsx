@@ -132,29 +132,8 @@ export function SalesTableToolbar<TData>({
                 <AlertDialogDescription className="flex flex-col space-y-3">
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente las ventas seleccionadas.
-                  </span>
-
-                  <span className="flex flex-col">
-                    Items seleccionados:
-                    {table.getSelectedRowModel().rows.map((row) => {
-                      const sale = row.original as {
-                        date: string;
-                        time: string;
-                        total: number;
-                      };
-                      return (
-                        <span key={row.id} className="text-foreground">
-                          {formatDate(new Date(sale.date + "Z"), "PPP", {
-                            locale: es,
-                          })}{" "}
-                          {formatDate(new Date(sale.date + "Z"), "p", {
-                            locale: es,
-                          })}{" "}
-                          ${sale.total}
-                        </span>
-                      );
-                    })}
+                    permanentemente las ventas seleccionadas de la base de
+                    datos.
                   </span>
                 </AlertDialogDescription>
               </AlertDialogHeader>

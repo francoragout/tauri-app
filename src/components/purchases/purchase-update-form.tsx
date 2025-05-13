@@ -44,9 +44,9 @@ export default function PurchaseUpdateForm({
   purchase,
   onOpenChange,
 }: ExpenseCreateFormProps) {
-  const [displayValue, setDisplayValue] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { mutate, isPending } = UpdatePurchase();
+  const [displayValue, setDisplayValue] = useState("");
 
   const form = useForm<z.infer<typeof PurchaseSchema>>({
     resolver: zodResolver(PurchaseSchema),
@@ -87,13 +87,9 @@ export default function PurchaseUpdateForm({
   }
 
   useEffect(() => {
-    const currentValue = form.getValues("total");
-    if (currentValue) {
-      setDisplayValue(
-        new Intl.NumberFormat("es-ES").format(Number(currentValue))
-      );
-    }
-  }, []);
+    const formatted = new Intl.NumberFormat("es-AR").format(purchase.total);
+    setDisplayValue(formatted);
+  }, [purchase.total]);
 
   return (
     <Form {...form}>
@@ -173,30 +169,21 @@ export default function PurchaseUpdateForm({
             <FormItem>
               <FormControl>
                 <Input
-                  disabled={isPending}
                   placeholder="Total (requerido)"
+                  disabled={isPending}
                   value={displayValue}
                   onChange={(e) => {
-                    const input = e.target.value;
+                    const rawValue = e.target.value.replace(/\D/g, ""); // solo números
+                    const numericValue = Number(rawValue);
 
-                    if (input.trim() === "") {
-                      field.onChange("");
-                      setDisplayValue("");
-                      return;
-                    }
+                    field.onChange(numericValue);
 
-                    const rawValue = input.replace(/\./g, "").replace(",", ".");
-
-                    if (!isNaN(Number(rawValue))) {
-                      field.onChange(rawValue);
-                      const formatted = new Intl.NumberFormat("es-ES").format(
-                        Number(rawValue)
-                      );
-                      setDisplayValue(formatted);
-                    } else {
-                      setDisplayValue(input);
-                    }
+                    const formatted = new Intl.NumberFormat("es-AR").format(
+                      numericValue
+                    );
+                    setDisplayValue(formatted);
                   }}
+                  onBlur={field.onBlur}
                 />
               </FormControl>
               <FormMessage />
@@ -213,7 +200,7 @@ export default function PurchaseUpdateForm({
                 <Input
                   {...field}
                   disabled={isPending}
-                  placeholder="Cantidad (opcional)"
+                  placeholder="Cantidad (requerido)"
                 />
               </FormControl>
               <FormMessage />

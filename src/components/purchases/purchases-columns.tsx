@@ -61,7 +61,6 @@ export const PurchasesColumns: ColumnDef<Purchase>[] = [
     ),
     cell: ({ row }) => <div>{row.getValue("product_name")}</div>,
   },
-
   {
     accessorKey: "total",
     header: ({ column }) => (

@@ -12,6 +12,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { Button } from "./ui/button";
 import { ListRestart, ShoppingCart } from "lucide-react";
 import { Badge } from "./ui/badge";
@@ -30,6 +38,8 @@ import { Separator } from "./ui/separator";
 
 export default function Cart({ customers }: { customers: Customer[] }) {
   const [openPopover, setOpenPopover] = useState(false);
+  const [surcharge, setSurcharge] = useState(0);
+
   const products = useSelector((state: RootState) => state.cart.items);
   const totalCount = products.reduce(
     (acc, product) => acc + product.quantity,
@@ -54,8 +64,18 @@ export default function Cart({ customers }: { customers: Customer[] }) {
     }
   };
 
+  const totalWithSurcharge = totalPrice + totalPrice * (surcharge / 100);
+
   return (
-    <Popover open={openPopover} onOpenChange={setOpenPopover}>
+    <Popover
+      open={openPopover}
+      onOpenChange={(isOpen) => {
+        setOpenPopover(isOpen);
+        if (!isOpen) {
+          setSurcharge(0);
+        }
+      }}
+    >
       <PopoverTrigger asChild>
         <Button variant="outline" size="icon" className="relative rounded-full">
           <ShoppingCart className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -68,7 +88,8 @@ export default function Cart({ customers }: { customers: Customer[] }) {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-120">
         <div className="flex justify-between items-center">
-          Carrito de ventas
+          <div className="text-lg font-semibold mb-1">Registrar venta</div>
+
           <Button
             variant="ghost"
             size="icon"
@@ -130,28 +151,49 @@ export default function Cart({ customers }: { customers: Customer[] }) {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      ${product.price * product.quantity}
+                      ${new Intl.NumberFormat("es-ES").format(
+                        product.price * product.quantity
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
               <TableFooter>
                 <TableRow>
-                  <TableCell colSpan={2}>Total</TableCell>
-                  <TableCell className="text-right">${totalPrice}</TableCell>
+                  <TableCell>Total</TableCell>
+                  <TableCell>
+                    <Select
+                      value={surcharge.toString()}
+                      onValueChange={(value) => setSurcharge(Number(value))}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[0, 1, 2, 3, 4, 5, 6].map((value) => (
+                          <SelectItem key={value} value={value.toString()}>
+                            {value}%
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {" "}
+                    ${new Intl.NumberFormat("es-ES").format(totalWithSurcharge)}
+                  </TableCell>
                 </TableRow>
               </TableFooter>
             </Table>
             <Separator className="my-4" />
-            <div className="text-lg font-semibold mb-1">Registrar venta</div>
-            <p className="text-muted-foreground text-sm">
-              Use tabs para navegar mas rapido entre los diferentes campos.
-            </p>
+
             <SaleCreateForm
               products={products}
               customers={customers}
               onOpenChange={setOpenPopover}
-              totalPrice={totalPrice}
+              surcharge={surcharge}
+              total={totalWithSurcharge}
+              onResetSurcharge={() => setSurcharge(0)}
             />
           </>
         )}

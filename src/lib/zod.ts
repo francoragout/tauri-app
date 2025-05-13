@@ -6,10 +6,10 @@ export const PurchaseSchema = z.object({
   product_id: z.number({
     required_error: "Seleccione un producto",
   }),
-
   product_name: z.string().optional(),
   total: z.coerce
     .number({
+      required_error: "Ingrese el total de la compra",
       invalid_type_error: "Ingrese el total de la compra",
     })
     .min(1, {
@@ -24,16 +24,23 @@ export const PurchaseSchema = z.object({
     }),
 });
 
-export type Purchase = z.infer<typeof PurchaseSchema>;
 
 export const ProductSchema = z.object({
   id: z.number().optional(),
-  name: z.string().nonempty({
-    message: "Ingrese el nombre del producto",
-  }),
-  category: z.string().nonempty({
-    message: "Ingrese la categoría del producto",
-  }),
+  name: z
+    .string({
+      required_error: "Ingrese el nombre del producto",
+    })
+    .nonempty({
+      message: "Ingrese el nombre del producto",
+    }),
+  category: z
+    .string({
+      required_error: "Ingrese la categoría del producto",
+    })
+    .nonempty({
+      message: "Ingrese la categoría del producto",
+    }),
   price: z.coerce
     .number({
       invalid_type_error: "Ingrese el precio del producto",
@@ -51,7 +58,7 @@ export const ProductSchema = z.object({
     .int({
       message: "El stock debe ser un número entero",
     }),
-  unit_price: z.number().optional(),
+  unit_price: z.number().nullish(),
   times_sold: z.number().optional(),
 });
 
@@ -60,15 +67,13 @@ export const SaleSchema = z.object({
   customer_id: z.number().optional(),
   date: z.string().optional(),
   total: z.number(),
-  payment_method: z.string(),
-  surcharge_percent: z.coerce.number({
-    invalid_type_error: "Ingrese el porcentaje de recargo",
-  }).optional(),
+  payment_method: z.string().optional(),
+  surcharge_percent: z.number(),
   is_paid: z.number().optional(),
   products: z.array(
     z.object({
-      id: z.number().int(),
-      quantity: z.number().int().positive(),
+      id: z.number(),
+      quantity: z.number(),
     })
   ),
 });
@@ -77,9 +82,8 @@ export const SaleItemsSchema = z.object({
   id: z.number(),
   date: z.string(),
   products: z.string(),
-  payment_method: z.string(),
-  surcharge_percent: z.number().nullable(),
-  subtotal: z.number(),
+  payment_method: z.string().nullable(),
+  surcharge_percent: z.number(),
   total: z.number(),
   customer_id: z.number().nullable(),
   is_paid: z.number(),
@@ -98,6 +102,7 @@ export const CustomerSchema = z.object({
   phone: z.string().optional(),
   debt: z.number().optional(),
 });
+
 export const ExpenseSchema = z.object({
   id: z.number().optional(),
   product_id: z.number().nullish(),
@@ -125,10 +130,11 @@ export const ExpenseSchema = z.object({
       message: "La cantidad debe ser un número entero",
     })
     .nullish(),
-});
-
+  });
+  
+export type Purchase = z.infer<typeof PurchaseSchema>;
 export type Product = z.infer<typeof ProductSchema>;
+export type Sale = z.infer<typeof SaleSchema>;
 export type Expense = z.infer<typeof ExpenseSchema>;
 export type SaleItems = z.infer<typeof SaleItemsSchema>;
-export type Sale = z.infer<typeof SaleSchema>;
 export type Customer = z.infer<typeof CustomerSchema>;

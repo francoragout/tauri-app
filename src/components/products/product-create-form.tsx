@@ -29,12 +29,6 @@ export default function ProductCreateForm() {
 
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
-    defaultValues: {
-      name: "",
-      category: "",
-      price: undefined,
-      stock: undefined,
-    },
   });
 
   const { mutate, isPending } = CreateProduct();
@@ -60,7 +54,7 @@ export default function ProductCreateForm() {
           Agregar
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[475px]">
         <DialogHeader>
           <DialogTitle>Registrar producto</DialogTitle>
           <DialogDescription>
@@ -106,18 +100,35 @@ export default function ProductCreateForm() {
             <FormField
               control={form.control}
               name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="Precio (requerido)"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const [displayValue, setDisplayValue] = useState("");
+                return (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        placeholder="Precio (requerido)"
+                        disabled={isPending}
+                        value={displayValue}
+                        onChange={(e) => {
+                          const rawValue = e.target.value.replace(/\D/g, ""); // solo números
+                          const numericValue = Number(rawValue);
+
+                          // Actualiza el valor del formulario con el número puro
+                          field.onChange(numericValue);
+
+                          // Formatea con separadores de miles para mostrar
+                          const formatted = new Intl.NumberFormat(
+                            "es-AR"
+                          ).format(numericValue);
+                          setDisplayValue(formatted);
+                        }}
+                        onBlur={field.onBlur}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
@@ -142,7 +153,10 @@ export default function ProductCreateForm() {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                  form.reset();
+                }}
                 disabled={isPending}
               >
                 Cancelar

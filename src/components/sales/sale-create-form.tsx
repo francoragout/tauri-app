@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { Customer, SaleSchema } from "@/lib/zod";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CreateSale } from "@/lib/mutations/useSale";
 import { useDispatch } from "react-redux";
 import { clearCart } from "@/features/cart/cartSlice";
@@ -40,48 +40,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "../ui/input";
 
 interface SaleCreateFormProps {
   customers: Customer[];
   products: any[];
   onOpenChange: (open: boolean) => void;
-  totalPrice: number;
+  surcharge: number;
+  total: number;
+  onResetSurcharge: () => void;
 }
 
 export function SaleCreateForm({
   customers,
   products,
   onOpenChange = () => {},
-  totalPrice,
+  surcharge,
+  total,
+  onResetSurcharge = () => {},
 }: SaleCreateFormProps) {
-  const [value, setValue] = useState<number | undefined>(undefined);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<
+    number | undefined
+  >(undefined);
+
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
 
   const form = useForm<z.infer<typeof SaleSchema>>({
     resolver: zodResolver(SaleSchema),
     defaultValues: {
-      customer_id: value ? +value : undefined,
-      payment_method: "efectivo",
-      total: totalPrice,
-      surcharge_percent: undefined,
+      total: selectedCustomerId ? 0 : total,
+      surcharge_percent: surcharge,
+      is_paid: selectedCustomerId ? 0 : 1,
       products: products.map((product) => ({
         id: product.id,
         quantity: product.quantity,
       })),
-      is_paid: value ? 0 : 1,
     },
   });
-
-  const surchargePercent = form.watch("surcharge_percent") || 0;
-
-  useEffect(() => {
-    const surcharge = (totalPrice * surchargePercent) / 100;
-    const updatedTotal = totalPrice + surcharge;
-
-    form.setValue("total", updatedTotal);
-  }, [surchargePercent, totalPrice, form]);
 
   const { mutate, isPending } = CreateSale();
 
@@ -94,16 +89,17 @@ export function SaleCreateForm({
     const updatedValues = {
       ...values,
       products: updatedProducts,
-      is_paid: value ? 0 : 1,
-      surcharge_percent: values.surcharge_percent,
+      is_paid: selectedCustomerId ? 0 : 1,
+      surcharge_percent: surcharge,
+      total: selectedCustomerId ? 0 : total,
     };
 
     mutate(updatedValues, {
       onSuccess: () => {
         onOpenChange(false);
-
         dispatch(clearCart());
-        setValue(undefined);
+        setSelectedCustomerId(undefined);
+        onResetSurcharge();
         toast.success("Venta registrada");
       },
       onError: (error: any) => {
@@ -123,58 +119,20 @@ export function SaleCreateForm({
             <FormItem>
               <Select
                 onValueChange={field.onChange}
-                defaultValue={field.value || "efectivo"}
                 disabled={isPending}
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
-                    <SelectValue />
+                    <SelectValue placeholder="Metodo de pago (opcional)" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="efectivo">Efectivo</SelectItem>
-                  <SelectItem value="transferencia">Transferencia</SelectItem>
-                  <SelectItem value="mercadopago">Mercado Pago</SelectItem>
-                  <SelectItem value="fiado">Fiado</SelectItem>
-                  <SelectItem value="debito">Débito</SelectItem>
-                  <SelectItem value="credito">Crédito</SelectItem>
+                  <SelectItem value="cash">Efectivo</SelectItem>
+                  <SelectItem value="transfer">Transferencia</SelectItem>
+                  <SelectItem value="debit">Débito</SelectItem>
+                  <SelectItem value="credit">Crédito</SelectItem>
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="surcharge_percent"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isPending}
-                  placeholder="Recargo (opcional)"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="total"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isPending}
-                  readOnly
-                  placeholder="Recargo (opcional)"
-                />
-              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -198,9 +156,10 @@ export function SaleCreateForm({
                         !field.value && "text-muted-foreground"
                       )}
                     >
-                      {value
-                        ? customers.find((customer) => customer.id === value)
-                            ?.full_name
+                      {selectedCustomerId
+                        ? customers.find(
+                            (customer) => customer.id === selectedCustomerId
+                          )?.full_name
                         : "Cliente (opcional)"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -217,10 +176,10 @@ export function SaleCreateForm({
                             key={customer.id}
                             value={`${customer.full_name} ${customer.reference}`}
                             onSelect={() => {
-                              const same = value === customer.id;
+                              const same = selectedCustomerId === customer.id;
                               const newValue = same ? undefined : customer.id;
 
-                              setValue(newValue);
+                              setSelectedCustomerId(newValue);
                               form.setValue("customer_id", newValue);
                               setOpen(false);
                             }}
@@ -228,7 +187,7 @@ export function SaleCreateForm({
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                value === customer.id
+                                selectedCustomerId === customer.id
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}

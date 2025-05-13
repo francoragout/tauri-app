@@ -12,7 +12,7 @@ async function GetProducts(): Promise<Product[]> {
     products.id,
     products.name,
     products.category,
-    ROUND(IFNULL(SUM(purchases.total) / NULLIF(SUM(purchases.quantity), 0), 0), 2) AS unit_price,
+    ROUND(SUM(purchases.total) / SUM(purchases.quantity), 2) AS unit_price,
     products.price,
     products.stock,
     IFNULL(SUM(sale_items.quantity), 0) AS times_sold

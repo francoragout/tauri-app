@@ -5,7 +5,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { ProductsTableRowActions } from "./products-table-row-actions";
 import { Product } from "@/lib/zod";
-import { Badge } from "../ui/badge";
 
 export const ProductsColumns: ColumnDef<Product>[] = [
   {
@@ -55,12 +54,13 @@ export const ProductsColumns: ColumnDef<Product>[] = [
       <DataTableColumnHeader column={column} title="Precio unitario" />
     ),
     cell: ({ row }) => {
-      const unitPrice = row.getValue("unit_price") as number | null;
-      return unitPrice && unitPrice > 0 ? (
-        <div>${unitPrice.toFixed(0)}</div>
-      ) : (
-        <Badge variant="secondary">Sin precio</Badge>
+      const unitPrice = row.getValue("unit_price") as number;
+      const formattedUnitPrice = new Intl.NumberFormat("es-ES").format(
+        unitPrice
       );
+      if (unitPrice) {
+        return <div>${formattedUnitPrice}</div>;
+      }
     },
   },
   {
@@ -69,12 +69,11 @@ export const ProductsColumns: ColumnDef<Product>[] = [
       <DataTableColumnHeader column={column} title="Precio venta" />
     ),
     cell: ({ row }) => {
-      const price = row.getValue("price") as number | null;
-      return price && price > 0 ? (
-        <div>${price.toFixed(0)}</div>
-      ) : (
-        <Badge variant="secondary">Sin precio</Badge>
-      );
+      const price = row.getValue("price") as number;
+      const formattedPrice = new Intl.NumberFormat("es-ES").format(price);
+      if (price) {
+        return <div>${formattedPrice}</div>;
+      }
     },
   },
   {
@@ -82,28 +81,14 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Stock" />
     ),
-    cell: ({ row }) => {
-      const stock = row.getValue("stock") as number;
-      return stock < 1 ? (
-        <Badge variant="secondary">Sin stock</Badge>
-      ) : (
-        <div>{stock}</div>
-      );
-    },
+    cell: ({ row }) => <div>{row.getValue("stock")}</div>,
   },
   {
     accessorKey: "times_sold",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Ventas" />
     ),
-    cell: ({ row }) => {
-      const timesSold = row.getValue("times_sold") as number;
-      return timesSold < 1 ? (
-        <Badge variant="secondary">Sin ventas</Badge>
-      ) : (
-        <div>{timesSold}</div>
-      );
-    },
+    cell: ({ row }) => <div>{row.getValue("times_sold")}</div>,
   },
   {
     id: "actions",

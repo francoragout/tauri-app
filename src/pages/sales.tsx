@@ -15,21 +15,19 @@ async function GetSales(): Promise<SaleItems[]> {
   sales.surcharge_percent,
   sales.customer_id,
   sales.payment_method,
+  sales.total,
   GROUP_CONCAT(
     products.name || ' (x' || sale_items.quantity || ')',
     ', '
-  ) AS products,
-  SUM(sale_items.price * sale_items.quantity) AS subtotal,
-  sales.total
-FROM
+  ) AS products
+  FROM
   sales
-LEFT JOIN sale_items ON sale_items.sale_id = sales.id
-LEFT JOIN products ON products.id = sale_items.product_id
-GROUP BY
+  LEFT JOIN sale_items ON sale_items.sale_id = sales.id
+  LEFT JOIN products ON products.id = sale_items.product_id
+  GROUP BY
   sales.id;
   `;
   const result = await db.select(query);
-  console.log(result);
   return SaleItemsSchema.array().parse(result);
 }
 

@@ -22,7 +22,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         <HashRouter>
           <Routes>
             <Route path="/" element={<App />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route index element={<Navigate to="/products" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="purchases" element={<Purchases />} />
               <Route path="products" element={<Products />} />

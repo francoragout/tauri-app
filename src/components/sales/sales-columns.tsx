@@ -7,7 +7,6 @@ import { SaleItems } from "@/lib/zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { SalesTableRowActions } from "./sales-table-row-actions";
-import { Badge } from "../ui/badge";
 
 export const SalesColumns: ColumnDef<SaleItems>[] = [
   {
@@ -41,7 +40,7 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
     ),
     cell: ({ row }) => {
       const date = new Date(row.getValue("date") + "Z");
-      return <div>{format(date, "PPP", { locale: es })}</div>;
+      return <div>{format(date, "PP", { locale: es })}</div>;
     },
   },
   {
@@ -79,15 +78,15 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
       <DataTableColumnHeader column={column} title="Metodo de pago" />
     ),
     cell: ({ row }) => {
-      const paymentMethod = row.getValue("payment_method");
+      const paymentMethod = row.getValue("payment_method") as string | null;
+
       const translatedPaymentMethod = {
-        efectivo: "Efectivo",
-        transferencia: "Transferencia",
-        mercadopago: "Mercado Pago",
-        fiado: "Fiado",
-        debito: "Débito",
-        credito: "Crédito",
+        cash: "Efectivo",
+        transfer: "Transferencia",
+        debit: "Débito",
+        credit: "Crédito",
       };
+
       return (
         <div>
           {
@@ -100,25 +99,11 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
     },
   },
   {
-    accessorKey: "subtotal",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Subtotal" />
-    ),
-    cell: ({ row }) => <div>${row.getValue("subtotal")}</div>,
-  },
-  {
     accessorKey: "surcharge_percent",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Recargo" />
     ),
-    cell: ({ row }) => {
-      const surcharge = row.getValue("surcharge_percent") as number;
-      return surcharge > 0 ? (
-        <div>{surcharge}%</div>
-      ) : (
-        <Badge variant="secondary">Sin recargo</Badge>
-      );
-    },
+    cell: ({ row }) => <div>{row.getValue("surcharge_percent")}%</div>,
   },
   {
     accessorKey: "total",

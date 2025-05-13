@@ -7,7 +7,7 @@ import { Customer, CustomerSchema } from "./lib/zod";
 import Database from "@tauri-apps/plugin-sql";
 import { useQuery } from "@tanstack/react-query";
 import Cart from "./components/cart";
-import Notifications from "./components/notifications";
+// import Notifications from "./components/notifications";
 
 export async function GetCustomers(): Promise<Customer[]> {
   const db = await Database.load("sqlite:mydatabase.db");
@@ -30,9 +30,6 @@ export default function App() {
         <Tabs value={currentTab} className="w-full px-6">
           <div className="flex justify-between">
             <TabsList>
-              <TabsTrigger asChild value="dashboard" className="cursor-default">
-                <NavLink to="/dashboard">Tablero</NavLink>
-              </TabsTrigger>
               <TabsTrigger asChild value="purchases" className="cursor-default">
                 <NavLink to="/purchases">Compras</NavLink>
               </TabsTrigger>
@@ -45,13 +42,16 @@ export default function App() {
               <TabsTrigger asChild value="customers" className="cursor-default">
                 <NavLink to="/customers">Clientes</NavLink>
               </TabsTrigger>
+              {/* <TabsTrigger asChild value="dashboard" className="cursor-default">
+                <NavLink to="/dashboard">Tablero</NavLink>
+              </TabsTrigger>
               <TabsTrigger asChild value="expenses" className="cursor-default">
                 <NavLink to="/expenses">Gastos</NavLink>
-              </TabsTrigger>
+              </TabsTrigger> */}
             </TabsList>
             <div className="flex items-center space-x-4">
               <Cart customers={customers} />
-              <Notifications />
+              {/* <Notifications /> */}
               <ModeToggle />
             </div>
           </div>

@@ -6,7 +6,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-
 import {
   Form,
   FormControl,
@@ -14,13 +13,11 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-
 import {
   PopoverDialog,
   PopoverDialogContent,
   PopoverDialogTrigger,
 } from "../ui/popover-dialog";
-
 import { Product, PurchaseSchema } from "@/lib/zod";
 import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,7 +27,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -48,7 +45,6 @@ interface ExpenseCreateFormProps {
 export default function PurchaseCreateForm({
   products,
 }: ExpenseCreateFormProps) {
-  const [displayValue, setDisplayValue] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const { mutate, isPending } = CreatePurchase();
@@ -69,15 +65,6 @@ export default function PurchaseCreateForm({
     });
   }
 
-  useEffect(() => {
-    const currentValue = form.getValues("total");
-    if (currentValue) {
-      setDisplayValue(
-        new Intl.NumberFormat("es-ES").format(Number(currentValue))
-      );
-    }
-  }, []);
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -86,7 +73,7 @@ export default function PurchaseCreateForm({
           Agregar
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[475px]">
         <DialogHeader>
           <DialogTitle>Registrar compra</DialogTitle>
           <DialogDescription>
@@ -134,7 +121,11 @@ export default function PurchaseCreateForm({
                                 value={product.name}
                                 key={product.id}
                                 onSelect={() => {
-                                  form.setValue("product_id", product.id as number, { shouldValidate: true });
+                                  form.setValue(
+                                    "product_id",
+                                    product.id as number,
+                                    { shouldValidate: true }
+                                  );
                                   setIsPopoverOpen(false);
                                 }}
                               >
@@ -162,41 +153,35 @@ export default function PurchaseCreateForm({
             <FormField
               control={form.control}
               name="total"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      placeholder="Total (requerido)"
-                      value={displayValue}
-                      onChange={(e) => {
-                        const input = e.target.value;
+              render={({ field }) => {
+                const [displayValue, setDisplayValue] = useState("");
+                return (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        placeholder="Total (requerido)"
+                        disabled={isPending}
+                        value={displayValue}
+                        onChange={(e) => {
+                          const rawValue = e.target.value.replace(/\D/g, ""); // solo números
+                          const numericValue = Number(rawValue);
 
-                        if (input.trim() === "") {
-                          field.onChange("");
-                          setDisplayValue("");
-                          return;
-                        }
+                          // Actualiza el valor del formulario con el número puro
+                          field.onChange(numericValue);
 
-                        const rawValue = input
-                          .replace(/\./g, "")
-                          .replace(",", ".");
-
-                        if (!isNaN(Number(rawValue))) {
-                          field.onChange(rawValue);
+                          // Formatea con separadores de miles para mostrar
                           const formatted = new Intl.NumberFormat(
-                            "es-ES"
-                          ).format(Number(rawValue));
+                            "es-AR"
+                          ).format(numericValue);
                           setDisplayValue(formatted);
-                        } else {
-                          setDisplayValue(input);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+                        }}
+                        onBlur={field.onBlur}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
@@ -208,7 +193,7 @@ export default function PurchaseCreateForm({
                     <Input
                       {...field}
                       disabled={isPending}
-                      placeholder="Cantidad (opcional)"
+                      placeholder="Cantidad (requerido)"
                     />
                   </FormControl>
                   <FormMessage />

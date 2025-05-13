@@ -19,7 +19,6 @@ async function getPurchases(): Promise<Purchase[]> {
   `;
 
   const result = await db.select(query);
-  console.log(result);
   return PurchaseSchema.array().parse(result);
 }
 
