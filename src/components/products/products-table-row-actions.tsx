@@ -126,10 +126,8 @@ export function ProductsTableRowActions<TData>({
             <AlertDialogDescription>
               Esta acción no se puede deshacer. Esto eliminará permanentemente
               el producto{" "}
-              <span className="text-foreground">
-                {product.brand} {product.variant} {product.weight}
-              </span>{" "}
-              aunque no afectará a las ventas asociadas con el mismo.
+              <span className="text-foreground">{product.name}</span> aunque no
+              afectará a las ventas asociadas con el mismo.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

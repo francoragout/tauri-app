@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
-import { Sale, SaleItemsSchema } from "../zod";
+import { Sale, SaleItemsSchema, SaleUpdate } from "../zod";
 
 export function CreateSale() {
   const queryClient = useQueryClient();

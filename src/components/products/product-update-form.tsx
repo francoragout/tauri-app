@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Product, ProductSchema } from "@/lib/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -28,6 +28,7 @@ export default function ProductUpdateForm({
 }: ProductUpdateFormProps) {
   const { mutate, isPending } = UpdateProduct();
   const dispatch = useDispatch();
+  const [displayValue, setDisplayValue] = useState("");
 
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
@@ -63,6 +64,11 @@ export default function ProductUpdateForm({
       },
     });
   }
+
+  useEffect(() => {
+    const formatted = new Intl.NumberFormat("es-AR").format(product.price);
+    setDisplayValue(formatted);
+  }, [product.price]);
 
   return (
     <Form {...form}>
@@ -108,9 +114,23 @@ export default function ProductUpdateForm({
             <FormItem>
               <FormControl>
                 <Input
-                  {...field}
-                  disabled={isPending}
                   placeholder="Precio (requerido)"
+                  disabled={isPending}
+                  value={displayValue}
+                  onChange={(e) => {
+                    const rawValue = e.target.value.replace(/\D/g, ""); // solo números
+                    const numericValue = Number(rawValue);
+
+                    // Actualiza el valor del formulario con el número puro
+                    field.onChange(numericValue);
+
+                    // Formatea con separadores de miles para mostrar
+                    const formatted = new Intl.NumberFormat("es-AR").format(
+                      numericValue
+                    );
+                    setDisplayValue(formatted);
+                  }}
+                  onBlur={field.onBlur}
                 />
               </FormControl>
               <FormMessage />

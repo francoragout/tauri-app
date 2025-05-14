@@ -113,6 +113,16 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
     cell: ({ row }) => <div>${row.getValue("total")}</div>,
   },
   {
+    accessorKey: "customer_name",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Cliente" />
+    ),
+    cell: ({ row }) => {
+      const customerName = row.getValue("customer_name") as string | null;
+      return <div>{customerName}</div>;
+    },
+  },
+  {
     id: "actions",
     cell: ({ row }) => <SalesTableRowActions row={row} />,
   },

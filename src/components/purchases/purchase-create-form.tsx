@@ -110,7 +110,7 @@ export default function PurchaseCreateForm({
                         </Button>
                       </FormControl>
                     </PopoverDialogTrigger>
-                    <PopoverDialogContent className="w-[462px] p-0">
+                    <PopoverDialogContent className="w-[425px] p-0">
                       <Command>
                         <CommandInput placeholder="Buscar producto..." />
                         <CommandList>

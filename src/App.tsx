@@ -5,9 +5,8 @@ import { ModeToggle } from "./components/mode-toggle";
 import { NavLink, Outlet, useLocation } from "react-router";
 import { Customer, CustomerSchema } from "./lib/zod";
 import Database from "@tauri-apps/plugin-sql";
-import { useQuery } from "@tanstack/react-query";
 import Cart from "./components/cart";
-// import Notifications from "./components/notifications";
+import { SectionCards } from "./components/section-cards";
 
 export async function GetCustomers(): Promise<Customer[]> {
   const db = await Database.load("sqlite:mydatabase.db");
@@ -18,11 +17,6 @@ export async function GetCustomers(): Promise<Customer[]> {
 export default function App() {
   const location = useLocation();
   const currentTab = location.pathname.replace("/", "") || "dashboard";
-
-  const { data: customers = [] } = useQuery({
-    queryKey: ["customers"],
-    queryFn: GetCustomers,
-  });
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -42,19 +36,13 @@ export default function App() {
               <TabsTrigger asChild value="customers" className="cursor-default">
                 <NavLink to="/customers">Clientes</NavLink>
               </TabsTrigger>
-              {/* <TabsTrigger asChild value="dashboard" className="cursor-default">
-                <NavLink to="/dashboard">Tablero</NavLink>
-              </TabsTrigger>
-              <TabsTrigger asChild value="expenses" className="cursor-default">
-                <NavLink to="/expenses">Gastos</NavLink>
-              </TabsTrigger> */}
             </TabsList>
             <div className="flex items-center space-x-4">
-              <Cart customers={customers} />
-              {/* <Notifications /> */}
+              <Cart />
               <ModeToggle />
             </div>
           </div>
+          {/* <SectionCards /> */}
           <Outlet />
         </Tabs>
       </Card>

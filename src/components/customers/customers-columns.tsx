@@ -4,8 +4,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { CustomersTableRowActions } from "./customers-table-row-actions";
-import { Badge } from "../ui/badge";
 import { Customer } from "@/lib/zod";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 export const CustomersColumns: ColumnDef<Customer>[] = [
   {
@@ -63,15 +64,54 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
   {
     accessorKey: "debt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Cuenta" />
+      <DataTableColumnHeader column={column} title="Deuda" />
     ),
     cell: ({ row }) => {
-      const current_debt = row.getValue("debt") as number;
-      if (current_debt === 0) {
-        return <Badge variant="secondary">Sin deudas</Badge>;
+      const debt = row.getValue("debt") as number | null;
+      if (debt) {
+        const formattedDebt = Number(debt).toLocaleString("es-AR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+        return <div>$ {formattedDebt}</div>;
       }
-      return <div>${current_debt}</div>;
     },
+  },
+  {
+    accessorKey: "sales_summary",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Resumen ventas" />
+    ),
+    cell: ({ row }) => {
+      const saleSummary = row.getValue("sales_summary") as string | null;
+
+      if (saleSummary) {
+        const sales = saleSummary.split(", ").map((sale) => {
+          const lastSpaceIndex = sale.lastIndexOf(" ");
+          const rawDateTime = sale.slice(0, lastSpaceIndex);
+          const rawAmount = sale.slice(lastSpaceIndex + 1);
+
+          const utcDate = new Date(rawDateTime.replace(" ", "T") + "Z");
+          const localDate = format(utcDate, "P", { locale: es });
+
+          const formattedAmount = Number(rawAmount).toLocaleString("es-AR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+
+          return `${localDate} - ${formattedAmount}`;
+        });
+
+        return (
+          <div className="space-y-1">
+            {sales.map((entry, index) => (
+              <div key={index}>{entry}</div>
+            ))}
+          </div>
+        );
+      }
+    },
+    enableSorting: false,
   },
   {
     accessorKey: "combined_filter",

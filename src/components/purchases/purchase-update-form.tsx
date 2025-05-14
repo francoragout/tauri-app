@@ -76,7 +76,6 @@ export default function PurchaseUpdateForm({
   function onSubmit(values: z.infer<typeof PurchaseSchema>) {
     mutate(values, {
       onSuccess: () => {
-        form.reset();
         toast.success("Compra actualizada");
         onOpenChange(false);
       },

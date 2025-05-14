@@ -2,6 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Customer } from "../zod";
 import Database from "@tauri-apps/plugin-sql";
 
+export function GetCustomers(): Promise<Customer[]> {
+  return Database.load("sqlite:mydatabase.db").then((db) =>
+    db.select(`SELECT * FROM customers`)
+  );
+}
+
 export function CreateCustomer() {
   const queryClient = useQueryClient();
 

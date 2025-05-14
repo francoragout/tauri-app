@@ -30,15 +30,20 @@ import {
   removeFromCart,
   updateQuantity,
 } from "@/features/cart/cartSlice";
-
-import { Customer } from "@/lib/zod";
 import { SaleCreateForm } from "./sales/sale-create-form";
 import { useState } from "react";
 import { Separator } from "./ui/separator";
+import { useQuery } from "@tanstack/react-query";
+import { GetCustomers } from "@/lib/mutations/useCustomer";
 
-export default function Cart({ customers }: { customers: Customer[] }) {
+export default function Cart() {
   const [openPopover, setOpenPopover] = useState(false);
   const [surcharge, setSurcharge] = useState(0);
+
+  const { data: customers = [] } = useQuery({
+    queryKey: ["customers"],
+    queryFn: GetCustomers,
+  });
 
   const products = useSelector((state: RootState) => state.cart.items);
   const totalCount = products.reduce(
@@ -151,7 +156,8 @@ export default function Cart({ customers }: { customers: Customer[] }) {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      ${new Intl.NumberFormat("es-ES").format(
+                      $
+                      {new Intl.NumberFormat("es-ES").format(
                         product.price * product.quantity
                       )}
                     </TableCell>

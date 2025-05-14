@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Column } from "@tanstack/react-table"
-import { Check, ListFilterPlus, PlusCircle } from "lucide-react"
+import { Check, Funnel } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -43,7 +43,7 @@ export function DataTableFacetedFilter<TData, TValue>({
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 border-dashed">
-          <ListFilterPlus />
+          <Funnel />
           {title}
           {selectedValues?.size > 0 && (
             <>

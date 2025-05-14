@@ -14,6 +14,7 @@ async function GetSales(): Promise<SaleItems[]> {
   sales.is_paid,
   sales.surcharge_percent,
   sales.customer_id,
+  customers.full_name AS customer_name,
   sales.payment_method,
   sales.total,
   GROUP_CONCAT(
@@ -24,6 +25,7 @@ async function GetSales(): Promise<SaleItems[]> {
   sales
   LEFT JOIN sale_items ON sale_items.sale_id = sales.id
   LEFT JOIN products ON products.id = sale_items.product_id
+  LEFT JOIN customers ON customers.id = sales.customer_id -- Unir con la tabla de clientes
   GROUP BY
   sales.id;
   `;

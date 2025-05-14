@@ -22,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
 import { DeleteSale } from "@/lib/mutations/useSale";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -80,6 +81,8 @@ export function SalesTableRowActions<TData>({
         </DropdownMenuContent>
       </DropdownMenu>
 
+      
+
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -95,8 +98,8 @@ export function SalesTableRowActions<TData>({
                 {format(new Date(sale.date) + "z", "p", { locale: es })}
               </span>{" "}
               con el total de{" "}
-              <span className="text-foreground">${sale.total}</span>{" "}
-              resgresando los productos vendidos al stock.
+              <span className="text-foreground">${sale.total}</span> resgresando
+              los productos vendidos al stock.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

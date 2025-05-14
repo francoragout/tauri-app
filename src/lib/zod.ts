@@ -24,7 +24,6 @@ export const PurchaseSchema = z.object({
     }),
 });
 
-
 export const ProductSchema = z.object({
   id: z.number().optional(),
   name: z
@@ -78,6 +77,12 @@ export const SaleSchema = z.object({
   ),
 });
 
+export const SaleUpdateSchema = z.object({
+  id: z.number(),
+  customer_id: z.number().nullish(),
+  payment_method: z.string().nullish(),
+});
+
 export const SaleItemsSchema = z.object({
   id: z.number(),
   date: z.string(),
@@ -86,6 +91,7 @@ export const SaleItemsSchema = z.object({
   surcharge_percent: z.number(),
   total: z.number(),
   customer_id: z.number().nullable(),
+  customer_name: z.string().nullable(),
   is_paid: z.number(),
 });
 
@@ -100,7 +106,8 @@ export const CustomerSchema = z.object({
     }),
   reference: z.string().optional(),
   phone: z.string().optional(),
-  debt: z.number().optional(),
+  debt: z.number().nullish(),
+  sales_summary: z.string().nullish(),
 });
 
 export const ExpenseSchema = z.object({
@@ -130,8 +137,9 @@ export const ExpenseSchema = z.object({
       message: "La cantidad debe ser un número entero",
     })
     .nullish(),
-  });
-  
+});
+
+export type SaleUpdate = z.infer<typeof SaleUpdateSchema>;
 export type Purchase = z.infer<typeof PurchaseSchema>;
 export type Product = z.infer<typeof ProductSchema>;
 export type Sale = z.infer<typeof SaleSchema>;
