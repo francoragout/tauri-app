@@ -110,7 +110,16 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Total" />
     ),
-    cell: ({ row }) => <div>${row.getValue("total")}</div>,
+    cell: ({ row }) => {
+      const total = row.getValue("total") as number;
+
+      const formattedTotal = Number(total).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+      return <div>${formattedTotal}</div>;
+    },
   },
   {
     accessorKey: "customer_name",

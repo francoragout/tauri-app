@@ -55,9 +55,11 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     ),
     cell: ({ row }) => {
       const unitPrice = row.getValue("unit_price") as number;
-      const formattedUnitPrice = new Intl.NumberFormat("es-ES").format(
-        unitPrice
-      );
+      const formattedUnitPrice = Number(unitPrice).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
       if (unitPrice) {
         return <div>${formattedUnitPrice}</div>;
       }
@@ -70,7 +72,11 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     ),
     cell: ({ row }) => {
       const price = row.getValue("price") as number;
-      const formattedPrice = new Intl.NumberFormat("es-ES").format(price);
+      const formattedPrice = Number(price).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
       if (price) {
         return <div>${formattedPrice}</div>;
       }

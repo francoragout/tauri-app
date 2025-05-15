@@ -68,7 +68,12 @@ export const PurchasesColumns: ColumnDef<Purchase>[] = [
     ),
     cell: ({ row }) => {
       const total = row.getValue("total") as number;
-      const formattedTotal = new Intl.NumberFormat("es-ES").format(total);
+
+      const formattedTotal = Number(total).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      
       return <div>${formattedTotal}</div>;
     },
   },

@@ -3,7 +3,7 @@
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { CustomerSchema } from "@/lib/zod";
-import { MoreHorizontal, Pencil, Trash } from "lucide-react";
+import { MoreHorizontal, Pencil, SendHorizonal, Trash } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +31,8 @@ import CustomerUpdateForm from "./customer-update-form";
 import { useState } from "react";
 import { DeleteCustomer } from "@/lib/mutations/useCustomer";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -69,6 +71,75 @@ export function CustomersTableRowActions<TData>({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px] z-50">
           <div className="flex flex-col w-full">
+            <DropdownMenuItem asChild>
+              <Button
+                className="flex justify-start pl-2"
+                variant="ghost"
+                size="sm"
+                aria-label="Enviar mensaje por WhatsApp"
+                disabled={!customer.phone || !customer.debt}
+                onClick={() => {
+                  let phone = customer.phone?.replace(/\D/g, "") ?? "";
+                  phone = phone.replace(/^0+/, "");
+                  phone = `549${phone}`;
+
+                  if (phone.length < 13) {
+                    toast.error("El número de teléfono parece incompleto.");
+                    return;
+                  }
+
+                  const saleSummary = customer.sales_summary as string | null;
+
+                  let formattedSales = "";
+
+                  if (saleSummary) {
+                    formattedSales = saleSummary
+                      .split(", ")
+                      .map((sale) => {
+                        const lastSpaceIndex = sale.lastIndexOf(" ");
+                        const rawDateTime = sale.slice(0, lastSpaceIndex);
+                        const rawAmount = sale.slice(lastSpaceIndex + 1);
+
+                        const utcDate = new Date(
+                          rawDateTime.replace(" ", "T") + "Z"
+                        );
+                        const localDate = format(utcDate, "d/M/yyyy", {
+                          locale: es,
+                        });
+
+                        const amount = Number(rawAmount);
+                        const formattedAmount = isNaN(amount)
+                          ? "Monto inválido"
+                          : amount.toLocaleString("es-AR", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            });
+
+                        return `${localDate} - ${formattedAmount}`;
+                      })
+                      .join("\n");
+                  }
+
+                  const totalFormatted = Number(customer.debt).toLocaleString(
+                    "es-AR",
+                    {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }
+                  );
+
+                  const message = `Hola! ¿Cómo estás?\nTe dejo el resumen de compras de ${customer.full_name}\n\n${formattedSales}\n\nTotal: $${totalFormatted}`;
+
+                  const url = `https://wa.me/${phone}?text=${encodeURIComponent(
+                    message
+                  )}`;
+                  window.open(url, "_blank");
+                }}
+              >
+                <SendHorizonal className="text-primary" />
+                Enviar
+              </Button>
+            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Button
                 className="flex justify-start pl-2"

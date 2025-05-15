@@ -186,7 +186,11 @@ export default function Cart() {
                   </TableCell>
                   <TableCell className="text-right">
                     {" "}
-                    ${new Intl.NumberFormat("es-ES").format(totalWithSurcharge)}
+                    $
+                    {new Intl.NumberFormat("es-ES", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(totalWithSurcharge)}
                   </TableCell>
                 </TableRow>
               </TableFooter>

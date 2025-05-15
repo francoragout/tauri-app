@@ -85,6 +85,11 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
     cell: ({ row }) => {
       const saleSummary = row.getValue("sales_summary") as string | null;
 
+      // If there are no sales, return null
+      if (!saleSummary) {
+        return null;
+      }
+
       if (saleSummary) {
         const sales = saleSummary.split(", ").map((sale) => {
           const lastSpaceIndex = sale.lastIndexOf(" ");
