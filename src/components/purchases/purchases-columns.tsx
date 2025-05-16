@@ -74,7 +74,7 @@ export const PurchasesColumns: ColumnDef<Purchase>[] = [
         maximumFractionDigits: 2,
       });
       
-      return <div>${formattedTotal}</div>;
+      return <div>$ {formattedTotal}</div>;
     },
   },
   {

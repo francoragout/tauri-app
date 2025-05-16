@@ -157,17 +157,18 @@ export default function Cart() {
                     </TableCell>
                     <TableCell className="text-right">
                       $
-                      {new Intl.NumberFormat("es-ES").format(
-                        product.price * product.quantity
-                      )}
+                      {new Intl.NumberFormat("es-AR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(product.price * product.quantity)}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
               <TableFooter>
                 <TableRow>
-                  <TableCell>Total</TableCell>
-                  <TableCell>
+                  <TableCell colSpan={2}>Total</TableCell>
+                  {/* <TableCell>
                     <Select
                       value={surcharge.toString()}
                       onValueChange={(value) => setSurcharge(Number(value))}
@@ -183,7 +184,7 @@ export default function Cart() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell className="text-right">
                     {" "}
                     $
@@ -195,7 +196,6 @@ export default function Cart() {
                 </TableRow>
               </TableFooter>
             </Table>
-            <Separator className="my-4" />
 
             <SaleCreateForm
               products={products}
@@ -204,6 +204,7 @@ export default function Cart() {
               surcharge={surcharge}
               total={totalWithSurcharge}
               onResetSurcharge={() => setSurcharge(0)}
+              setSurcharge={setSurcharge}
             />
           </>
         )}

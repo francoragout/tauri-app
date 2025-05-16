@@ -77,12 +77,6 @@ export const SaleSchema = z.object({
   ),
 });
 
-export const SaleUpdateSchema = z.object({
-  id: z.number(),
-  customer_id: z.number().nullish(),
-  payment_method: z.string().nullish(),
-});
-
 export const SaleItemsSchema = z.object({
   id: z.number(),
   date: z.string(),
@@ -106,7 +100,7 @@ export const CustomerSchema = z.object({
     }),
   reference: z.string().optional(),
   phone: z.string().optional(),
-  debt: z.number().nullish(),
+  debt: z.number().optional(),
   sales_summary: z.string().nullish(),
 });
 
@@ -139,7 +133,14 @@ export const ExpenseSchema = z.object({
     .nullish(),
 });
 
-export type SaleUpdate = z.infer<typeof SaleUpdateSchema>;
+export const PaymentSchema = z.object({
+  customer_id: z.number(),
+  total: z.coerce.number(),
+  payment_method: z.string(),
+  surcharge_percent: z.number().optional(),
+});
+
+export type Payment = z.infer<typeof PaymentSchema>;
 export type Purchase = z.infer<typeof PurchaseSchema>;
 export type Product = z.infer<typeof ProductSchema>;
 export type Sale = z.infer<typeof SaleSchema>;

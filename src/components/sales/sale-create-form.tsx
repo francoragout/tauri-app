@@ -48,6 +48,7 @@ interface SaleCreateFormProps {
   surcharge: number;
   total: number;
   onResetSurcharge: () => void;
+  setSurcharge: (value: number) => void; // <-- Agrega esto
 }
 
 export function SaleCreateForm({
@@ -57,6 +58,7 @@ export function SaleCreateForm({
   surcharge,
   total,
   onResetSurcharge = () => {},
+  setSurcharge,
 }: SaleCreateFormProps) {
   const [selectedCustomerId, setSelectedCustomerId] = useState<
     number | undefined
@@ -68,6 +70,7 @@ export function SaleCreateForm({
   const form = useForm<z.infer<typeof SaleSchema>>({
     resolver: zodResolver(SaleSchema),
     defaultValues: {
+      payment_method: "cash",
       total: selectedCustomerId ? 0 : total,
       surcharge_percent: surcharge,
       is_paid: selectedCustomerId ? 0 : 1,
@@ -77,6 +80,8 @@ export function SaleCreateForm({
       })),
     },
   });
+
+  const paymentMethod = form.watch("payment_method");
 
   const { mutate, isPending } = CreateSale();
 
@@ -92,6 +97,7 @@ export function SaleCreateForm({
       is_paid: selectedCustomerId ? 0 : 1,
       surcharge_percent: surcharge,
       total: selectedCustomerId ? 0 : total,
+      payment_method: selectedCustomerId ? "" : values.payment_method,
     };
 
     mutate(updatedValues, {
@@ -120,6 +126,7 @@ export function SaleCreateForm({
               <Select
                 onValueChange={field.onChange}
                 disabled={isPending}
+                defaultValue="cash"
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -131,6 +138,9 @@ export function SaleCreateForm({
                   <SelectItem value="transfer">Transferencia</SelectItem>
                   <SelectItem value="debit">Débito</SelectItem>
                   <SelectItem value="credit">Crédito</SelectItem>
+                  <SelectItem value="customer_account">
+                    Cuenta Corriente
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -138,71 +148,102 @@ export function SaleCreateForm({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="customer_id"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      role="combobox"
-                      disabled={isPending}
-                      className={cn(
-                        "justify-between hover:text-muted-foreground",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {selectedCustomerId
-                        ? customers.find(
-                            (customer) => customer.id === selectedCustomerId
-                          )?.full_name
-                        : "Cliente (opcional)"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-[446px] p-0">
-                  <Command>
-                    <CommandInput placeholder="Filtrar clientes..." />
-                    <CommandList>
-                      <CommandEmpty>Sin resultados.</CommandEmpty>
-                      <CommandGroup>
-                        {customers.map((customer) => (
-                          <CommandItem
-                            key={customer.id}
-                            value={`${customer.full_name} ${customer.reference}`}
-                            onSelect={() => {
-                              const same = selectedCustomerId === customer.id;
-                              const newValue = same ? undefined : customer.id;
+        {(paymentMethod === "transfer" ||
+          paymentMethod === "debit" ||
+          paymentMethod === "credit") && (
+          <FormField
+            control={form.control}
+            name="payment_method"
+            render={({ field }) => (
+              <FormItem>
+                <Select
+                  value={surcharge.toString()}
+                  onValueChange={(value) => setSurcharge(Number(value))}
+                >
+                  <SelectTrigger className="bg-background w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[0, 1, 2, 3, 4, 5, 6].map((value) => (
+                      <SelectItem key={value} value={value.toString()}>
+                        {value}%
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
-                              setSelectedCustomerId(newValue);
-                              form.setValue("customer_id", newValue);
-                              setOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                selectedCustomerId === customer.id
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            {`${customer.full_name} ${customer.reference}`}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </FormItem>
-          )}
-        />
+        {paymentMethod === "customer_account" && (
+          <FormField
+            control={form.control}
+            name="customer_id"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        role="combobox"
+                        disabled={isPending}
+                        className={cn(
+                          "justify-between h-9 hover:bg-background",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {selectedCustomerId
+                          ? customers.find(
+                              (customer) => customer.id === selectedCustomerId
+                            )?.full_name
+                          : "Cliente (opcional)"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[446px] p-0">
+                    <Command>
+                      <CommandInput placeholder="Filtrar clientes..." />
+                      <CommandList>
+                        <CommandEmpty>Sin resultados.</CommandEmpty>
+                        <CommandGroup>
+                          {customers.map((customer) => (
+                            <CommandItem
+                              key={customer.id}
+                              value={`${customer.full_name} ${customer.reference}`}
+                              onSelect={() => {
+                                const same = selectedCustomerId === customer.id;
+                                const newValue = same ? undefined : customer.id;
+
+                                setSelectedCustomerId(newValue);
+                                form.setValue("customer_id", newValue);
+                                setOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedCustomerId === customer.id
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {`${customer.full_name} ${customer.reference}`}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </FormItem>
+            )}
+          />
+        )}
 
         <div className="flex justify-end">
           <Button type="submit" size="sm" disabled={isPending}>

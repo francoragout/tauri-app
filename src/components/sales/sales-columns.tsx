@@ -118,7 +118,7 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
         maximumFractionDigits: 2,
       });
 
-      return <div>${formattedTotal}</div>;
+      return <div>$ {formattedTotal}</div>;
     },
   },
   {

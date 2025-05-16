@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
-import { Sale, SaleItemsSchema, SaleUpdate } from "../zod";
+import { Payment, Sale } from "../zod";
 
 export function CreateSale() {
   const queryClient = useQueryClient();
@@ -142,40 +142,47 @@ export function DeleteSales() {
   });
 }
 
-export function GetSalesByCutomerId() {
+export function PaySales() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (customerId: number) => {
+    mutationFn: async (values: Payment) => {
       const db = await Database.load("sqlite:mydatabase.db");
 
-      const query = `
-          SELECT
-          sales.id,
-          sales.date,
-          sales.is_paid,
-          sales.surcharge_percent,
-          sales.customer_id,
-          GROUP_CONCAT(
-            products.brand || ' ' || products.variant || ' ' || products.weight || 
-            ' (x' || sale_items.quantity || ')',
-            ', '
-          ) AS products,
-          SUM(sale_items.price * sale_items.quantity) * (1 + IFNULL(sales.surcharge_percent, 0) / 100.0) AS total
-        FROM
-          sales
-        LEFT JOIN sale_items ON sale_items.sale_id = sales.id
-        LEFT JOIN products ON products.id = sale_items.product_id
-        WHERE sales.customer_id = $1
-        GROUP BY
-        sales.id;
-        `;
+      // 1. Buscar todas las ventas del cliente que no estén pagadas
+      const sales = await db.select<{ id: number }[]>(
+        `SELECT id FROM sales WHERE customer_id = $1 AND is_paid = 0`,
+        [values.customer_id]
+      );
 
-      const result = await db.select(query, [customerId]);
-      return SaleItemsSchema.array().parse(result);
+      // 2. Actualizar cada venta: total (con recargo), pagada, método de pago y recargo
+      for (const sale of sales) {
+        // Calcular el total base de la venta
+        const totalResult = await db.select<{ total: number }[]>(
+          `SELECT SUM(price * quantity) as total FROM sale_items WHERE sale_id = $1`,
+          [sale.id]
+        );
+        const totalBase = totalResult[0]?.total ?? 0;
+
+        // Calcular el total con recargo
+        const surchargePercent = values.surcharge_percent ?? 0;
+        const surcharge = (totalBase * surchargePercent) / 100;
+        const totalWithSurcharge = totalBase + surcharge;
+
+        await db.execute(
+          `UPDATE sales SET is_paid = 1, payment_method = $1, surcharge_percent = $2, total = $3 WHERE id = $4`,
+          [
+            values.payment_method,
+            values.surcharge_percent,
+            totalWithSurcharge,
+            sale.id,
+          ]
+        );
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
   });
 }

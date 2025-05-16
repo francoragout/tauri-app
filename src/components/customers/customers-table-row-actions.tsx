@@ -3,7 +3,13 @@
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { CustomerSchema } from "@/lib/zod";
-import { MoreHorizontal, Pencil, SendHorizonal, Trash } from "lucide-react";
+import {
+  Banknote,
+  MoreHorizontal,
+  Pencil,
+  SendHorizonal,
+  Trash,
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +39,7 @@ import { DeleteCustomer } from "@/lib/mutations/useCustomer";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import CustomerPayForm from "./customer-payment-form";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -44,6 +51,7 @@ export function CustomersTableRowActions<TData>({
   const customer = CustomerSchema.parse(row.original);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
   const { mutate } = DeleteCustomer();
   const customerId = customer.id as number;
 
@@ -145,6 +153,20 @@ export function CustomersTableRowActions<TData>({
                 className="flex justify-start pl-2"
                 variant="ghost"
                 size="sm"
+                disabled={!customer.debt}
+                onClick={() => {
+                  setTimeout(() => setPayOpen(true), 0);
+                }}
+              >
+                <Banknote className="text-primary" />
+                Pagar
+              </Button>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Button
+                className="flex justify-start pl-2"
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   setTimeout(() => setEditOpen(true), 0);
                 }}
@@ -169,6 +191,18 @@ export function CustomersTableRowActions<TData>({
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Dialog open={payOpen} onOpenChange={setPayOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Registrar pago</DialogTitle>
+            <DialogDescription>
+              Use tabs para navegar mas rapido entre los diferentes campos.
+            </DialogDescription>
+          </DialogHeader>
+          <CustomerPayForm customer={customer} onOpenChange={setPayOpen} />
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>

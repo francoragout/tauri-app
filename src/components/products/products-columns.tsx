@@ -61,7 +61,7 @@ export const ProductsColumns: ColumnDef<Product>[] = [
       });
 
       if (unitPrice) {
-        return <div>${formattedUnitPrice}</div>;
+        return <div>$ {formattedUnitPrice}</div>;
       }
     },
   },
@@ -78,7 +78,7 @@ export const ProductsColumns: ColumnDef<Product>[] = [
       });
 
       if (price) {
-        return <div>${formattedPrice}</div>;
+        return <div>$ {formattedPrice}</div>;
       }
     },
   },

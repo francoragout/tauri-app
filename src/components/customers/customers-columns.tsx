@@ -67,14 +67,12 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
       <DataTableColumnHeader column={column} title="Deuda" />
     ),
     cell: ({ row }) => {
-      const debt = row.getValue("debt") as number | null;
-      if (debt) {
-        const formattedDebt = Number(debt).toLocaleString("es-AR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-        return <div>$ {formattedDebt}</div>;
-      }
+      const debt = row.getValue("debt") as number;
+      const formattedDebt = Number(debt).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      return <div>$ {formattedDebt}</div>;
     },
   },
   {
