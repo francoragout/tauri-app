@@ -68,7 +68,7 @@ export function CustomersTable<TData, TValue>({
   })
 
   return (
-    <div className="space-y-4 pt-4">
+    <div className="space-y-4">
       <CustomersTableToolbar table={table} />
       <div className="rounded-md border">
         <Table>

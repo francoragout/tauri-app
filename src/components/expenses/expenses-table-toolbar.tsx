@@ -2,7 +2,7 @@
 
 import { Table } from "@tanstack/react-table";
 import { Button } from "../ui/button";
-import { PlusCircle, Trash, X } from "lucide-react";
+import { Trash, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import ExpenseCreateForm from "./expense-create-form";
-import { formatDate } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,6 +30,7 @@ import { DeleteExpenses } from "@/lib/mutations/useExpense";
 import { DataTableFacetedFilter } from "../data-table-faceted-filter";
 
 import { Product } from "@/lib/zod";
+import { format } from "date-fns";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -80,7 +80,7 @@ export function ExpensesTableToolbar<TData>({
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {date ? (
-                formatDate(date, "PPP", { locale: es })
+                format(date, "PPP", { locale: es })
               ) : (
                 <span>Filtrar gastos...</span>
               )}
@@ -168,7 +168,7 @@ export function ExpensesTableToolbar<TData>({
                       return (
                         <span key={row.id} className="text-foreground">
                           {expense.date
-                            ? formatDate(new Date(expense.date), "PPP", {
+                            ? format(new Date(expense.date), "PPP", {
                                 locale: es,
                               })
                             : "Fecha no disponible"}{" "}

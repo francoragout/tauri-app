@@ -28,11 +28,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { formatDate } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import PurchaseUpdateForm from "./purchase-update-form";
 import { DeletePurchase } from "@/lib/mutations/usePurchase";
+import { format } from "date-fns";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -120,13 +120,13 @@ export function PurchasesTableRowActions<TData>({
             <AlertDialogDescription>
               Esta acción no se puede deshacer. Esto eliminará permanentemente
               la compra del día{" "}
-              <span className="text-foreground">
-                {formatDate(purchase.date + "Z", "PPP", { locale: es })}
+              {/* <span className="text-foreground">
+                {format(purchase.date + "Z", "PPP", { locale: es })}
               </span>{" "}
               a las{" "}
               <span className="text-foreground">
                 {formatDate(purchase.date + "Z", "p", { locale: es })}
-              </span>{" "}
+              </span>{" "} */}
               del producto{" "}
               <span className="text-foreground">{purchase.product_name}</span>.
             </AlertDialogDescription>

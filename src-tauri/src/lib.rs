@@ -27,7 +27,7 @@ pub fn run() {
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     date TEXT DEFAULT CURRENT_TIMESTAMP,
                     total REAL NOT NULL,
-                    payment_method TEXT,
+                    payment_method TEXT NOT NULL,
                     surcharge_percent REAL NOT NULL,
                     customer_id INTEGER,
                     is_paid INTEGER DEFAULT 0 CHECK (is_paid IN (0, 1)),                 

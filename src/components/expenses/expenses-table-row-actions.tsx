@@ -29,10 +29,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { formatDate } from "date-fns";
 import { es } from "date-fns/locale";
 import { DeleteExpense } from "@/lib/mutations/useExpense";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -118,15 +118,7 @@ export function ExpensesTableRowActions<TData>({
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estas completamente seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente
-              el gasto del dia{" "}
-              <span className="text-foreground">
-                {expense.date
-                  ? formatDate(expense.date, "PPP", { locale: es })
-                  : "Fecha no disponible"}
-              </span>{" "}
-              con el monto de{" "}
-              <span className="text-foreground">${expense.total}</span>
+              
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

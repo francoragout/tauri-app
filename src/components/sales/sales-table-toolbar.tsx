@@ -15,7 +15,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { formatDate } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,6 +26,7 @@ import {
 } from "@/components/ui/popover";
 import { useState } from "react";
 import { DeleteSales } from "@/lib/mutations/useSale";
+import { format } from "date-fns";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -74,7 +74,7 @@ export function SalesTableToolbar<TData>({
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {date ? (
-                formatDate(date, "PPP", { locale: es })
+                format(date, "PPP", { locale: es })
               ) : (
                 <span>Filtrar gastos...</span>
               )}

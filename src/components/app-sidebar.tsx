@@ -1,0 +1,131 @@
+import * as React from "react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import {
+  BanknoteArrowDown,
+  BanknoteArrowUp,
+  ChartNoAxesCombined,
+  Cog,
+  NotepadText,
+  Power,
+  ShoppingBasket,
+  Users,
+} from "lucide-react";
+import { NavLink, useLocation } from "react-router";
+
+const data = {
+  store: [
+    {
+      name: "Analisis",
+      url: "/dashboard",
+      icon: ChartNoAxesCombined,
+    },
+    {
+      name: "Expensas",
+      url: "/expenses",
+      icon: BanknoteArrowDown,
+    },
+    {
+      name: "Clientes",
+      url: "/customers",
+      icon: Users,
+    },
+  ],
+  inventory: [
+    {
+      name: "Compras",
+      url: "/purchases",
+      icon: BanknoteArrowDown,
+    },
+    {
+      name: "Productos",
+      url: "/products",
+      icon: NotepadText,
+    },
+    {
+      name: "Ventas",
+      url: "/sales",
+      icon: BanknoteArrowUp,
+    },
+  ],
+};
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const location = useLocation();
+  
+  return (
+    <Sidebar collapsible="offcanvas" {...props}>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:!p-1.5"
+            >
+              <a href="#">
+                <ShoppingBasket className="!size-5" />
+                <span className="text-base font-semibold">Store Master</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+          <SidebarGroupLabel>Negocio</SidebarGroupLabel>
+          <SidebarMenu>
+            {data.store.map((s) => (
+              <SidebarMenuItem key={s.name}>
+                <SidebarMenuButton asChild className={location.pathname === s.url ? "bg-accent" : ""}>
+                  <NavLink to={s.url}>
+                    <s.icon />
+                    <span>{s.name}</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+        <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+          <SidebarGroupLabel>Inventario</SidebarGroupLabel>
+          <SidebarMenu>
+            {data.inventory.map((i) => (
+              <SidebarMenuItem key={i.name}>
+                <SidebarMenuButton asChild>
+                  <a href={i.url}>
+                    <i.icon />
+                    <span>{i.name}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+        <SidebarGroup className="group-data-[collapsible=icon]:hidden mt-auto">
+          <SidebarMenu>
+            <SidebarMenuItem className="active">
+              <SidebarMenuButton asChild className="">
+                <NavLink to="/configuration">
+                  <Cog />
+                  <span>Configuración</span>
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter>
+        <Power className="!size-5" />
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
