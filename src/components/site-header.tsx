@@ -1,9 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useLocation } from "react-router";
 import Cart from "./cart";
 import { ModeToggle } from "./mode-toggle";
+import Notifications from "./notifications";
 
 const pathnames: Record<string, string> = {
   "/dashboard": "Análisis",
@@ -27,8 +26,8 @@ export function SiteHeader() {
           <SidebarTrigger />
           <h1 className="text-base font-medium">{title}</h1>
         </div>
-
         <div className="ml-auto flex items-center gap-4">
+          <Notifications />
           <Cart />
           <ModeToggle />
         </div>

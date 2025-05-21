@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Row } from "@tanstack/react-table";
 import { ExpenseSchema } from "@/lib/zod";
-import ExpenseUpdateForm from "./expense-update-from";
 import {
   Dialog,
   DialogContent,
@@ -29,10 +28,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { es } from "date-fns/locale";
 import { DeleteExpense } from "@/lib/mutations/useExpense";
 import { toast } from "sonner";
-import { format } from "date-fns";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -109,7 +106,6 @@ export function ExpensesTableRowActions<TData>({
               Use tabs para navegar mas rapido entre los diferentes campos.
             </DialogDescription>
           </DialogHeader>
-          <ExpenseUpdateForm expense={expense} onOpenChange={setIsOpen} />
         </DialogContent>
       </Dialog>
 

@@ -76,7 +76,7 @@ export function PurchasesTable<TData, TValue>({
   });
 
   return (
-    <div className="space-y-4 pt-4">
+    <div className="space-y-4">
       <PurchasesTableToolbar table={table} products={products} />
       <div className="rounded-md border">
         <Table>

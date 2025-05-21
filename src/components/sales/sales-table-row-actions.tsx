@@ -90,13 +90,13 @@ export function SalesTableRowActions<TData>({
             <AlertDialogDescription>
               Esta acción no se puede deshacer. Esto eliminará permanentemente
               la venta del dia{" "}
-              <span className="text-foreground">
+              {/* <span className="text-foreground">
                 {format(new Date(sale.date), "PPP", { locale: es })}
               </span>{" "}
               a las{" "}
               <span className="text-foreground">
                 {format(new Date(sale.date) + "z", "p", { locale: es })}
-              </span>{" "}
+              </span>{" "} */}
               con el total de{" "}
               <span className="text-foreground">${sale.total}</span> resgresando
               los productos vendidos al stock.

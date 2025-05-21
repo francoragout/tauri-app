@@ -185,25 +185,23 @@ export function SaleCreateForm({
               <FormItem className="flex flex-col">
                 <Popover open={open} onOpenChange={setOpen}>
                   <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        role="combobox"
-                        disabled={isPending}
-                        className={cn(
-                          "justify-between h-9 hover:bg-background",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {selectedCustomerId
-                          ? customers.find(
-                              (customer) => customer.id === selectedCustomerId
-                            )?.full_name
-                          : "Cliente (opcional)"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      role="combobox"
+                      disabled={isPending}
+                      className={cn(
+                        "justify-between h-9 hover:bg-background",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {selectedCustomerId
+                        ? customers.find(
+                            (customer) => customer.id === selectedCustomerId
+                          )?.full_name
+                        : "Cliente (opcional)"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[446px] p-0">
                     <Command>

@@ -64,34 +64,24 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
     },
   },
   {
-    accessorKey: "product_name",
+    accessorKey: "description",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Producto" />
-    ),
-    cell: ({ row }) => (
-      <div>{row.getValue("product_name") as string | null}</div>
-    ),
-  },
-
-  {
-    accessorKey: "total",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Total" />
+      <DataTableColumnHeader column={column} title="Descripción" />
     ),
     cell: ({ row }) => {
-      const total = row.getValue("total") as number;
-      const formattedTotal = new Intl.NumberFormat("es-ES").format(total);
-      return <div>${formattedTotal}</div>;
+      const description = row.getValue("description") as string | null;
+      return <div>{description !== null ? description : ""}</div>;
     },
   },
   {
-    accessorKey: "quantity",
+    accessorKey: "amount",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Cantidad" />
+      <DataTableColumnHeader column={column} title="Monto" />
     ),
     cell: ({ row }) => {
-      const quantity = row.getValue("quantity") as number | null;
-      return <div>{quantity !== null ? quantity : ""}</div>;
+      const amount = row.getValue("amount") as number;
+      const formattedAmount = new Intl.NumberFormat("es-ES").format(amount);
+      return <div>${formattedAmount}</div>;
     },
   },
   {

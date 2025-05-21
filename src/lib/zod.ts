@@ -106,8 +106,6 @@ export const CustomerSchema = z.object({
 
 export const ExpenseSchema = z.object({
   id: z.number().optional(),
-  product_id: z.number().nullish(),
-  product_name: z.string().nullish(),
   date: z.string().optional(),
   category: z
     .string({
@@ -116,21 +114,14 @@ export const ExpenseSchema = z.object({
     .nonempty({
       message: "Ingrese la categoría del gasto",
     }),
-  total: z.coerce
+  amount: z.coerce
     .number({
       invalid_type_error: "Ingrese el total del gasto",
     })
     .min(1, {
       message: "El total del gasto debe ser mayor a 0",
     }),
-  quantity: z.coerce
-    .number({
-      invalid_type_error: "Ingrese la cantidad del producto",
-    })
-    .int({
-      message: "La cantidad debe ser un número entero",
-    })
-    .nullish(),
+  description: z.string().optional(),
 });
 
 export const PaymentSchema = z.object({

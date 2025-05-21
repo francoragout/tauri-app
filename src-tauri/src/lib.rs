@@ -50,6 +50,22 @@ pub fn run() {
                     reference TEXT,
                     phone TEXT
                 );
+
+                CREATE TABLE IF NOT EXISTS expenses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT DEFAULT CURRENT_TIMESTAMP,
+                    category TEXT NOT NULL,
+                    amount REAL NOT NULL,
+                    description TEXT
+                );
+
+                CREATE TABLE IF NOT EXISTS notifications (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT DEFAULT CURRENT_TIMESTAMP,
+                    title TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    is_read INTEGER DEFAULT 0 CHECK (is_read IN (0, 1))
+                );
             ",
         kind: MigrationKind::Up,
     }];

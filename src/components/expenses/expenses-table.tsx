@@ -27,18 +27,15 @@ import {
 
 import { DataTablePagination } from "@/components/data-table-pagination"
 import { ExpensesTableToolbar } from "./expenses-table-toolbar"
-import { Product } from "@/lib/zod"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  products: Product[]
 }
 
 export function ExpensesTable<TData, TValue>({
   columns,
   data,
-  products,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -76,8 +73,8 @@ export function ExpensesTable<TData, TValue>({
   })
 
   return (
-    <div className="space-y-4 pt-4">
-      <ExpensesTableToolbar table={table} products={products}/>
+    <div className="space-y-4">
+      <ExpensesTableToolbar table={table} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>

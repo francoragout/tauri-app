@@ -1,13 +1,4 @@
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-
-import {
   Form,
   FormControl,
   FormField,
@@ -15,23 +6,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import {
-  PopoverDialog,
-  PopoverDialogContent,
-  PopoverDialogTrigger,
-} from "../ui/popover-dialog";
-
-import { CreateExpense } from "@/lib/mutations/useExpense";
-import { ExpenseSchema, Product } from "@/lib/zod";
-import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -41,15 +15,18 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 
-interface ExpenseCreateFormProps {
-  products: Product[];
-}
+import { PlusCircle } from "lucide-react";
+import { ExpenseSchema } from "@/lib/zod";
+import { useState } from "react";
+import { CreateExpense } from "@/lib/mutations/useExpense";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
-export default function ExpenseCreateForm({
-  products,
-}: ExpenseCreateFormProps) {
-  const [displayValue, setDisplayValue] = useState("");
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+export default function ExpenseCreateForm() {
   const [isOpen, setIsOpen] = useState(false);
   const { mutate, isPending } = CreateExpense();
   const form = useForm<z.infer<typeof ExpenseSchema>>({
@@ -68,15 +45,6 @@ export default function ExpenseCreateForm({
       },
     });
   }
-
-  useEffect(() => {
-    const currentValue = form.getValues("total");
-    if (currentValue) {
-      setDisplayValue(
-        new Intl.NumberFormat("es-ES").format(Number(currentValue))
-      );
-    }
-  }, []);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -111,137 +79,7 @@ export default function ExpenseCreateForm({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="total"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      placeholder="Total (requerido)"
-                      value={displayValue}
-                      onChange={(e) => {
-                        const input = e.target.value;
 
-                        if (input.trim() === "") {
-                          field.onChange("");
-                          setDisplayValue("");
-                          return;
-                        }
-
-                        const rawValue = input
-                          .replace(/\./g, "")
-                          .replace(",", ".");
-
-                        if (!isNaN(Number(rawValue))) {
-                          field.onChange(rawValue);
-                          const formatted = new Intl.NumberFormat(
-                            "es-ES"
-                          ).format(Number(rawValue));
-                          setDisplayValue(formatted);
-                        } else {
-                          setDisplayValue(input);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="product_id"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <PopoverDialog
-                    modal={true}
-                    open={isPopoverOpen}
-                    onOpenChange={setIsPopoverOpen}
-                  >
-                    <PopoverDialogTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className={cn(
-                            "justify-between",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value
-                            ? products.find(
-                                (product) => product.id === field.value
-                              )?.name
-                            : "Producto (opcional)"}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverDialogTrigger>
-                    <PopoverDialogContent className="w-[462px]">
-                      <Command>
-                        <CommandInput placeholder="Buscar producto..." />
-                        <CommandList>
-                          <CommandEmpty>Sin resultados.</CommandEmpty>
-                          <CommandGroup>
-                            {products.map((product) => (
-                              <CommandItem
-                                value={product.name}
-                                key={product.id}
-                                onSelect={() => {
-                                  const currentValue =
-                                    form.getValues("product_id");
-
-                                  if (currentValue === product.id) {
-                                    form.setValue("product_id", null);
-                                    form.setValue("quantity", undefined);
-                                  } else {
-                                    form.setValue("product_id", product.id);
-                                  }
-
-                                  setIsPopoverOpen(false);
-                                }}
-                              >
-                                {product.name}
-                                <Check
-                                  className={cn(
-                                    "ml-auto",
-                                    product.id === field.value
-                                      ? "opacity-100"
-                                      : "opacity-0"
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverDialogContent>
-                  </PopoverDialog>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="quantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending || !form.getValues("product_id")}
-                      placeholder="Cantidad (opcional)"
-                      value={field.value ?? undefined}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <div className="flex justify-end space-x-2">
               <Button
                 type="button"

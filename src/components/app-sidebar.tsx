@@ -13,14 +13,19 @@ import {
 import {
   BanknoteArrowDown,
   BanknoteArrowUp,
+  Calculator,
   ChartNoAxesCombined,
   Cog,
+  DollarSign,
+  MailIcon,
   NotepadText,
+  PlusCircleIcon,
   Power,
   ShoppingBasket,
   Users,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
+import { Button } from "./ui/button";
 
 const data = {
   store: [
@@ -61,12 +66,12 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
-  
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
-          <SidebarMenuItem>
+          {/* <SidebarMenuItem>
             <SidebarMenuButton
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
@@ -75,6 +80,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <ShoppingBasket className="!size-5" />
                 <span className="text-base font-semibold">Store Master</span>
               </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem> */}
+          <SidebarMenuItem className="flex items-center gap-2">
+            {/* <Button
+              size="icon"
+              className="h-9 w-9 shrink-0 group-data-[collapsible=icon]:opacity-0"
+              variant="outline"
+            >
+              <Calculator />
+              <span className="sr-only">Inbox</span>
+            </Button> */}
+            <SidebarMenuButton
+              tooltip="Quick Create"
+              className="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
+            >
+              <DollarSign />
+              <span>22.570</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -85,7 +107,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             {data.store.map((s) => (
               <SidebarMenuItem key={s.name}>
-                <SidebarMenuButton asChild className={location.pathname === s.url ? "bg-accent" : ""}>
+                <SidebarMenuButton
+                  asChild
+                  className={location.pathname === s.url ? "bg-accent" : ""}
+                >
                   <NavLink to={s.url}>
                     <s.icon />
                     <span>{s.name}</span>
@@ -100,11 +125,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             {data.inventory.map((i) => (
               <SidebarMenuItem key={i.name}>
-                <SidebarMenuButton asChild>
-                  <a href={i.url}>
+                <SidebarMenuButton asChild className={location.pathname === i.url ? "bg-accent" : ""}>
+                  <NavLink to={i.url}>
                     <i.icon />
                     <span>{i.name}</span>
-                  </a>
+                  </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}

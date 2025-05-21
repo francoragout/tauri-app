@@ -28,18 +28,14 @@ import {
 import { useState } from "react";
 import { DeleteExpenses } from "@/lib/mutations/useExpense";
 import { DataTableFacetedFilter } from "../data-table-faceted-filter";
-
-import { Product } from "@/lib/zod";
 import { format } from "date-fns";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
-  products: Product[];
 }
 
 export function ExpensesTableToolbar<TData>({
   table,
-  products,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
@@ -157,26 +153,7 @@ export function ExpensesTableToolbar<TData>({
                     permanentemente los productos seleccionados.
                   </span>
 
-                  <span className="flex flex-col">
-                    Items seleccionados:
-                    {table.getSelectedRowModel().rows.map((row) => {
-                      const expense = row.original as {
-                        date: string;
-                        amount: number;
-                        category: string;
-                      };
-                      return (
-                        <span key={row.id} className="text-foreground">
-                          {expense.date
-                            ? format(new Date(expense.date), "PPP", {
-                                locale: es,
-                              })
-                            : "Fecha no disponible"}{" "}
-                          ${expense.amount} {expense.category}
-                        </span>
-                      );
-                    })}
-                  </span>
+                  
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -188,12 +165,8 @@ export function ExpensesTableToolbar<TData>({
             </AlertDialogContent>
           </AlertDialog>
         )}
-
-        
       </div>
-      <ExpenseCreateForm
-        products={products}
-        />
+      <ExpenseCreateForm />
     </div>
   );
 }
