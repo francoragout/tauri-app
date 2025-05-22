@@ -108,9 +108,7 @@ export const ExpenseSchema = z.object({
   id: z.number().optional(),
   date: z.string().optional(),
   category: z
-    .string({
-      required_error: "Ingrese la categoría del gasto",
-    })
+    .string()
     .nonempty({
       message: "Ingrese la categoría del gasto",
     }),

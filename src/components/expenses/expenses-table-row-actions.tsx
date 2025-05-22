@@ -1,35 +1,18 @@
-"use client";
-
-import { useState } from "react";
-import { Row } from "@tanstack/react-table";
-import { ExpenseSchema } from "@/lib/zod";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
+import { useState } from "react";
+import { Row } from "@tanstack/react-table";
+import { ExpenseSchema } from "@/lib/zod";
 import { Button } from "../ui/button";
-import { MoreHorizontal, Pencil, Trash } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { DeleteExpense } from "@/lib/mutations/useExpense";
-import { toast } from "sonner";
+import { SquarePen } from "lucide-react";
+import ExpenseForm from "./expense-form";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -39,92 +22,31 @@ export function ExpensesTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
   const expense = ExpenseSchema.parse(row.original);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const { mutate } = DeleteExpense();
-  const expenseId = expense.id as number;
-
-  function handleDelete() {
-    mutate(expenseId, {
-      onSuccess: () => {
-        setIsAlertOpen(false);
-        toast.success("Gasto eliminado");
-      },
-      onError: () => {
-        setIsAlertOpen(false);
-        toast.error("Error al eliminar gasto");
-      },
-    });
-  }
+  const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[160px] z-50">
-          <div className="flex flex-col w-full">
-            <DropdownMenuItem asChild>
-              <Button
-                className="flex justify-start pl-2"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setTimeout(() => setIsOpen(true), 0);
-                }}
-              >
-                <Pencil className="text-primary" />
-                Editar
-              </Button>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Button
-                className="flex justify-start pl-2"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setTimeout(() => setIsAlertOpen(true), 0);
-                }}
-              >
-                <Trash className="text-primary" />
-                Eliminar
-              </Button>
-            </DropdownMenuItem>
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar producto</DialogTitle>
-            <DialogDescription>
-              Use tabs para navegar mas rapido entre los diferentes campos.
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estas completamente seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>
-              Continuar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <Dialog open={isUpdateOpen} onOpenChange={setIsUpdateOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0"
+          onClick={() => {
+            setIsUpdateOpen(true);
+          }}
+        >
+          <SquarePen className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Editar expensa</DialogTitle>
+          <DialogDescription>
+            Use tabs para navegar mas rapido entre los diferentes campos.
+          </DialogDescription>
+        </DialogHeader>
+        <ExpenseForm expense={expense} onOpenChange={setIsUpdateOpen} />
+      </DialogContent>
+    </Dialog>
   );
 }

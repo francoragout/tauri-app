@@ -1,8 +1,5 @@
 "use client";
 
-import { Table } from "@tanstack/react-table";
-import { Button } from "../ui/button";
-import { Trash, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,21 +11,34 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import ExpenseCreateForm from "./expense-create-form";
-import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
+import { Calendar as CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
+import { Table } from "@tanstack/react-table";
+import { Button } from "../ui/button";
+import { toast } from "sonner";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
 import { useState } from "react";
 import { DeleteExpenses } from "@/lib/mutations/useExpense";
 import { DataTableFacetedFilter } from "../data-table-faceted-filter";
 import { format } from "date-fns";
+import ExpenseForm from "./expense-form";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -37,10 +47,10 @@ interface DataTableToolbarProps<TData> {
 export function ExpensesTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
   const [date, setDate] = useState<Date>();
-  const { mutate } = DeleteExpenses();
+  const { mutate, isPending } = DeleteExpenses();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
@@ -52,11 +62,11 @@ export function ExpensesTableToolbar<TData>({
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
-          `Se han eliminado ${expensesIds.length} gastos seleccionados`
+          `Se han eliminado ${expensesIds.length} expensas seleccionadas`
         );
       },
       onError: () => {
-        toast.error("Error al eliminar gastos seleccionados");
+        toast.error("Error al eliminar expensas seleccionadas");
       },
     });
   };
@@ -76,9 +86,9 @@ export function ExpensesTableToolbar<TData>({
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {date ? (
-                format(date, "PPP", { locale: es })
+                format(date, "PP", { locale: es })
               ) : (
-                <span>Filtrar gastos...</span>
+                <span>Filtrar expensas...</span>
               )}
             </Button>
           </PopoverTrigger>
@@ -118,28 +128,14 @@ export function ExpensesTableToolbar<TData>({
             }))}
           />
         )}
-
-        {isFiltered && (
-          <Button
-            variant="ghost"
-            onClick={() => {
-              table.resetColumnFilters();
-              setDate(undefined); // Restablecer la fecha seleccionada
-            }}
-            className="h-8 px-2 lg:px-3"
-          >
-            Limpiar
-            <X />
-          </Button>
-        )}
       </div>
-      <div className="flex space-x-2">
-        {selectedRowsCount > 1 && (
+
+      <div className="flex space-x-4">
+        {selectedRowsCount > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button size="sm" variant="outline">
-                <Trash className="h-4 w-4" />
-                Eliminar
+              <Button size="icon" variant="outline" disabled={isPending}>
+                <Trash2 />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -150,23 +146,42 @@ export function ExpensesTableToolbar<TData>({
                 <AlertDialogDescription className="flex flex-col space-y-3">
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente los productos seleccionados.
+                    permanentemente {selectedRowsCount} expensa/s seleccionadas.
                   </span>
-
-                  
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteSelected}>
+                <AlertDialogCancel disabled={isPending}>
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteSelected}
+                  disabled={isPending}
+                >
                   Continuar
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         )}
+
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="h-8 w-8 p-0">
+              <PlusCircle />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Registrar expensa</DialogTitle>
+              <DialogDescription>
+                Use tabs para navegar mas rapido entre los diferentes campos.
+              </DialogDescription>
+            </DialogHeader>
+            <ExpenseForm onOpenChange={setIsCreateOpen} />
+          </DialogContent>
+        </Dialog>
       </div>
-      <ExpenseCreateForm />
     </div>
   );
 }

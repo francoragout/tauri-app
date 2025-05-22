@@ -11,6 +11,8 @@
       "@/*": ["./src/*"]
     },
 
+    "types": ["vitest/globals", "node"],
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

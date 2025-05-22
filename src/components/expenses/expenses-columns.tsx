@@ -40,7 +40,7 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
     ),
     cell: ({ row }) => {
       const date = new Date(row.getValue("date") + "Z");
-      return <div>{format(date, "PPP", { locale: es })}</div>;
+      return <div>{format(date, "PP", { locale: es })}</div>;
     },
   },
   {
@@ -72,6 +72,7 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
       const description = row.getValue("description") as string | null;
       return <div>{description !== null ? description : ""}</div>;
     },
+    enableSorting: false,
   },
   {
     accessorKey: "amount",
@@ -80,8 +81,11 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
     ),
     cell: ({ row }) => {
       const amount = row.getValue("amount") as number;
-      const formattedAmount = new Intl.NumberFormat("es-ES").format(amount);
-      return <div>${formattedAmount}</div>;
+      const formattedAmount = Number(amount).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      return <div>$ {formattedAmount}</div>;
     },
   },
   {
