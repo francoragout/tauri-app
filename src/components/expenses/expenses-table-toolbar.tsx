@@ -136,7 +136,7 @@ export function ExpensesTableToolbar<TData>({
         {selectedRowsCount > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button size="icon" variant="outline" disabled={isPending}>
+              <Button variant="outline" size="sm" disabled={isPending}>
                 <Trash2 />
               </Button>
             </AlertDialogTrigger>
@@ -145,7 +145,7 @@ export function ExpensesTableToolbar<TData>({
                 <AlertDialogTitle>
                   ¿Estas completamente seguro?
                 </AlertDialogTitle>
-                <AlertDialogDescription className="flex flex-col space-y-3">
+                <AlertDialogDescription>
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
                     permanentemente{" "}
@@ -173,7 +173,7 @@ export function ExpensesTableToolbar<TData>({
 
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="h-8 w-8 p-0">
+            <Button variant="outline" size="sm">
               <PlusCircle />
             </Button>
           </DialogTrigger>

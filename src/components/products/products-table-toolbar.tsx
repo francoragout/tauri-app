@@ -1,11 +1,3 @@
-"use client";
-
-import { Table } from "@tanstack/react-table";
-import { Input } from "@/components/ui/input";
-import { DataTableFacetedFilter } from "../data-table-faceted-filter";
-import { Button } from "../ui/button";
-import { Trash, X } from "lucide-react";
-import ProductCreateForm from "./product-create-form";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,10 +9,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import { DataTableFacetedFilter } from "../data-table-faceted-filter";
+import { PlusCircle, Trash2 } from "lucide-react";
+import { Table } from "@tanstack/react-table";
+import { Input } from "@/components/ui/input";
+import { Button } from "../ui/button";
 import { DeleteProducts } from "@/lib/mutations/useProduct";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { clearCart } from "@/features/cart/cartSlice";
+import ProductForm from "./product-form";
+import { useState } from "react";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -29,10 +38,11 @@ interface DataTableToolbarProps<TData> {
 export function ProductsTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
   const dispatch = useDispatch();
-  const { mutate: deleteProducts } = DeleteProducts();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const { mutate, isPending } = DeleteProducts();
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
@@ -40,13 +50,17 @@ export function ProductsTableToolbar<TData>({
       (row) => (row.original as { id: number }).id
     );
 
-    deleteProducts(productsIds, {
+    mutate(productsIds, {
       onSuccess: () => {
         table.resetRowSelection();
         dispatch(clearCart());
 
         toast.success(
-          `Se han eliminado ${productsIds.length} productos seleccionados`
+          `Se ${
+            productsIds.length > 1
+              ? `han eliminado ${selectedRowsCount} productos seleccionados`
+              : "ha eliminado el producto seleccionado"
+          }`
         );
       },
       onError: () => {
@@ -81,20 +95,9 @@ export function ProductsTableToolbar<TData>({
             }))}
           />
         )}
-
-        {isFiltered && (
-          <Button
-            variant="ghost"
-            onClick={() => table.resetColumnFilters()}
-            className="h-8 px-2 lg:px-3"
-          >
-            Limpiar
-            <X />
-          </Button>
-        )}
       </div>
-      <div className="flex space-x-2">
-        {selectedRowsCount > 1 && (
+      <div className="flex space-x-4">
+        {selectedRowsCount > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -102,8 +105,7 @@ export function ProductsTableToolbar<TData>({
                 variant="outline"
                 disabled={selectedRowsCount === 0}
               >
-                <Trash className="h-4 w-4" />
-                Eliminar
+                <Trash2 />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -111,24 +113,48 @@ export function ProductsTableToolbar<TData>({
                 <AlertDialogTitle>
                   ¿Estas completamente seguro?
                 </AlertDialogTitle>
-                <AlertDialogDescription className="flex flex-col space-y-3">
+                <AlertDialogDescription>
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente los productos seleccionados de la base de
-                    datos.
+                    permanentemente{" "}
+                    {selectedRowsCount > 1
+                      ? `los ${selectedRowsCount} productos seleccionados`
+                      : "el producto seleccionado"}
+                    .
                   </span>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteSelected}>
+                <AlertDialogCancel disabled={isPending}>
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteSelected}
+                  disabled={isPending}
+                >
                   Continuar
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         )}
-        <ProductCreateForm />
+
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <PlusCircle />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Registrar producto</DialogTitle>
+              <DialogDescription>
+                Use tabs para navegar mas rapido entre los diferentes campos.
+              </DialogDescription>
+            </DialogHeader>
+            <ProductForm onOpenChange={setIsCreateOpen} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

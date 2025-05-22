@@ -7,7 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { BanknoteArrowUp, SquarePen } from "lucide-react";
+import { HandCoins, SquarePen } from "lucide-react";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { CustomerSchema } from "@/lib/zod";
@@ -37,7 +37,6 @@ export function CustomersTableRowActions<TData>({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
             onClick={() => {
               setIsUpdateOpen(true);
             }}
@@ -122,12 +121,11 @@ export function CustomersTableRowActions<TData>({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
             onClick={() => {
               setIsPayOpen(true);
             }}
           >
-            <BanknoteArrowUp />
+            <HandCoins />
           </Button>
         </DialogTrigger>
         <DialogContent>

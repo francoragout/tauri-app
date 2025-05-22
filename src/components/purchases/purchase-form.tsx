@@ -23,6 +23,7 @@ import {
 
 import { Purchase, PurchaseSchema } from "@/lib/zod";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { CreatePurchase, UpdatePurchase } from "@/lib/mutations/usePurchase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
@@ -30,65 +31,69 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
-import { UpdatePurchase } from "@/lib/mutations/usePurchase";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { NumericFormat } from "react-number-format";
 import { GetProducts } from "@/lib/mutations/useProduct";
+import { useQuery } from "@tanstack/react-query";
 
-interface ExpenseCreateFormProps {
-  purchase: Purchase;
+interface PurchaseFormProps {
+  purchase?: Purchase;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function PurchaseUpdateForm({
+export default function PurchaseForm({
   purchase,
   onOpenChange,
-}: ExpenseCreateFormProps) {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const { mutate, isPending } = UpdatePurchase();
-  const [displayValue, setDisplayValue] = useState("");
-
-  const form = useForm<z.infer<typeof PurchaseSchema>>({
-    resolver: zodResolver(PurchaseSchema),
-    defaultValues: {
-      id: purchase.id,
-      product_id: purchase.product_id,
-      total: purchase.total,
-      quantity: purchase.quantity,
-    },
-  });
-
-  useEffect(() => {
-    if (!onOpenChange) {
-      form.reset({
-        product_id: purchase.product_id,
-        total: purchase.total,
-        quantity: purchase.quantity,
-      });
-    }
-  }, [purchase, form, onOpenChange]);
-
+}: PurchaseFormProps) {
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: GetProducts,
   });
 
+  const isEditMode = Boolean(purchase);
+
+  const [open, setOpen] = useState(false);
+
+  const { mutate: createPurchase, isPending: isCreating } = CreatePurchase();
+  const { mutate: updatePurchase, isPending: isUpdating } = UpdatePurchase();
+
+  const form = useForm<z.infer<typeof PurchaseSchema>>({
+    resolver: zodResolver(PurchaseSchema),
+    defaultValues: {
+      product_id: purchase?.product_id ?? undefined,
+      total: purchase?.total ?? undefined,
+      quantity: purchase?.quantity ?? undefined,
+    },
+  });
+
   function onSubmit(values: z.infer<typeof PurchaseSchema>) {
-    mutate(values, {
-      onSuccess: () => {
-        toast.success("Compra actualizada");
-        onOpenChange(false);
-      },
-      onError: () => {
-        toast.error("Error al actualizar compra");
-      },
-    });
+    if (isEditMode && purchase?.id) {
+      updatePurchase(
+        { id: purchase.id, ...values },
+        {
+          onSuccess: () => {
+            onOpenChange(false);
+            toast.success("Compra actualizada");
+          },
+          onError: () => {
+            toast.error("Error al actualizar compra");
+          },
+        }
+      );
+    } else {
+      createPurchase(values, {
+        onSuccess: () => {
+          onOpenChange(false);
+          toast.success("Compra creada");
+        },
+        onError: () => {
+          toast.error("Error al crear compra");
+        },
+      });
+    }
   }
 
-  useEffect(() => {
-    const formatted = new Intl.NumberFormat("es-AR").format(purchase.total);
-    setDisplayValue(formatted);
-  }, [purchase.total]);
+  const isPending = isCreating || isUpdating;
 
   return (
     <Form {...form}>
@@ -98,10 +103,7 @@ export default function PurchaseUpdateForm({
           name="product_id"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <PopoverDialog
-                open={isPopoverOpen}
-                onOpenChange={setIsPopoverOpen}
-              >
+              <PopoverDialog open={open} onOpenChange={setOpen}>
                 <PopoverDialogTrigger asChild>
                   <FormControl>
                     <Button
@@ -120,9 +122,13 @@ export default function PurchaseUpdateForm({
                     </Button>
                   </FormControl>
                 </PopoverDialogTrigger>
-                <PopoverDialogContent className="w-[462px] p-0">
+                <PopoverDialogContent
+                  className="p-0"
+                  side="right"
+                  align="start"
+                >
                   <Command>
-                    <CommandInput placeholder="Search language..." />
+                    <CommandInput placeholder="Buscar producto..." />
                     <CommandList>
                       <CommandEmpty>No language found.</CommandEmpty>
                       <CommandGroup>
@@ -131,13 +137,10 @@ export default function PurchaseUpdateForm({
                             value={product.name}
                             key={product.id}
                             onSelect={() => {
-                              form.setValue(
-                                "product_id",
-                                product.id as number,
-                                { shouldDirty: true }
-                              );
-
-                              setIsPopoverOpen(false);
+                              if (typeof product.id === "number") {
+                                form.setValue("product_id", product.id);
+                              }
+                              setOpen(false);
                             }}
                           >
                             {product.name}
@@ -167,22 +170,18 @@ export default function PurchaseUpdateForm({
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Input
-                  placeholder="Total (requerido)"
-                  disabled={isPending}
-                  value={displayValue}
-                  onChange={(e) => {
-                    const rawValue = e.target.value.replace(/\D/g, ""); // solo números
-                    const numericValue = Number(rawValue);
-
-                    field.onChange(numericValue);
-
-                    const formatted = new Intl.NumberFormat("es-AR").format(
-                      numericValue
-                    );
-                    setDisplayValue(formatted);
+                <NumericFormat
+                  value={field.value}
+                  onValueChange={(values) => {
+                    field.onChange(values.floatValue);
                   }}
-                  onBlur={field.onBlur}
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  decimalScale={2}
+                  allowNegative={false}
+                  customInput={Input}
+                  disabled={isPending}
+                  placeholder="Total (requerido)"
                 />
               </FormControl>
               <FormMessage />
@@ -212,7 +211,9 @@ export default function PurchaseUpdateForm({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              onOpenChange(false);
+            }}
             disabled={isPending}
           >
             Cancelar
@@ -220,7 +221,7 @@ export default function PurchaseUpdateForm({
           <Button
             type="submit"
             size="sm"
-            disabled={isPending || !form.formState.isDirty}
+            disabled={isPending || (isEditMode && !form.formState.isDirty)}
           >
             Guardar
           </Button>

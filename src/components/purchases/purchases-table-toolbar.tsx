@@ -1,8 +1,5 @@
 "use client";
 
-import { Table } from "@tanstack/react-table";
-import { Button } from "../ui/button";
-import { Trash } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,34 +11,46 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+import { Table } from "@tanstack/react-table";
+import { Button } from "../ui/button";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useState } from "react";
-import { Product } from "@/lib/zod";
-import PurchaseCreateForm from "./purchase-create-form";
 import { DeletePurchases } from "@/lib/mutations/usePurchase";
+import PurchaseForm from "./purchase-form";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
-  products: Product[];
 }
 
 export function PurchasesTableToolbar<TData>({
   table,
-  products,
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
   const [date, setDate] = useState<Date>();
   const { mutate } = DeletePurchases();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
@@ -53,7 +62,11 @@ export function PurchasesTableToolbar<TData>({
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
-          `Se han eliminado ${purchasesIds.length} compras seleccionadas`
+          `Se ${
+            purchasesIds.length > 1
+              ? `han eliminado ${selectedRowsCount} compras seleccionadas`
+              : "ha eliminado la compra seleccionada"
+          }`
         );
       },
       onError: () => {
@@ -104,13 +117,12 @@ export function PurchasesTableToolbar<TData>({
           </PopoverContent>
         </Popover>
       </div>
-      <div className="flex space-x-2">
-        {selectedRowsCount > 1 && (
+      <div className="flex space-x-4">
+        {selectedRowsCount > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button size="sm" variant="outline">
-                <Trash className="h-4 w-4" />
-                Eliminar
+                <Trash2 />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -118,11 +130,14 @@ export function PurchasesTableToolbar<TData>({
                 <AlertDialogTitle>
                   ¿Estas completamente seguro?
                 </AlertDialogTitle>
-                <AlertDialogDescription className="flex flex-col space-y-3">
+                <AlertDialogDescription>
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente las compras seleccionadas de la base de
-                    datos.
+                    permanentemente{" "}
+                    {selectedRowsCount > 1
+                      ? `las ${selectedRowsCount} compras seleccionadas`
+                      : "la compra seleccionada"}
+                    .
                   </span>
                 </AlertDialogDescription>
               </AlertDialogHeader>
@@ -136,7 +151,22 @@ export function PurchasesTableToolbar<TData>({
           </AlertDialog>
         )}
 
-        <PurchaseCreateForm products={products} />
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <PlusCircle />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Registrar expensa</DialogTitle>
+              <DialogDescription>
+                Use tabs para navegar mas rapido entre los diferentes campos.
+              </DialogDescription>
+            </DialogHeader>
+            <PurchaseForm onOpenChange={setIsCreateOpen} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

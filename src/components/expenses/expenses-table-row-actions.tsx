@@ -29,13 +29,12 @@ export function ExpensesTableRowActions<TData>({
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
+          size="sm"         
           onClick={() => {
             setIsUpdateOpen(true);
           }}
         >
-          <SquarePen className="h-4 w-4" />
+          <SquarePen />
         </Button>
       </DialogTrigger>
       <DialogContent>

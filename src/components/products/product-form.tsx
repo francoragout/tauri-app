@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -6,69 +5,69 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+
+import { CreateProduct, UpdateProduct } from "@/lib/mutations/useProduct";
 import { Product, ProductSchema } from "@/lib/zod";
-import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { UpdateProduct } from "@/lib/mutations/useProduct";
-import { clearCart } from "@/features/cart/cartSlice";
-import { useDispatch } from "react-redux";
+import { NumericFormat } from "react-number-format";
 
-interface ProductUpdateFormProps {
-  product: Product;
+type ProductFormProps = {
+  product?: Product;
   onOpenChange: (open: boolean) => void;
-}
+};
 
-export default function ProductUpdateForm({
+export default function ProductForm({
   product,
   onOpenChange,
-}: ProductUpdateFormProps) {
-  const { mutate, isPending } = UpdateProduct();
-  const dispatch = useDispatch();
-  const [displayValue, setDisplayValue] = useState("");
+}: ProductFormProps) {
+  const isEditMode = Boolean(product);
+
+  const { mutate: createProduct, isPending: isCreating } = CreateProduct();
+  const { mutate: updateProduct, isPending: isUpdating } = UpdateProduct();
 
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
     defaultValues: {
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      stock: product.stock,
+      name: product?.name ?? "",
+      category: product?.category ?? "",
+      price: product?.price ?? undefined,
+      stock: product?.stock ?? undefined,
     },
   });
 
-  useEffect(() => {
-    if (!onOpenChange) {
-      form.reset({
-        name: product.name,
-        category: product.category,
-        price: product.price,
-        stock: product.stock,
+  function onSubmit(values: z.infer<typeof ProductSchema>) {
+    if (isEditMode && product?.id) {
+      updateProduct(
+        { id: product.id, ...values },
+        {
+          onSuccess: () => {
+            onOpenChange(false);
+            toast.success("Producto actualizado");
+          },
+          onError: () => {
+            toast.error("Error al actualizar producto");
+          },
+        }
+      );
+    } else {
+      createProduct(values, {
+        onSuccess: () => {
+          onOpenChange(false);
+          toast.success("Producto registrado");
+        },
+        onError: () => {
+          toast.error("Error al registrar producto");
+        },
       });
     }
-  }, [product, form, onOpenChange]);
-
-  function onSubmit(values: z.infer<typeof ProductSchema>) {
-    values.id = product.id;
-    mutate(values, {
-      onSuccess: () => {
-        onOpenChange(false);
-        dispatch(clearCart());
-        toast.success("Producto actualizado");
-      },
-      onError: () => {
-        toast.error("Error al actualizar producto");
-      },
-    });
   }
 
-  useEffect(() => {
-    const formatted = new Intl.NumberFormat("es-AR").format(product.price);
-    setDisplayValue(formatted);
-  }, [product.price]);
+  const isPending = isCreating || isUpdating;
 
   return (
     <Form {...form}>
@@ -113,24 +112,18 @@ export default function ProductUpdateForm({
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Input
-                  placeholder="Precio (requerido)"
-                  disabled={isPending}
-                  value={displayValue}
-                  onChange={(e) => {
-                    const rawValue = e.target.value.replace(/\D/g, ""); // solo números
-                    const numericValue = Number(rawValue);
-
-                    // Actualiza el valor del formulario con el número puro
-                    field.onChange(numericValue);
-
-                    // Formatea con separadores de miles para mostrar
-                    const formatted = new Intl.NumberFormat("es-AR").format(
-                      numericValue
-                    );
-                    setDisplayValue(formatted);
+                <NumericFormat
+                  value={field.value}
+                  onValueChange={(values) => {
+                    field.onChange(values.floatValue);
                   }}
-                  onBlur={field.onBlur}
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  decimalScale={2}
+                  allowNegative={false}
+                  customInput={Input}
+                  disabled={isPending}
+                  placeholder="Precio (requerido)"
                 />
               </FormControl>
               <FormMessage />
@@ -160,7 +153,9 @@ export default function ProductUpdateForm({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              onOpenChange(false);
+            }}
             disabled={isPending}
           >
             Cancelar
@@ -168,7 +163,7 @@ export default function ProductUpdateForm({
           <Button
             type="submit"
             size="sm"
-            disabled={isPending || !form.formState.isDirty}
+            disabled={isPending || (isEditMode && !form.formState.isDirty)}
           >
             Guardar
           </Button>

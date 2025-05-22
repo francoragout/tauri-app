@@ -77,7 +77,7 @@ export function CustomersTableToolbar<TData>({
           className="h-8 w-[150px] lg:w-[250px]"
         />
       </div>
-      <div className="flex space-x-2">
+      <div className="flex space-x-4">
         {selectedRowsCount > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -86,7 +86,7 @@ export function CustomersTableToolbar<TData>({
                 variant="outline"
                 disabled={selectedRowsCount === 0}
               >
-                <Trash2 className="h-8 w-8 p-0" />
+                <Trash2 />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -94,7 +94,7 @@ export function CustomersTableToolbar<TData>({
                 <AlertDialogTitle>
                   ¿Estas completamente seguro?
                 </AlertDialogTitle>
-                <AlertDialogDescription className="flex flex-col space-y-3">
+                <AlertDialogDescription>
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
                     permanentemente{" "}
@@ -122,7 +122,7 @@ export function CustomersTableToolbar<TData>({
 
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="h-8 w-8 p-0">
+            <Button variant="outline" size="sm">
               <PlusCircle />
             </Button>
           </DialogTrigger>
