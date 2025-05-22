@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -6,57 +5,67 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Customer, CustomerSchema } from "@/lib/zod";
-import { useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { UpdateCustomer } from "@/lib/mutations/useCustomer";
+import { CreateCustomer, UpdateCustomer } from "@/lib/mutations/useCustomer";
 
-interface CustomerUpdateFormProps {
-  customer: Customer;
+type CustomerFormProps = {
+  customer?: Customer;
   onOpenChange: (open: boolean) => void;
-}
+};
 
-export default function CustomerUpdateForm({
+export default function CustomerForm({
   customer,
   onOpenChange,
-}: CustomerUpdateFormProps) {
-  const { mutate, isPending } = UpdateCustomer();
+}: CustomerFormProps) {
+  const isEditMode = Boolean(customer);
+
+  const { mutate: createCustomer, isPending: isCreating } = CreateCustomer();
+  const { mutate: updateCustomer, isPending: isUpdating } = UpdateCustomer();
 
   const form = useForm<z.infer<typeof CustomerSchema>>({
     resolver: zodResolver(CustomerSchema),
     defaultValues: {
-      full_name: customer.full_name,
-      reference: customer.reference,
-      phone: customer.phone,
+      full_name: customer?.full_name ?? "",
+      reference: customer?.reference ?? "",
+      phone: customer?.phone ?? "",
     },
   });
 
-  useEffect(() => {
-    if (!onOpenChange) {
-      form.reset({
-        full_name: customer.full_name,
-        reference: customer.reference,
-        phone: customer.phone,
+  function onSubmit(values: z.infer<typeof CustomerSchema>) {
+    if (isEditMode && customer?.id) {
+      updateCustomer(
+        { id: customer.id, ...values },
+        {
+          onSuccess: () => {
+            onOpenChange(false);
+            toast.success("Cliente actualizado");
+          },
+          onError: () => {
+            toast.error("Error al actualizar cliente");
+          },
+        }
+      );
+    } else {
+      createCustomer(values, {
+        onSuccess: () => {
+          onOpenChange(false);
+          toast.success("Cliente registrado");
+        },
+        onError: () => {
+          toast.error("Error al registrar cliente");
+        },
       });
     }
-  }, [customer, form, onOpenChange]);
-
-  function onSubmit(values: z.infer<typeof CustomerSchema>) {
-    values.id = customer.id;
-    mutate(values, {
-      onSuccess: () => {
-        onOpenChange(false);
-        toast.success("Cliente actualizado");
-      },
-      onError: () => {
-        toast.error("Error al actualizar cliente");
-      },
-    });
   }
+
+  const isPending = isCreating || isUpdating;
 
   return (
     <Form {...form}>
@@ -117,7 +126,9 @@ export default function CustomerUpdateForm({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              onOpenChange(false);
+            }}
             disabled={isPending}
           >
             Cancelar
@@ -125,7 +136,7 @@ export default function CustomerUpdateForm({
           <Button
             type="submit"
             size="sm"
-            disabled={isPending || !form.formState.isDirty}
+            disabled={isPending || (isEditMode && !form.formState.isDirty)}
           >
             Guardar
           </Button>

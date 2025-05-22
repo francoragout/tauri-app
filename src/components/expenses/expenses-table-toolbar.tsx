@@ -1,5 +1,3 @@
-"use client";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,7 +60,11 @@ export function ExpensesTableToolbar<TData>({
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
-          `Se han eliminado ${expensesIds.length} expensas seleccionadas`
+          `Se ${
+            expensesIds.length > 1
+              ? `han eliminado ${selectedRowsCount} expensas seleccionadas`
+              : "ha eliminado la expensa seleccionada"
+          }`
         );
       },
       onError: () => {
@@ -146,7 +148,11 @@ export function ExpensesTableToolbar<TData>({
                 <AlertDialogDescription className="flex flex-col space-y-3">
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente {selectedRowsCount} expensa/s seleccionadas.
+                    permanentemente{" "}
+                    {selectedRowsCount > 1
+                      ? `las ${selectedRowsCount} expensas seleccionadas`
+                      : "la expensa seleccionada"}
+                    .
                   </span>
                 </AlertDialogDescription>
               </AlertDialogHeader>

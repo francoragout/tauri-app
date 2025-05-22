@@ -45,33 +45,6 @@ export function UpdateCustomer() {
   });
 }
 
-export function DeleteCustomer() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      const db = await Database.load("sqlite:mydatabase.db");
-
-      const result = await db.select<{ count: number }[]>(
-        `SELECT COUNT(*) as count FROM sales WHERE customer_id = $1 AND is_paid = 0`,
-        [id]
-      );
-
-      if (result[0].count > 0) {
-        throw new Error("No se puede eliminar un cliente con deudas");
-      }
-
-      await db.execute(`DELETE FROM customers WHERE id = $1`, [id]);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["customers"] });
-    },
-    onError: (error) => {
-      console.error(error.message);
-    },
-  });
-}
-
 export function DeleteCustomers() {
   const queryClient = useQueryClient();
 

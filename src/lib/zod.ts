@@ -125,7 +125,9 @@ export const ExpenseSchema = z.object({
 export const PaymentSchema = z.object({
   customer_id: z.number(),
   total: z.coerce.number(),
-  payment_method: z.string(),
+  payment_method: z.string({
+    required_error: "Seleccione un método de pago",
+  }),
   surcharge_percent: z.number().optional(),
 });
 

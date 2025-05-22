@@ -1,8 +1,3 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -10,6 +5,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+
 import {
   Select,
   SelectContent,
@@ -17,53 +13,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Customer, PaymentSchema } from "@/lib/zod";
-import { Input } from "../ui/input";
-import { useEffect } from "react";
-import { PaySales } from "@/lib/mutations/useSale";
-import { toast } from "sonner";
 
-interface CustomerPaymentFormProps {
+import { PaySales } from "@/lib/mutations/useSale";
+import { Customer, PaymentSchema } from "@/lib/zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { NumericFormat } from "react-number-format";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+
+type CustomerPayFormProps = {
   customer: Customer;
   onOpenChange: (open: boolean) => void;
-}
+};
 
 export default function CustomerPaymentForm({
   customer,
   onOpenChange,
-}: CustomerPaymentFormProps) {
+}: CustomerPayFormProps) {
+  const { mutate, isPending } = PaySales();
+
   const form = useForm<z.infer<typeof PaymentSchema>>({
     resolver: zodResolver(PaymentSchema),
     defaultValues: {
       customer_id: customer.id,
-      total: customer.debt as number,
       surcharge_percent: 0,
+      total: customer.debt,
     },
   });
-
-  // Nuevo efecto para actualizar el total con el recargo
-  useEffect(() => {
-    const surcharge = form.watch("surcharge_percent") || 0;
-    const baseTotal = customer.debt as number;
-    const newTotal = baseTotal + (baseTotal * surcharge) / 100;
-    form.setValue("total", Number(newTotal.toFixed(2)));
-  }, [form.watch("surcharge_percent"), customer.debt]);
-
-  const { mutate, isPending } = PaySales();
 
   function onSubmit(values: z.infer<typeof PaymentSchema>) {
     mutate(values, {
       onSuccess: () => {
-        form.reset();
         onOpenChange(false);
-        toast.success("Deuda pagada");
+        toast.success("Pago registrado");
       },
       onError: () => {
-        toast.error("Error al registrar el pago");
+        toast.error("Error al registrar pago");
       },
     });
-
-    onOpenChange(false);
   }
   return (
     <Form {...form}>
@@ -76,22 +66,14 @@ export default function CustomerPaymentForm({
               <Select onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="w-full" disabled={isPending}>
-                    <SelectValue placeholder="Metodo de pago (opcional)" />
+                    <SelectValue placeholder="Metodo de pago (requerido)" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="cash" className="hover:bg-accent">
-                    Efectivo
-                  </SelectItem>
-                  <SelectItem value="transfer" className="hover:bg-accent">
-                    Transferencia
-                  </SelectItem>
-                  <SelectItem value="debit" className="hover:bg-accent">
-                    Débito
-                  </SelectItem>
-                  <SelectItem value="credit" className="hover:bg-accent">
-                    Crédito
-                  </SelectItem>
+                  <SelectItem value="cash">Efectivo</SelectItem>
+                  <SelectItem value="transfer">Transferencia</SelectItem>
+                  <SelectItem value="debit">Débito</SelectItem>
+                  <SelectItem value="credit">Crédito</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -137,14 +119,45 @@ export default function CustomerPaymentForm({
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Input placeholder="shadcn" readOnly {...field} />
+                <NumericFormat
+                  value={field.value}
+                  onValueChange={(values) => {
+                    field.onChange(values.floatValue);
+                  }}
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  decimalScale={2}
+                  allowNegative={false}
+                  customInput={Input}
+                  disabled={isPending}
+                  placeholder="Monto (requerido)"
+                />
               </FormControl>
-
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+
+        <div className="flex justify-end space-x-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              onOpenChange(false);
+            }}
+            disabled={isPending}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            size="sm"
+            disabled={isPending || !form.formState.isDirty}
+          >
+            Guardar
+          </Button>
+        </div>
       </form>
     </Form>
   );

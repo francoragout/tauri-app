@@ -1,10 +1,3 @@
-"use client";
-
-import { Table } from "@tanstack/react-table";
-import { Input } from "@/components/ui/input";
-import { Button } from "../ui/button";
-import { Trash, X } from "lucide-react";
-import CustomerCreateForm from "./customer-create-form";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,8 +9,24 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import { Table } from "@tanstack/react-table";
+import { Input } from "@/components/ui/input";
+import { Button } from "../ui/button";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { DeleteCustomers } from "@/lib/mutations/useCustomer";
 import { toast } from "sonner";
+import CustomerForm from "./customer-form";
+import { useState } from "react";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -26,9 +35,9 @@ interface DataTableToolbarProps<TData> {
 export function CustomersTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
-  const { mutate: deleteCustomers } = DeleteCustomers();
+  const { mutate, isPending } = DeleteCustomers();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
@@ -36,11 +45,15 @@ export function CustomersTableToolbar<TData>({
       (row) => (row.original as { id: number }).id
     );
 
-    deleteCustomers(customersIds, {
+    mutate(customersIds, {
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
-          `Se han eliminado ${customersIds.length} clientes seleccionados`
+          `Se ${customersIds.length} ${
+            selectedRowsCount > 1
+              ? `han eliminado ${selectedRowsCount} clientes seleccionados`
+              : "ha eliminado el cliente seleccionado"
+          }`
         );
       },
       onError: (error: any) => {
@@ -56,29 +69,16 @@ export function CustomersTableToolbar<TData>({
         <Input
           placeholder="Filtrar clientes..."
           value={
-            (table.getColumn("combined_filter")?.getFilterValue() as string) ??
-            ""
+            (table.getColumn("full_name")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table
-              .getColumn("combined_filter")
-              ?.setFilterValue(event.target.value)
+            table.getColumn("full_name")?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {isFiltered && (
-          <Button
-            variant="ghost"
-            onClick={() => table.resetColumnFilters()}
-            className="h-8 px-2 lg:px-3"
-          >
-            Limpiar
-            <X />
-          </Button>
-        )}
       </div>
       <div className="flex space-x-2">
-        {selectedRowsCount > 1 && (
+        {selectedRowsCount > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -86,8 +86,7 @@ export function CustomersTableToolbar<TData>({
                 variant="outline"
                 disabled={selectedRowsCount === 0}
               >
-                <Trash className="h-4 w-4" />
-                Eliminar
+                <Trash2 className="h-8 w-8 p-0" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -98,43 +97,45 @@ export function CustomersTableToolbar<TData>({
                 <AlertDialogDescription className="flex flex-col space-y-3">
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente los productos seleccionados aunque no
-                    afectará a las ventas asociadas con los mismos.
-                  </span>
-
-                  <span className="flex flex-col">
-                    Items seleccionados:
-                    {table.getSelectedRowModel().rows.map((row) => (
-                      <span key={row.id} className="text-foreground">
-                        {
-                          (
-                            row.original as {
-                              full_name: string;
-                            }
-                          ).full_name
-                        }{" "}
-                        {
-                          (
-                            row.original as {
-                              reference: string;
-                            }
-                          ).reference
-                        }
-                      </span>
-                    ))}
+                    permanentemente{" "}
+                    {selectedRowsCount > 1
+                      ? `los ${selectedRowsCount} clientes seleccionados`
+                      : "el cliente seleccionado"}
+                    .
                   </span>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteSelected}>
+                <AlertDialogCancel disabled={isPending}>
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteSelected}
+                  disabled={isPending}
+                >
                   Continuar
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         )}
-        <CustomerCreateForm />
+
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="h-8 w-8 p-0">
+              <PlusCircle />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Registrar cliente</DialogTitle>
+              <DialogDescription>
+                Use tabs para navegar mas rapido entre los diferentes campos.
+              </DialogDescription>
+            </DialogHeader>
+            <CustomerForm onOpenChange={setIsCreateOpen} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
