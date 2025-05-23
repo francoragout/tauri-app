@@ -49,6 +49,7 @@ export function PurchasesTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
   const [date, setDate] = useState<Date>();
+  console.log(date);
   const { mutate } = DeletePurchases();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -159,7 +160,7 @@ export function PurchasesTableToolbar<TData>({
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Registrar expensa</DialogTitle>
+              <DialogTitle>Registrar compra</DialogTitle>
               <DialogDescription>
                 Use tabs para navegar mas rapido entre los diferentes campos.
               </DialogDescription>

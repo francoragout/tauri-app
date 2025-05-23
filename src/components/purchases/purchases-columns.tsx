@@ -73,7 +73,7 @@ export const PurchasesColumns: ColumnDef<Purchase>[] = [
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
-      
+
       return <div>$ {formattedTotal}</div>;
     },
   },
@@ -87,8 +87,8 @@ export const PurchasesColumns: ColumnDef<Purchase>[] = [
       return <div>{quantity !== null ? quantity : ""}</div>;
     },
   },
-    {
-      id: "actions",
-      cell: ({ row }) => <PurchasesTableRowActions row={row} />,
-    },
+  {
+    id: "actions",
+    cell: ({ row }) => <PurchasesTableRowActions row={row} />,
+  },
 ];

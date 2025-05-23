@@ -6,7 +6,7 @@ import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { SaleItems } from "@/lib/zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { SalesTableRowActions } from "./sales-table-row-actions";
+// import { SalesTableRowActions } from "./sales-table-row-actions";
 
 export const SalesColumns: ColumnDef<SaleItems>[] = [
   {
@@ -131,8 +131,8 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
       return <div>{customerName}</div>;
     },
   },
-  {
-    id: "actions",
-    cell: ({ row }) => <SalesTableRowActions row={row} />,
-  },
+  // {
+  //   id: "actions",
+  //   cell: ({ row }) => <SalesTableRowActions row={row} />,
+  // },
 ];

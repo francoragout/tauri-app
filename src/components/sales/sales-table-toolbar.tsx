@@ -1,8 +1,3 @@
-"use client";
-
-import { Table } from "@tanstack/react-table";
-import { Button } from "../ui/button";
-import { Trash, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,16 +9,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Table } from "@tanstack/react-table";
+import { Button } from "../ui/button";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
 import { useState } from "react";
 import { DeleteSales } from "@/lib/mutations/useSale";
 import { format } from "date-fns";
@@ -35,7 +35,6 @@ interface DataTableToolbarProps<TData> {
 export function SalesTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
   const [date, setDate] = useState<Date>();
   const { mutate } = DeleteSales();
@@ -50,7 +49,11 @@ export function SalesTableToolbar<TData>({
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
-          `Se han eliminado ${salesIds.length} ventas seleccionadas`
+          `Se ${
+            salesIds.length > 1
+              ? `han eliminado ${selectedRowsCount} ventas seleccionadas`
+              : "ha eliminado la venta seleccionada"
+          }`
         );
       },
       onError: () => {
@@ -100,28 +103,13 @@ export function SalesTableToolbar<TData>({
             />
           </PopoverContent>
         </Popover>
-
-        {isFiltered && (
-          <Button
-            variant="ghost"
-            onClick={() => {
-              table.resetColumnFilters();
-              setDate(undefined);
-            }}
-            className="h-8 px-2 lg:px-3"
-          >
-            Limpiar
-            <X />
-          </Button>
-        )}
       </div>
       <div className="flex space-x-2">
-        {selectedRowsCount > 1 && (
+        {selectedRowsCount > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button size="sm" variant="outline">
-                <Trash className="h-4 w-4" />
-                Eliminar
+                <Trash2 />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -129,11 +117,14 @@ export function SalesTableToolbar<TData>({
                 <AlertDialogTitle>
                   ¿Estas completamente seguro?
                 </AlertDialogTitle>
-                <AlertDialogDescription className="flex flex-col space-y-3">
+                <AlertDialogDescription>
                   <span>
                     Esta acción no se puede deshacer. Esto eliminará
-                    permanentemente las ventas seleccionadas de la base de
-                    datos.
+                    permanentemente{" "}
+                    {selectedRowsCount > 1
+                      ? `las ${selectedRowsCount} ventas seleccionadas`
+                      : "la venta seleccionada"}
+                    .
                   </span>
                 </AlertDialogDescription>
               </AlertDialogHeader>

@@ -49,7 +49,7 @@ export function CustomersTableToolbar<TData>({
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
-          `Se ${customersIds.length} ${
+          `Se ${
             selectedRowsCount > 1
               ? `han eliminado ${selectedRowsCount} clientes seleccionados`
               : "ha eliminado el cliente seleccionado"

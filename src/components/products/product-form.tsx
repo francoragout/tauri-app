@@ -15,6 +15,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
+import { clearCart } from "@/features/cart/cartSlice";
+import { useDispatch } from "react-redux";
 
 type ProductFormProps = {
   product?: Product;
@@ -26,6 +28,7 @@ export default function ProductForm({
   onOpenChange,
 }: ProductFormProps) {
   const isEditMode = Boolean(product);
+  const dispatch = useDispatch();
 
   const { mutate: createProduct, isPending: isCreating } = CreateProduct();
   const { mutate: updateProduct, isPending: isUpdating } = UpdateProduct();
@@ -47,6 +50,7 @@ export default function ProductForm({
         {
           onSuccess: () => {
             onOpenChange(false);
+            dispatch(clearCart());
             toast.success("Producto actualizado");
           },
           onError: () => {

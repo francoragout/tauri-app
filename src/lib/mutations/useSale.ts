@@ -2,6 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
 import { Payment, Sale } from "../zod";
 
+export function GetSales(): Promise<Sale[]> {
+  return Database.load("sqlite:mydatabase.db").then((db) =>
+    db.select(`SELECT * FROM sales`)
+  );
+}
+
 export function CreateSale() {
   const queryClient = useQueryClient();
 
@@ -76,35 +82,6 @@ export function CreateSale() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-    },
-  });
-}
-
-export function DeleteSale() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      const db = await Database.load("sqlite:mydatabase.db");
-
-      // 1. Recuperar los productos y cantidades de la venta
-      const saleProducts = await db.select<
-        { product_id: number; quantity: number }[]
-      >(`SELECT product_id, quantity FROM sale_items WHERE sale_id = $1`, [id]);
-
-      // 2. Revertir el stock de los productos
-      for (const product of saleProducts) {
-        await db.execute(
-          `UPDATE products SET stock = stock + $1 WHERE id = $2`,
-          [product.quantity, product.product_id]
-        );
-      }
-
-      // 3. Eliminar la venta
-      await db.execute(`DELETE FROM sales WHERE id = $1`, [id]);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sales"] });
     },
   });
 }

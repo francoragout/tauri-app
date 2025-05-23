@@ -1,5 +1,9 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { CreateExpense, DeleteExpenses } from "@/lib/mutations/useExpense";
+import {
+  CreateExpense,
+  DeleteExpenses,
+  UpdateExpense,
+} from "@/lib/mutations/useExpense";
 import { createWrapper } from "./utils/reactQueryWrapper";
 import { vi, describe, it, expect } from "vitest";
 
@@ -33,7 +37,7 @@ describe("CreateExpense", () => {
 
 describe("UpdateExpense", () => {
   it("debería actualizar y luego invalidar la query", async () => {
-    const { result } = renderHook(() => CreateExpense(), {
+    const { result } = renderHook(() => UpdateExpense(), {
       wrapper: createWrapper(),
     });
 

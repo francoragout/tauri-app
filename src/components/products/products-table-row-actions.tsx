@@ -26,12 +26,13 @@ export function ProductsTableRowActions<TData>({
 
   return (
     <Dialog open={isUpdateOpen} onOpenChange={setIsUpdateOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild >
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => {
+          onClick={(event) => {
             setIsUpdateOpen(true);
+            event.stopPropagation();
           }}
         >
           <SquarePen />

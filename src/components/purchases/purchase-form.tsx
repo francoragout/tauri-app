@@ -110,8 +110,9 @@ export default function PurchaseForm({
                       variant="outline"
                       role="combobox"
                       className={cn(
-                        "justify-between",
-                        !field.value && "text-muted-foreground"
+                        "justify-between h-9 hover:bg-background font-normal",
+                        !field.value &&
+                          "hover:text-muted-foreground font-normal text-muted-foreground"
                       )}
                     >
                       {field.value
@@ -122,11 +123,7 @@ export default function PurchaseForm({
                     </Button>
                   </FormControl>
                 </PopoverDialogTrigger>
-                <PopoverDialogContent
-                  className="p-0"
-                  side="right"
-                  align="start"
-                >
+                <PopoverDialogContent className="absolute w-[462px] mt-[127px] ms-[24px] p-0">
                   <Command>
                     <CommandInput placeholder="Buscar producto..." />
                     <CommandList>
@@ -138,7 +135,9 @@ export default function PurchaseForm({
                             key={product.id}
                             onSelect={() => {
                               if (typeof product.id === "number") {
-                                form.setValue("product_id", product.id);
+                                form.setValue("product_id", product.id, {
+                                  shouldDirty: true,
+                                });
                               }
                               setOpen(false);
                             }}
