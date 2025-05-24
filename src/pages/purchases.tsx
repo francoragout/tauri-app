@@ -1,6 +1,6 @@
 import { PurchasesColumns } from "@/components/purchases/purchases-columns";
 import { PurchasesTable } from "@/components/purchases/purchases-table";
-import { Product, ProductSchema, Purchase, PurchaseSchema } from "@/lib/zod";
+import { Purchase, PurchaseSchema } from "@/lib/zod";
 import { useQuery } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
 
@@ -9,7 +9,7 @@ async function getPurchases(): Promise<Purchase[]> {
   const query = `
   SELECT 
       purchases.id, 
-      purchases.date, 
+      datetime(purchases.date, '-3 hours') AS local_date,
       products.name AS product_name, 
       purchases.product_id,
       purchases.total, 
@@ -22,28 +22,11 @@ async function getPurchases(): Promise<Purchase[]> {
   return PurchaseSchema.array().parse(result);
 }
 
-async function getProducts(): Promise<Product[]> {
-  const db = await Database.load("sqlite:mydatabase.db");
-  const result = await db.select(`SELECT * FROM products`);
-  return ProductSchema.array().parse(result);
-}
-
 export default function Purchases() {
   const { data = [] } = useQuery({
     queryKey: ["purchases"],
     queryFn: getPurchases,
   });
 
-  const { data: products = [] } = useQuery({
-    queryKey: ["products"],
-    queryFn: getProducts,
-  });
-
-  return (
-    <PurchasesTable
-      data={data}
-      columns={PurchasesColumns}
-      products={products}
-    />
-  );
+  return <PurchasesTable data={data} columns={PurchasesColumns} />;
 }

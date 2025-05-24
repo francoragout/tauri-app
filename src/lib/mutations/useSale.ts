@@ -81,6 +81,7 @@ export function CreateSale() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
+      queryClient.invalidateQueries({ queryKey: ["sales_today"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
@@ -115,6 +116,7 @@ export function DeleteSales() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
+      queryClient.invalidateQueries({ queryKey: ["sales_today"] });
     },
   });
 }

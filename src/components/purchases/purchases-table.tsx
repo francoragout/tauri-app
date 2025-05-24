@@ -27,18 +27,15 @@ import {
 
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { PurchasesTableToolbar } from "./purchases-table-toolbar";
-import { Product } from "@/lib/zod";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  products: Product[];
 }
 
 export function PurchasesTable<TData, TValue>({
   columns,
   data,
-  products,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -48,7 +45,7 @@ export function PurchasesTable<TData, TValue>({
   );
   const [sorting, setSorting] = React.useState<SortingState>([
     {
-      id: "date",
+      id: "local_date",
       desc: true,
     },
   ]);
@@ -77,7 +74,7 @@ export function PurchasesTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <PurchasesTableToolbar table={table} products={products} />
+      <PurchasesTableToolbar table={table} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>

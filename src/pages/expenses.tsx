@@ -7,7 +7,16 @@ import { Expense, ExpenseSchema } from "@/lib/zod";
 
 async function GetExpenses(): Promise<Expense[]> {
   const db = await Database.load("sqlite:mydatabase.db");
-  const result = await db.select(`SELECT * FROM expenses`);
+  const query = `
+  SELECT 
+      expenses.id, 
+      datetime(expenses.date, '-3 hours') AS local_date,
+      expenses.category,
+      expenses.description, 
+      expenses.amount
+    FROM expenses 
+  `;
+  const result = await db.select(query);
   return ExpenseSchema.array().parse(result);
 }
 
@@ -17,7 +26,5 @@ export default function Expenses() {
     queryFn: GetExpenses,
   });
 
-  return (
-    <ExpensesTable data={data} columns={ExpensesColumns} />
-  );
+  return <ExpensesTable data={data} columns={ExpensesColumns} />;
 }

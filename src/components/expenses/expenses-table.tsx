@@ -45,7 +45,7 @@ export function ExpensesTable<TData, TValue>({
   )
   const [sorting, setSorting] = React.useState<SortingState>([
     {
-      id: "date",
+      id: "local_date",
       desc: true,
     },
   ])

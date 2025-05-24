@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Expense } from "@/lib/zod";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { ExpensesTableRowActions } from "./expenses-table-row-actions";
-import { format } from "date-fns";
+import { format, isValid, parse } from "date-fns";
 import { es } from "date-fns/locale";
 
 export const ExpensesColumns: ColumnDef<Expense>[] = [
@@ -34,25 +34,34 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "date",
+    accessorKey: "local_date",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Fecha" />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue("date") + "Z");
-      return <div>{format(date, "PP", { locale: es })}</div>;
+      const rawDate = row.getValue("local_date") as string;
+      const parsed = parse(rawDate, "yyyy-MM-dd HH:mm:ss", new Date());
+
+      if (!isValid(parsed)) return <div>-</div>;
+
+      const formatted = format(parsed, "PP", { locale: es });
+      return <div>{formatted}</div>;
     },
   },
   {
-    accessorKey: "time",
+    accessorKey: "local_time",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Hora" />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue("date") + "Z");
-      return <div>{format(date, "p", { locale: es })}</div>;
+      const rawDate = row.getValue("local_date") as string;
+      const parsed = parse(rawDate, "yyyy-MM-dd HH:mm:ss", new Date());
+
+      if (!isValid(parsed)) return <div>-</div>;
+
+      const formatted = format(parsed, "HH:mm", { locale: es });
+      return <div>{formatted}</div>;
     },
-    enableSorting: false,
   },
   {
     accessorKey: "category",

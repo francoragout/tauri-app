@@ -10,7 +10,7 @@ async function GetSales(): Promise<SaleItems[]> {
   const query = `
   SELECT
   sales.id,
-  sales.date,
+  datetime(sales.date, '-3 hours') AS local_date,
   sales.is_paid,
   sales.surcharge_percent,
   sales.customer_id,

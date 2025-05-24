@@ -49,7 +49,6 @@ export function PurchasesTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
   const [date, setDate] = useState<Date>();
-  console.log(date);
   const { mutate } = DeletePurchases();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -103,14 +102,16 @@ export function PurchasesTableToolbar<TData>({
               mode="single"
               selected={date}
               onSelect={(selectedDate) => {
-                if (
-                  selectedDate?.toISOString().split("T")[0] !==
-                  date?.toISOString().split("T")[0]
-                ) {
-                  setDate(selectedDate);
-                  table
-                    .getColumn("date")
-                    ?.setFilterValue(selectedDate?.toISOString().split("T")[0]);
+                setDate(selectedDate);
+                if (selectedDate) {
+                  table.setColumnFilters([
+                    {
+                      id: "local_date",
+                      value: format(selectedDate, "yyyy-MM-dd"),
+                    },
+                  ]);
+                } else {
+                  table.setColumnFilters([]);
                 }
               }}
               initialFocus

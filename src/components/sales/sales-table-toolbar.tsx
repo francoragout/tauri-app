@@ -77,7 +77,7 @@ export function SalesTableToolbar<TData>({
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {date ? (
-                format(date, "PPP", { locale: es })
+                format(date, "PP", { locale: es })
               ) : (
                 <span>Filtrar gastos...</span>
               )}
@@ -88,17 +88,21 @@ export function SalesTableToolbar<TData>({
               locale={es}
               mode="single"
               selected={date}
-              onSelect={(selectedDate) => {
-                if (
-                  selectedDate?.toISOString().split("T")[0] !==
-                  date?.toISOString().split("T")[0]
-                ) {
+              onSelect={
+                (selectedDate) => {
                   setDate(selectedDate);
-                  table
-                    .getColumn("date")
-                    ?.setFilterValue(selectedDate?.toISOString().split("T")[0]);
+                  if (selectedDate) {
+                    table.setColumnFilters([
+                      {
+                        id: "local_date",
+                        value: format(selectedDate, "yyyy-MM-dd"),
+                      },
+                    ]);
+                  } else {
+                    table.setColumnFilters([]);
+                  }
                 }
-              }}
+              }
               initialFocus
             />
           </PopoverContent>

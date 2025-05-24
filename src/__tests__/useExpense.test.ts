@@ -1,11 +1,12 @@
 import { renderHook, waitFor } from "@testing-library/react";
+import { vi, describe, it, expect } from "vitest";
+import { createWrapper } from "./utils/reactQueryWrapper";
+
 import {
   CreateExpense,
   DeleteExpenses,
   UpdateExpense,
 } from "@/lib/mutations/useExpense";
-import { createWrapper } from "./utils/reactQueryWrapper";
-import { vi, describe, it, expect } from "vitest";
 
 vi.mock("@tauri-apps/plugin-sql", () => {
   return {

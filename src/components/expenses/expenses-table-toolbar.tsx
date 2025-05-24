@@ -100,14 +100,16 @@ export function ExpensesTableToolbar<TData>({
               mode="single"
               selected={date}
               onSelect={(selectedDate) => {
-                if (
-                  selectedDate?.toISOString().split("T")[0] !==
-                  date?.toISOString().split("T")[0]
-                ) {
-                  setDate(selectedDate);
-                  table
-                    .getColumn("date")
-                    ?.setFilterValue(selectedDate?.toISOString().split("T")[0]);
+                setDate(selectedDate);
+                if (selectedDate) {
+                  table.setColumnFilters([
+                    {
+                      id: "local_date",
+                      value: format(selectedDate, "yyyy-MM-dd"),
+                    },
+                  ]);
+                } else {
+                  table.setColumnFilters([]);
                 }
               }}
               initialFocus

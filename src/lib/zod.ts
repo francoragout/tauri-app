@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const PurchaseSchema = z.object({
   id: z.number().optional(),
-  date: z.string().optional(),
+  local_date: z.string().optional(),
   product_id: z.number({
     required_error: "Seleccione un producto",
   }),
@@ -79,7 +79,7 @@ export const SaleSchema = z.object({
 
 export const SaleItemsSchema = z.object({
   id: z.number(),
-  date: z.string(),
+  local_date: z.string(),
   products: z.string(),
   payment_method: z.string().nullable(),
   surcharge_percent: z.number(),
@@ -106,12 +106,10 @@ export const CustomerSchema = z.object({
 
 export const ExpenseSchema = z.object({
   id: z.number().optional(),
-  date: z.string().optional(),
-  category: z
-    .string()
-    .nonempty({
-      message: "Ingrese la categoría del gasto",
-    }),
+  local_date: z.string().optional(),
+  category: z.string().nonempty({
+    message: "Ingrese la categoría del gasto",
+  }),
   amount: z.coerce
     .number({
       invalid_type_error: "Ingrese el total del gasto",
