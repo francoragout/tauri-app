@@ -4,7 +4,9 @@ import { Payment, Sale } from "../zod";
 
 export function GetSales(): Promise<Sale[]> {
   return Database.load("sqlite:mydatabase.db").then((db) =>
-    db.select(`SELECT * FROM sales`)
+    db.select(
+      `SELECT id, total, date, datetime(date, '-3 hours') AS local_date FROM sales`
+    )
   );
 }
 
@@ -81,8 +83,9 @@ export function CreateSale() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
-      queryClient.invalidateQueries({ queryKey: ["sales_today"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["today_sales"] });
+      queryClient.invalidateQueries({ queryKey: ["month_sales"] });
     },
   });
 }
@@ -116,7 +119,8 @@ export function DeleteSales() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
-      queryClient.invalidateQueries({ queryKey: ["sales_today"] });
+      queryClient.invalidateQueries({ queryKey: ["today_sales"] });
+      queryClient.invalidateQueries({ queryKey: ["today_sales"] });
     },
   });
 }
@@ -161,6 +165,7 @@ export function PaySales() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
+      queryClient.invalidateQueries({ queryKey: ["today_sales"] });
       queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
   });

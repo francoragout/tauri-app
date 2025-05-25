@@ -65,6 +65,7 @@ export const SaleSchema = z.object({
   id: z.number().optional(),
   customer_id: z.number().optional(),
   date: z.string().optional(),
+  local_date: z.string().optional(),
   total: z.number(),
   payment_method: z.string().optional(),
   surcharge_percent: z.number(),

@@ -23,6 +23,7 @@ import {
 import { NavLink, useLocation } from "react-router";
 import { GetSales } from "@/lib/mutations/useSale";
 import { useQuery } from "@tanstack/react-query";
+import { Sale } from "@/lib/zod";
 
 const data = {
   store: [
@@ -64,20 +65,26 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
 
-  const { data: sales = [] } = useQuery({
-    queryKey: ["sales_today"],
+  const { data: sales = [] } = useQuery<Sale[]>({
+    queryKey: ["today_sales"],
     queryFn: GetSales,
   });
 
+  console.log("sales", sales);
+
   // Obtener la fecha de hoy en formato YYYY-MM-DD
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const today = new Date();
+  const todayStr =
+    today.getFullYear() +
+    "-" +
+    String(today.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(today.getDate()).padStart(2, "0");
 
   // Sumar los totales de las ventas del día actual
   const todaySalesTotal = sales
-    .filter((sale: any) => sale.date?.slice(0, 10) === todayStr)
-    .reduce((sum: number, sale: any) => sum + (sale.total || 0), 0);
-
-    console.log(todaySalesTotal);
+    .filter((sale: Sale) => sale.local_date?.slice(0, 10) === todayStr)
+    .reduce((sum: number, sale: Sale) => sum + (sale.total || 0), 0);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>

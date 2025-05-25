@@ -2,6 +2,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Purchase } from "../zod";
 import Database from "@tauri-apps/plugin-sql";
 
+export function GetPurchases(): Promise<Purchase[]> {
+  return Database.load("sqlite:mydatabase.db").then((db) =>
+    db.select(
+      `SELECT id, total, date, datetime(date, '-3 hours') AS local_date FROM purchases`
+    )
+  );
+}
+
 export function CreatePurchase() {
   const queryClient = useQueryClient();
 
