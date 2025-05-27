@@ -1,23 +1,27 @@
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { HandCoins, SquarePen } from "lucide-react";
+import { Banknote, MoreHorizontal, SquarePen } from "lucide-react";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { CustomerSchema } from "@/lib/zod";
 import { useState } from "react";
-import { toast } from "sonner";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import CustomerForm from "./customer-form";
-import { IconBrandWhatsapp } from "@tabler/icons-react";
 import CustomerPaymentForm from "./customer-pay-form";
+import CustomerSendSummary from "./customer-send-summary";
+import { toast } from "sonner";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -31,19 +35,54 @@ export function CustomersTableRowActions<TData>({
   const [isPayOpen, setIsPayOpen] = useState(false);
 
   return (
-    <div className="flex items-center space-x-2">
-      <Dialog open={isUpdateOpen} onOpenChange={setIsUpdateOpen}>
-        <DialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setIsUpdateOpen(true);
-            }}
-          >
-            <SquarePen />
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
-        </DialogTrigger>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[160px] z-50">
+          <div className="flex flex-col w-full">
+            <DropdownMenuItem asChild>
+              <Button
+                className="flex justify-start pl-2"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setTimeout(() => setIsUpdateOpen(true), 0);
+                }}
+              >
+                <SquarePen className="text-primary" />
+                Editar
+              </Button>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <CustomerSendSummary customer={customer} />
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Button
+                className="flex justify-start pl-2"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (customer.debt === 0) {
+                    toast.error("El cliente no tiene deuda");
+                    return;
+                  }
+                  setTimeout(() => setIsPayOpen(true), 0);
+                }}
+              >
+                <Banknote className="text-primary" />
+                Pagar deuda
+              </Button>
+            </DropdownMenuItem>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={isUpdateOpen} onOpenChange={setIsUpdateOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Editar expensa</DialogTitle>
@@ -55,79 +94,7 @@ export function CustomersTableRowActions<TData>({
         </DialogContent>
       </Dialog>
 
-      <Button
-        className="flex justify-start pl-2"
-        variant="ghost"
-        size="sm"
-        aria-label="Enviar mensaje por WhatsApp"
-        onClick={() => {
-          let phone = customer.phone?.replace(/\D/g, "") ?? "";
-          phone = phone.replace(/^0+/, "");
-          phone = `549${phone}`;
-
-          if (phone.length < 13) {
-            toast.error("El número de teléfono parece incompleto.");
-            return;
-          }
-
-          const saleSummary = customer.sales_summary as string | null;
-
-          let formattedSales = "";
-
-          if (saleSummary) {
-            formattedSales = saleSummary
-              .split(", ")
-              .map((sale) => {
-                const lastSpaceIndex = sale.lastIndexOf(" ");
-                const rawDateTime = sale.slice(0, lastSpaceIndex);
-                const rawAmount = sale.slice(lastSpaceIndex + 1);
-
-                const utcDate = new Date(rawDateTime.replace(" ", "T") + "Z");
-                const localDate = format(utcDate, "d/M/yyyy", {
-                  locale: es,
-                });
-
-                const amount = Number(rawAmount);
-                const formattedAmount = isNaN(amount)
-                  ? "Monto inválido"
-                  : amount.toLocaleString("es-AR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    });
-
-                return `${localDate} - ${formattedAmount}`;
-              })
-              .join("\n");
-          }
-
-          const totalFormatted = Number(customer.debt).toLocaleString("es-AR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          });
-
-          const message = `Hola! ¿Cómo estás?\nTe dejo el resumen de compras de ${customer.full_name}\n\n${formattedSales}\n\nTotal: $${totalFormatted}`;
-
-          const url = `https://wa.me/${phone}?text=${encodeURIComponent(
-            message
-          )}`;
-          window.open(url, "_blank");
-        }}
-      >
-        <IconBrandWhatsapp />
-      </Button>
-
       <Dialog open={isPayOpen} onOpenChange={setIsPayOpen}>
-        <DialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setIsPayOpen(true);
-            }}
-          >
-            <HandCoins />
-          </Button>
-        </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Pagar Deuda</DialogTitle>
@@ -141,6 +108,6 @@ export function CustomersTableRowActions<TData>({
           />
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

@@ -57,7 +57,7 @@ export function SalesTableToolbar<TData>({
         );
       },
       onError: () => {
-        toast.error("Error al eliminar ventas seleccionadas");
+        toast.error("Error al eliminar");
       },
     });
   };

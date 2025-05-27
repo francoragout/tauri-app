@@ -6,7 +6,7 @@ import { GetSales } from "@/lib/mutations/useSale";
 import { Expense, Purchase, Sale } from "@/lib/zod";
 import { useQuery } from "@tanstack/react-query";
 
-export default function DashboardPage() {
+export default function Dashboard() {
   const { data: sales = [] } = useQuery<Sale[]>({
     queryKey: ["month_sales"],
     queryFn: GetSales,

@@ -70,7 +70,7 @@ export function PurchasesTableToolbar<TData>({
         );
       },
       onError: () => {
-        toast.error("Error al eliminar gastos seleccionados");
+        toast.error("Error al eliminar");
       },
     });
   };

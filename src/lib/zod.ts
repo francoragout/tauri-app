@@ -100,7 +100,12 @@ export const CustomerSchema = z.object({
       message: "Ingrese el nombre completo del cliente",
     }),
   reference: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .optional()
+    .refine((val) => !val || val.length === 10, {
+      message: "El número de teléfono debe tener 10 dígitos",
+    }),
   debt: z.number().optional(),
   sales_summary: z.string().nullish(),
 });
@@ -130,6 +135,25 @@ export const PaymentSchema = z.object({
   surcharge_percent: z.number().optional(),
 });
 
+export const SupplierSchema = z.object({
+  id: z.number().optional(),
+  name: z
+    .string({
+      required_error: "Ingrese el nombre del proveedor",
+    })
+    .nonempty({
+      message: "Ingrese el nombre del proveedor",
+    }),
+  phone: z
+    .string()
+    .optional()
+    .refine((val) => !val || val.length === 10, {
+      message: "El número de teléfono debe tener 10 dígitos",
+    }),
+  address: z.string().optional(),
+  products: z.string().optional(),
+});
+
 export type Payment = z.infer<typeof PaymentSchema>;
 export type Purchase = z.infer<typeof PurchaseSchema>;
 export type Product = z.infer<typeof ProductSchema>;
@@ -137,3 +161,4 @@ export type Sale = z.infer<typeof SaleSchema>;
 export type Expense = z.infer<typeof ExpenseSchema>;
 export type SaleItems = z.infer<typeof SaleItemsSchema>;
 export type Customer = z.infer<typeof CustomerSchema>;
+export type Supplier = z.infer<typeof SupplierSchema>;

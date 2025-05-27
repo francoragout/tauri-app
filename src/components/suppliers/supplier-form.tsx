@@ -6,61 +6,60 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { Expense, ExpenseSchema } from "@/lib/zod";
-import { CreateExpense, UpdateExpense } from "@/lib/mutations/useExpense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Supplier, SupplierSchema } from "@/lib/zod";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { NumericFormat } from "react-number-format";
+import { CreateSupplier, UpdateSupplier } from "@/lib/mutations/useSupplier";
 
-type ExpenseFormProps = {
-  expense?: Expense;
+type SupplierFormProps = {
+  supplier?: Supplier;
   onOpenChange: (open: boolean) => void;
 };
 
-export default function ExpenseForm({
-  expense,
+export default function SupplierForm({
+  supplier,
   onOpenChange,
-}: ExpenseFormProps) {
-  const isEditMode = Boolean(expense);
+}: SupplierFormProps) {
+  const isEditMode = Boolean(supplier);
 
-  const { mutate: createExpense, isPending: isCreating } = CreateExpense();
-  const { mutate: updateExpense, isPending: isUpdating } = UpdateExpense();
+  const { mutate: createSupplier, isPending: isCreating } = CreateSupplier();
+  const { mutate: updateSupplier, isPending: isUpdating } = UpdateSupplier();
 
-  const form = useForm<z.infer<typeof ExpenseSchema>>({
-    resolver: zodResolver(ExpenseSchema),
+  const form = useForm<z.infer<typeof SupplierSchema>>({
+    resolver: zodResolver(SupplierSchema),
     defaultValues: {
-      category: expense?.category ?? "",
-      description: expense?.description ?? "",
-      amount: expense?.amount ?? undefined,
+      name: supplier?.name ?? "",
+      address: supplier?.address ?? "",
+      phone: supplier?.phone ?? "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof ExpenseSchema>) {
-    if (isEditMode && expense?.id) {
-      updateExpense(
-        { id: expense.id, ...values },
+  function onSubmit(values: z.infer<typeof SupplierSchema>) {
+    if (isEditMode && supplier?.id) {
+      updateSupplier(
+        { id: supplier.id, ...values },
         {
           onSuccess: () => {
             onOpenChange(false);
-            toast.success("Expensa actualizada");
+            toast.success("Cliente actualizado");
           },
           onError: () => {
-            toast.error("Error al actualizar expensa");
+            toast.error("Error al actualizar cliente");
           },
         }
       );
     } else {
-      createExpense(values, {
+      createSupplier(values, {
         onSuccess: () => {
           onOpenChange(false);
-          toast.success("Expensa registrada");
+          toast.success("Cliente registrado");
         },
         onError: () => {
-          toast.error("Error al registrar expensa");
+          toast.error("Error al registrar cliente");
         },
       });
     }
@@ -73,14 +72,14 @@ export default function ExpenseForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="category"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormControl>
                 <Input
                   {...field}
                   disabled={isPending}
-                  placeholder="Categoría (requerido)"
+                  placeholder="Nombre (requerido)"
                 />
               </FormControl>
               <FormMessage />
@@ -90,14 +89,14 @@ export default function ExpenseForm({
 
         <FormField
           control={form.control}
-          name="description"
+          name="address"
           render={({ field }) => (
             <FormItem>
               <FormControl>
                 <Input
                   {...field}
                   disabled={isPending}
-                  placeholder="Descripción (opcional)"
+                  placeholder="Dirección (opcional)"
                 />
               </FormControl>
               <FormMessage />
@@ -107,22 +106,14 @@ export default function ExpenseForm({
 
         <FormField
           control={form.control}
-          name="amount"
+          name="phone"
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <NumericFormat
-                  value={field.value}
-                  onValueChange={(values) => {
-                    field.onChange(values.floatValue ?? null);
-                  }}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  decimalScale={2}
-                  allowNegative={false}
-                  customInput={Input}
+                <Input
+                  {...field}
                   disabled={isPending}
-                  placeholder="Monto (requerido)"
+                  placeholder="Teléfono (opcional)"
                 />
               </FormControl>
               <FormMessage />

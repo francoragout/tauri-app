@@ -56,20 +56,6 @@ export function UpdatePurchase() {
   });
 }
 
-export function DeletePurchase() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      const db = await Database.load("sqlite:mydatabase.db");
-
-      await db.execute(`DELETE FROM purchases WHERE id = $1`, [id]);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["purchases"] });
-    },
-  });
-}
 
 export function DeletePurchases() {
   const queryClient = useQueryClient();

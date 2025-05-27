@@ -68,7 +68,7 @@ export function ExpensesTableToolbar<TData>({
         );
       },
       onError: () => {
-        toast.error("Error al eliminar expensas seleccionadas");
+        toast.error("Error al eliminar");
       },
     });
   };

@@ -25,14 +25,14 @@ import { Button } from "../ui/button";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { DeleteCustomers } from "@/lib/mutations/useCustomer";
 import { toast } from "sonner";
-import CustomerForm from "./customer-form";
 import { useState } from "react";
+import SupplierForm from "./supplier-form";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
 }
 
-export function CustomersTableToolbar<TData>({
+export function SuppliersTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
@@ -41,24 +41,23 @@ export function CustomersTableToolbar<TData>({
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
-    const customersIds = selectedRows.map(
+    const suppliersIds = selectedRows.map(
       (row) => (row.original as { id: number }).id
     );
 
-    mutate(customersIds, {
+    mutate(suppliersIds, {
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
           `Se ${
             selectedRowsCount > 1
-              ? `han eliminado ${selectedRowsCount} clientes seleccionados`
-              : "ha eliminado el cliente seleccionado"
+              ? `han eliminado ${selectedRowsCount} proveedores seleccionados`
+              : "ha eliminado el proveedor seleccionado"
           }`
         );
       },
-      onError: (error: any) => {
-        const errorMessage = error?.message || "Error al eliminar";
-        toast.error(errorMessage);
+      onError: () => {
+        toast.error("Error al eliminar");
       },
     });
   };
@@ -67,12 +66,10 @@ export function CustomersTableToolbar<TData>({
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-4">
         <Input
-          placeholder="Filtrar clientes..."
-          value={
-            (table.getColumn("full_name")?.getFilterValue() as string) ?? ""
-          }
+          placeholder="Filtrar proveedores..."
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("full_name")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
@@ -99,8 +96,8 @@ export function CustomersTableToolbar<TData>({
                     Esta acción no se puede deshacer. Esto eliminará
                     permanentemente{" "}
                     {selectedRowsCount > 1
-                      ? `los ${selectedRowsCount} clientes seleccionados`
-                      : "el cliente seleccionado"}
+                      ? `los ${selectedRowsCount} proveedores seleccionados`
+                      : "el proveedor seleccionado"}
                     .
                   </span>
                 </AlertDialogDescription>
@@ -133,7 +130,7 @@ export function CustomersTableToolbar<TData>({
                 Use tabs para navegar mas rapido entre los diferentes campos.
               </DialogDescription>
             </DialogHeader>
-            <CustomerForm onOpenChange={setIsCreateOpen} />
+            <SupplierForm onOpenChange={setIsCreateOpen} />
           </DialogContent>
         </Dialog>
       </div>

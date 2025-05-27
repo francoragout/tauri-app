@@ -64,7 +64,7 @@ export function ProductsTableToolbar<TData>({
         );
       },
       onError: () => {
-        toast.error("Error al eliminar los productos seleccionados");
+        toast.error("Error al eliminar");
       },
     });
   };

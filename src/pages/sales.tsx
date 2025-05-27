@@ -9,25 +9,21 @@ async function GetSales(): Promise<SaleItems[]> {
   const db = await Database.load("sqlite:mydatabase.db");
   const query = `
   SELECT
-  sales.id,
-  datetime(sales.date, '-3 hours') AS local_date,
-  sales.is_paid,
-  sales.surcharge_percent,
-  sales.customer_id,
-  customers.full_name AS customer_name,
-  sales.payment_method,
-  sales.total,
-  GROUP_CONCAT(
-    products.name || ' (x' || sale_items.quantity || ')',
-    ', '
-  ) AS products
-  FROM
-  sales
-  LEFT JOIN sale_items ON sale_items.sale_id = sales.id
-  LEFT JOIN products ON products.id = sale_items.product_id
-  LEFT JOIN customers ON customers.id = sales.customer_id -- Unir con la tabla de clientes
-  GROUP BY
-  sales.id;
+  s.id,
+  datetime(s.date, '-3 hours') AS local_date,
+  s.is_paid,
+  s.surcharge_percent,
+  s.customer_id,
+  c.full_name AS customer_name,
+  s.payment_method,
+  s.total,
+  GROUP_CONCAT(p.name || ' (x' || si.quantity || ')', ', ') AS products
+FROM sales s
+LEFT JOIN sale_items si ON si.sale_id = s.id
+LEFT JOIN products p ON p.id = si.product_id
+LEFT JOIN customers c ON c.id = s.customer_id
+GROUP BY s.id;
+
   `;
   const result = await db.select(query);
   return SaleItemsSchema.array().parse(result);

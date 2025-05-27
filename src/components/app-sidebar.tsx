@@ -18,6 +18,7 @@ import {
   DollarSign,
   NotepadText,
   Power,
+  Truck,
   Users,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
@@ -44,6 +45,11 @@ const data = {
     },
   ],
   inventory: [
+    {
+      name: "Proveedores",
+      url: "/suppliers",
+      icon: Truck,
+    },
     {
       name: "Compras",
       url: "/purchases",
@@ -95,6 +101,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               tooltip="Quick Create"
               className="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
             >
+              Hoy
               <DollarSign />
               <span>
                 {new Intl.NumberFormat("es-AR", {

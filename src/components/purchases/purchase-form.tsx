@@ -172,7 +172,7 @@ export default function PurchaseForm({
                 <NumericFormat
                   value={field.value}
                   onValueChange={(values) => {
-                    field.onChange(values.floatValue);
+                    field.onChange(values.floatValue ?? null);
                   }}
                   thousandSeparator="."
                   decimalSeparator=","

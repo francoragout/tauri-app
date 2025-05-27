@@ -78,12 +78,11 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
   {
     accessorKey: "sales_summary",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Resumen ventas" />
+      <DataTableColumnHeader column={column} title="Resumen compras" />
     ),
     cell: ({ row }) => {
       const saleSummary = row.getValue("sales_summary") as string | null;
 
-      // If there are no sales, return null
       if (!saleSummary) {
         return null;
       }
@@ -115,17 +114,6 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
       }
     },
     enableSorting: false,
-  },
-  {
-    accessorKey: "combined_filter",
-    accessorFn: (row) => `${row.full_name} ${row.reference}`,
-    filterFn: (row, columnId, filterValue) => {
-      const value = row.getValue(columnId) as string;
-      return value.toLowerCase().includes(filterValue.toLowerCase());
-    },
-    enableHiding: true,
-    header: undefined,
-    cell: undefined,
   },
   {
     id: "actions",
