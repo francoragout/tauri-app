@@ -33,8 +33,8 @@ export default function SupplierForm({
     resolver: zodResolver(SupplierSchema),
     defaultValues: {
       name: supplier?.name ?? "",
-      address: supplier?.address ?? "",
       phone: supplier?.phone ?? "",
+      address: supplier?.address ?? "",
     },
   });
 
@@ -89,23 +89,6 @@ export default function SupplierForm({
 
         <FormField
           control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isPending}
-                  placeholder="Dirección (opcional)"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="phone"
           render={({ field }) => (
             <FormItem>
@@ -114,6 +97,22 @@ export default function SupplierForm({
                   {...field}
                   disabled={isPending}
                   placeholder="Teléfono (opcional)"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input
+                  {...field}
+                  disabled={isPending}
+                  placeholder="Dirección (opcional)"
                 />
               </FormControl>
               <FormMessage />

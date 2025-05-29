@@ -93,8 +93,6 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
       const translatedPaymentMethod = {
         cash: "Efectivo",
         transfer: "Transferencia",
-        debit: "Débito",
-        credit: "Crédito",
       };
 
       return (
@@ -107,13 +105,6 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
         </div>
       );
     },
-  },
-  {
-    accessorKey: "surcharge_percent",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Recargo" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("surcharge_percent")}%</div>,
   },
   {
     accessorKey: "total",

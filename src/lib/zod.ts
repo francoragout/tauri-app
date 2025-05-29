@@ -7,6 +7,15 @@ export const PurchaseSchema = z.object({
     required_error: "Seleccione un producto",
   }),
   product_name: z.string().optional(),
+  supplier_id: z.number().optional(),
+  supplier_name: z.string().optional(),
+  quantity: z.coerce
+    .number({
+      invalid_type_error: "Ingrese la cantidad del producto",
+    })
+    .min(1, {
+      message: "La cantidad de compra debe ser mayor a 0",
+    }),
   total: z.coerce
     .number({
       required_error: "Ingrese el total de la compra",
@@ -15,13 +24,9 @@ export const PurchaseSchema = z.object({
     .min(1, {
       message: "El total de la compra debe ser mayor a 0",
     }),
-  quantity: z.coerce
-    .number({
-      invalid_type_error: "Ingrese la cantidad del producto",
-    })
-    .min(1, {
-      message: "La cantidad de compra debe ser mayor a 0",
-    }),
+  payment_method: z.string({
+    required_error: "Seleccione un método de pago",
+  }),
 });
 
 export const ProductSchema = z.object({
@@ -61,29 +66,37 @@ export const ProductSchema = z.object({
   times_sold: z.number().optional(),
 });
 
-export const SaleSchema = z.object({
-  id: z.number().optional(),
-  customer_id: z.number().optional(),
-  date: z.string().optional(),
-  local_date: z.string().optional(),
-  total: z.number(),
-  payment_method: z.string().optional(),
-  surcharge_percent: z.number(),
-  is_paid: z.number().optional(),
-  products: z.array(
-    z.object({
-      id: z.number(),
-      quantity: z.number(),
-    })
-  ),
-});
+export const SaleSchema = z
+  .object({
+    id: z.number().optional(),
+    customer_id: z.number().optional(),
+    date: z.string().optional(),
+    local_date: z.string().optional(),
+    total: z.number(),
+    payment_method: z.string().optional(),
+    is_paid: z.number().optional(),
+    products: z.array(
+      z.object({
+        id: z.number(),
+        quantity: z.number(),
+      })
+    ),
+  })
+  .refine(
+    (data) =>
+      data.payment_method !== "customer_account" ||
+      (data.customer_id !== undefined && data.customer_id !== null),
+    {
+      message: "Debe seleccionar un cliente para cuenta corriente",
+      path: ["customer_id"],
+    }
+  );
 
 export const SaleItemsSchema = z.object({
   id: z.number(),
   local_date: z.string(),
   products: z.string(),
   payment_method: z.string().nullable(),
-  surcharge_percent: z.number(),
   total: z.number(),
   customer_id: z.number().nullable(),
   customer_name: z.string().nullable(),
@@ -127,12 +140,21 @@ export const ExpenseSchema = z.object({
 });
 
 export const PaymentSchema = z.object({
+  id: z.number().optional(),
+  local_date: z.string().optional(),
   customer_id: z.number(),
-  total: z.coerce.number(),
+  customer_name: z.string().optional(),
+  amount: z.coerce
+    .number({
+      required_error: "Ingrese el monto del pago",
+      invalid_type_error: "Ingrese el monto del pago",
+    })
+    .min(1, {
+      message: "El monto del pago debe ser mayor a 0",
+    }),
   payment_method: z.string({
     required_error: "Seleccione un método de pago",
   }),
-  surcharge_percent: z.number().optional(),
 });
 
 export const SupplierSchema = z.object({

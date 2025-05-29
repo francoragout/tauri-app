@@ -46,18 +46,18 @@ import { useQuery } from "@tanstack/react-query";
 
 interface SaleCreateFormProps {
   products: any[];
-  surcharge: number;
-  total: number;
   onOpenChange: (open: boolean) => void;
-  onSurchargeChange: (surcharge: number) => void;
+  paymentMethod: string;
+  setPaymentMethod: (method: string) => void;
+  totalPrice: number;
 }
 
 export function SaleForm({
   products,
-  surcharge,
-  total,
   onOpenChange,
-  onSurchargeChange,
+  paymentMethod,
+  setPaymentMethod,
+  totalPrice,
 }: SaleCreateFormProps) {
   const { data: customers = [] } = useQuery({
     queryKey: ["customers"],
@@ -75,10 +75,9 @@ export function SaleForm({
   const form = useForm<z.infer<typeof SaleSchema>>({
     resolver: zodResolver(SaleSchema),
     defaultValues: {
-      payment_method: "cash",
+      payment_method: paymentMethod,
       customer_id: undefined,
-      total: total,
-      surcharge_percent: surcharge,
+      total: totalPrice,
       is_paid: 1,
       products: [],
     },
@@ -92,47 +91,26 @@ export function SaleForm({
         quantity: product.quantity,
       }))
     );
-  }, [products]);
-
-  const paymentMethod = form.watch("payment_method");
+    form.setValue("total", totalPrice);
+  }, [products, totalPrice]);
 
   useEffect(() => {
-    switch (paymentMethod) {
-      case "cash":
-        onSurchargeChange(0);
-        setSelectedCustomerId(undefined);
-        form.setValue("customer_id", undefined);
-        form.setValue("total", total);
-        form.setValue("surcharge_percent", 0);
-        form.setValue("is_paid", 1);
-        break;
-
-      case "customer_account":
-        onSurchargeChange(0);
-        form.setValue("total", 0);
-        form.setValue("surcharge_percent", 0);
-        form.setValue("is_paid", 0);
-        break;
-
-      default:
-        onSurchargeChange(surcharge);
-        form.setValue("surcharge_percent", surcharge);
-        form.setValue("total", total);
-        setSelectedCustomerId(undefined);
-        form.setValue("customer_id", undefined);
-        form.setValue("is_paid", 1);
-        break;
+    form.setValue("payment_method", paymentMethod);
+    form.setValue("is_paid", paymentMethod === "customer_account" ? 0 : 1);
+    if (paymentMethod !== "customer_account") {
+      form.setValue("customer_id", undefined);
+      setSelectedCustomerId(undefined);
     }
-  }, [paymentMethod, surcharge, total]);
+  }, [paymentMethod]);
 
   function onSubmit(values: z.infer<typeof SaleSchema>) {
     mutate(values, {
       onSuccess: () => {
         toast.success("Venta registrada");
         dispatch(clearCart());
-        onSurchargeChange(0);
         setSelectedCustomerId(undefined);
         onOpenChange(false);
+        setPaymentMethod("cash");
       },
       onError: (error: any) => {
         const errorMessage = error?.message || "Error al registrar venta";
@@ -147,12 +125,14 @@ export function SaleForm({
         <FormField
           control={form.control}
           name="payment_method"
-          render={({ field }) => (
+          render={() => (
             <FormItem>
               <Select
-                onValueChange={field.onChange}
+                value={form.watch("payment_method")}
+                onValueChange={(value) => {
+                  setPaymentMethod(value);
+                }}
                 disabled={isPending}
-                defaultValue="cash"
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -162,8 +142,6 @@ export function SaleForm({
                 <SelectContent>
                   <SelectItem value="cash">Efectivo</SelectItem>
                   <SelectItem value="transfer">Transferencia</SelectItem>
-                  <SelectItem value="debit">Débito</SelectItem>
-                  <SelectItem value="credit">Crédito</SelectItem>
                   <SelectItem value="customer_account">
                     Cuenta Corriente
                   </SelectItem>
@@ -173,34 +151,6 @@ export function SaleForm({
             </FormItem>
           )}
         />
-
-        {["transfer", "debit", "credit"].includes(paymentMethod ?? "") && (
-          <FormField
-            control={form.control}
-            name="surcharge_percent"
-            render={() => (
-              <FormItem>
-                <Select
-                  value={surcharge.toString()}
-                  onValueChange={(value) => onSurchargeChange(Number(value))}
-                  disabled={isPending}
-                >
-                  <SelectTrigger className="bg-background w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[0, 1, 2, 3, 4, 5, 6].map((value) => (
-                      <SelectItem key={value} value={value.toString()}>
-                        {value}%
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
 
         {paymentMethod === "customer_account" && (
           <FormField
@@ -229,7 +179,7 @@ export function SaleForm({
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[446px] p-0">
+                  <PopoverContent className="w-[446px]">
                     <Command>
                       <CommandInput placeholder="Filtrar clientes..." />
                       <CommandList>

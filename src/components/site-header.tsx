@@ -8,6 +8,8 @@ const pathnames: Record<string, string> = {
   "/dashboard": "Análisis",
   "/expenses": "Expensas",
   "/customers": "Clientes",
+  "/payments": "Pagos",
+  "/suppliers": "Proveedores",
   "/purchases": "Compras",
   "/products": "Productos",
   "/sales": "Ventas",

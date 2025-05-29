@@ -19,40 +19,50 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 import { Table } from "@tanstack/react-table";
-import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
-import { PlusCircle, Trash2 } from "lucide-react";
-import { DeleteCustomers } from "@/lib/mutations/useCustomer";
+import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
-import SupplierForm from "./supplier-form";
+import PaymentForm from "./payment-form";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Calendar } from "../ui/calendar";
+import { DeletePayments } from "@/lib/mutations/usePayment";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
 }
 
-export function SuppliersTableToolbar<TData>({
+export function PaymentsTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
-  const { mutate, isPending } = DeleteCustomers();
+  const { mutate, isPending } = DeletePayments();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [date, setDate] = useState<Date>();
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
-    const suppliersIds = selectedRows.map(
+    const customersIds = selectedRows.map(
       (row) => (row.original as { id: number }).id
     );
 
-    mutate(suppliersIds, {
+    mutate(customersIds, {
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
           `Se ${
             selectedRowsCount > 1
-              ? `han eliminado ${selectedRowsCount} proveedores seleccionados`
-              : "ha eliminado el proveedor seleccionado"
+              ? `han eliminado ${selectedRowsCount} pagos seleccionados`
+              : "ha eliminado el pago seleccionado"
           }`
         );
       },
@@ -65,14 +75,46 @@ export function SuppliersTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-4">
-        <Input
-          placeholder="Filtrar proveedores..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="h-8 w-[150px] lg:w-[250px]"
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={"outline"}
+              size="sm"
+              className={cn(
+                "w-[150px] lg:w-[250px] justify-start text-left font-normal",
+                !date && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {date ? (
+                format(date, "PP", { locale: es })
+              ) : (
+                <span>Filtrar pagos...</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              locale={es}
+              mode="single"
+              selected={date}
+              onSelect={(selectedDate) => {
+                setDate(selectedDate);
+                if (selectedDate) {
+                  table.setColumnFilters([
+                    {
+                      id: "local_date",
+                      value: format(selectedDate, "yyyy-MM-dd"),
+                    },
+                  ]);
+                } else {
+                  table.setColumnFilters([]);
+                }
+              }}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
       <div className="flex space-x-4">
         {selectedRowsCount > 0 && (
@@ -96,8 +138,8 @@ export function SuppliersTableToolbar<TData>({
                     Esta acción no se puede deshacer. Esto eliminará
                     permanentemente{" "}
                     {selectedRowsCount > 1
-                      ? `los ${selectedRowsCount} proveedores seleccionados`
-                      : "el proveedor seleccionado"}
+                      ? `los ${selectedRowsCount} pagos seleccionados`
+                      : "el pago seleccionado"}
                     .
                   </span>
                 </AlertDialogDescription>
@@ -125,12 +167,12 @@ export function SuppliersTableToolbar<TData>({
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Registrar proveedor</DialogTitle>
+              <DialogTitle>Registrar pago</DialogTitle>
               <DialogDescription>
                 Use tabs para navegar mas rapido entre los diferentes campos.
               </DialogDescription>
             </DialogHeader>
-            <SupplierForm onOpenChange={setIsCreateOpen} />
+            <PaymentForm onOpenChange={setIsCreateOpen} />
           </DialogContent>
         </Dialog>
       </div>

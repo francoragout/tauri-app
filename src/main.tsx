@@ -13,6 +13,7 @@ import { Provider } from "react-redux";
 import Expenses from "./pages/expenses";
 import Purchases from "./pages/purchases";
 import Suppliers from "./pages/suppliers";
+import Payments from "./pages/payments";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="expenses" element={<Expenses />} />
               <Route path="customers" element={<Customers />} />
+              <Route path="payments" element={<Payments />} />
               <Route path="suppliers" element={<Suppliers />} />
               <Route path="purchases" element={<Purchases />} />
               <Route path="products" element={<Products />} />

@@ -16,8 +16,7 @@ import CartTable from "./cart-table";
 
 export default function Cart() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-
-  const [surcharge, setSurcharge] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<string>("cash");
 
   const products = useSelector((state: RootState) => state.cart.items);
 
@@ -31,7 +30,8 @@ export default function Cart() {
     0
   );
 
-  const totalWithSurcharge = totalPrice + totalPrice * (surcharge / 100);
+  const totalWithFee =
+    paymentMethod === "transfer" ? +(totalPrice * 1.05).toFixed(2) : totalPrice;
 
   const dispatch = useDispatch();
 
@@ -69,13 +69,13 @@ export default function Cart() {
           </div>
         ) : (
           <>
-            <CartTable totalWithSurcharge={totalWithSurcharge} />
+            <CartTable totalPrice={totalWithFee} />
             <SaleForm
               products={products}
-              surcharge={surcharge}
-              total={totalWithSurcharge}
               onOpenChange={setIsCreateOpen}
-              onSurchargeChange={setSurcharge}
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              totalPrice={totalWithFee}
             />
           </>
         )}

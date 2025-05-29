@@ -2,13 +2,13 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Purchase } from "@/lib/zod";
 import { DataTableColumnHeader } from "../data-table-column-header";
+import { Payment } from "@/lib/zod";
 import { format, isValid, parse } from "date-fns";
 import { es } from "date-fns/locale";
-import { PurchasesTableRowActions } from "./purchases-table-row-actions";
+import { PaymentsTableRowActions } from "./payments-table-row-actions";
 
-export const PurchasesColumns: ColumnDef<Purchase>[] = [
+export const PaymentsColumns: ColumnDef<Payment>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -65,33 +65,19 @@ export const PurchasesColumns: ColumnDef<Purchase>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "product_name",
+    accessorKey: "customer_name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Producto" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("product_name")}</div>,
-  },
-  {
-    accessorKey: "quantity",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Cantidad" />
+      <DataTableColumnHeader column={column} title="Cliente" />
     ),
     cell: ({ row }) => {
-      const quantity = row.getValue("quantity") as number | null;
-      return <div>{quantity !== null ? quantity : ""}</div>;
+      const customerName = row.getValue("customer_name") as string | null;
+      return <div>{customerName || "-"}</div>;
     },
-  },
-  {
-    accessorKey: "supplier_name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Proveedor" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("supplier_name")}</div>,
   },
   {
     accessorKey: "payment_method",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Metodo de pago" />
+      <DataTableColumnHeader column={column} title="Método de pago" />
     ),
     cell: ({ row }) => {
       const paymentMethod = row.getValue("payment_method") as string | null;
@@ -115,23 +101,23 @@ export const PurchasesColumns: ColumnDef<Purchase>[] = [
     },
   },
   {
-    accessorKey: "total",
+    accessorKey: "amount",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Total" />
+      <DataTableColumnHeader column={column} title="Monto" />
     ),
     cell: ({ row }) => {
-      const total = row.getValue("total") as number;
+      const monto = row.getValue("amount") as number;
 
-      const formattedTotal = Number(total).toLocaleString("es-AR", {
+      const formattedAmount = Number(monto).toLocaleString("es-AR", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
 
-      return <div>$ {formattedTotal}</div>;
+      return <div>$ {formattedAmount}</div>;
     },
   },
   {
     id: "actions",
-    cell: ({ row }) => <PurchasesTableRowActions row={row} />,
+    cell: ({ row }) => <PaymentsTableRowActions row={row} />,
   },
 ];

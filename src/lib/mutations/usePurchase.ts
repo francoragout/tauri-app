@@ -18,9 +18,15 @@ export function CreatePurchase() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
-        `INSERT INTO purchases (product_id, total, quantity)
-           VALUES ($1, $2, $3)`,
-        [values.product_id, values.total, values.quantity]
+        `INSERT INTO purchases (product_id, supplier_id, quantity, total, payment_method)
+           VALUES ($1, $2, $3, $4, $5)`,
+        [
+          values.product_id,
+          values.supplier_id,
+          values.quantity,
+          values.total,
+          values.payment_method,
+        ]
       );
 
       await db.execute(
@@ -45,9 +51,16 @@ export function UpdatePurchase() {
 
       await db.execute(
         `UPDATE purchases
-           SET product_id = $1, total = $2, quantity = $3
-           WHERE id = $4`,
-        [values.product_id, values.total, values.quantity, values.id]
+           SET product_id = $1, supplier_id = $2, quantity = $3, total = $4, payment_method = $5
+           WHERE id = $6`,
+        [
+          values.product_id,
+          values.supplier_id,
+          values.quantity,
+          values.total,
+          values.payment_method,
+          values.id,
+        ]
       );
     },
     onSuccess: () => {
@@ -55,7 +68,6 @@ export function UpdatePurchase() {
     },
   });
 }
-
 
 export function DeletePurchases() {
   const queryClient = useQueryClient();

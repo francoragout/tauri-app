@@ -1,4 +1,12 @@
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -35,6 +43,7 @@ import { useState } from "react";
 import { NumericFormat } from "react-number-format";
 import { GetProducts } from "@/lib/mutations/useProduct";
 import { useQuery } from "@tanstack/react-query";
+import { GetSuppliers } from "@/lib/mutations/useSupplier";
 
 interface PurchaseFormProps {
   purchase?: Purchase;
@@ -50,9 +59,15 @@ export default function PurchaseForm({
     queryFn: GetProducts,
   });
 
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ["suppliers"],
+    queryFn: GetSuppliers,
+  });
+
   const isEditMode = Boolean(purchase);
 
-  const [open, setOpen] = useState(false);
+  const [openProduct, setOpenProduct] = useState(false);
+  const [openSupplier, setOpenSupplier] = useState(false);
 
   const { mutate: createPurchase, isPending: isCreating } = CreatePurchase();
   const { mutate: updatePurchase, isPending: isUpdating } = UpdatePurchase();
@@ -61,6 +76,8 @@ export default function PurchaseForm({
     resolver: zodResolver(PurchaseSchema),
     defaultValues: {
       product_id: purchase?.product_id ?? undefined,
+      supplier_id: purchase?.supplier_id ?? undefined,
+      payment_method: purchase?.payment_method ?? undefined,
       total: purchase?.total ?? undefined,
       quantity: purchase?.quantity ?? undefined,
     },
@@ -103,14 +120,15 @@ export default function PurchaseForm({
           name="product_id"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <PopoverDialog open={open} onOpenChange={setOpen}>
-                <PopoverDialogTrigger asChild>
+              <PopoverDialog open={openProduct} onOpenChange={setOpenProduct}>
+                <PopoverDialogTrigger>
                   <FormControl>
                     <Button
+                      type="button"
                       variant="outline"
                       role="combobox"
                       className={cn(
-                        "justify-between h-9 hover:bg-background font-normal",
+                        "justify-between h-9 hover:bg-background font-normal w-full",
                         !field.value &&
                           "hover:text-muted-foreground font-normal text-muted-foreground"
                       )}
@@ -123,11 +141,11 @@ export default function PurchaseForm({
                     </Button>
                   </FormControl>
                 </PopoverDialogTrigger>
-                <PopoverDialogContent className="absolute w-[462px] mt-[127px] ms-[24px] p-0">
+                <PopoverDialogContent className="w-[462px]">
                   <Command>
                     <CommandInput placeholder="Buscar producto..." />
                     <CommandList>
-                      <CommandEmpty>No language found.</CommandEmpty>
+                      <CommandEmpty>Sin resultados.</CommandEmpty>
                       <CommandGroup>
                         {products.map((product) => (
                           <CommandItem
@@ -137,9 +155,11 @@ export default function PurchaseForm({
                               if (typeof product.id === "number") {
                                 form.setValue("product_id", product.id, {
                                   shouldDirty: true,
+                                  shouldTouch: true, // <-- agrega esto
+                                  shouldValidate: true, // <-- y esto
                                 });
                               }
-                              setOpen(false);
+                              setOpenProduct(false);
                             }}
                           >
                             {product.name}
@@ -158,6 +178,90 @@ export default function PurchaseForm({
                   </Command>
                 </PopoverDialogContent>
               </PopoverDialog>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="supplier_id"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <PopoverDialog open={openSupplier} onOpenChange={setOpenSupplier}>
+                <PopoverDialogTrigger>
+                  <FormControl>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "justify-between h-9 hover:bg-background font-normal w-full",
+                        !field.value &&
+                          "hover:text-muted-foreground font-normal text-muted-foreground"
+                      )}
+                    >
+                      {field.value
+                        ? suppliers.find(
+                            (supplier) => supplier.id === field.value
+                          )?.name
+                        : "Proveedor (opcional)"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverDialogTrigger>
+                <PopoverDialogContent className="w-[462px]">
+                  <Command>
+                    <CommandInput placeholder="Buscar proveedor..." />
+                    <CommandList>
+                      <CommandEmpty>Sin resultados.</CommandEmpty>
+                      <CommandGroup>
+                        {suppliers.map((supplier) => (
+                          <CommandItem
+                            value={supplier.name}
+                            key={supplier.id}
+                            onSelect={() => {
+                              if (typeof supplier.id === "number") {
+                                form.setValue("supplier_id", supplier.id, {
+                                  shouldDirty: true,
+                                });
+                              }
+                              setOpenSupplier(false);
+                            }}
+                          >
+                            {supplier.name}
+                            <Check
+                              className={cn(
+                                "ml-auto",
+                                supplier.id === field.value
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverDialogContent>
+              </PopoverDialog>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="quantity"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input
+                  {...field}
+                  disabled={isPending}
+                  placeholder="Cantidad (requerido)"
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -190,16 +294,22 @@ export default function PurchaseForm({
 
         <FormField
           control={form.control}
-          name="quantity"
+          name="payment_method"
           render={({ field }) => (
             <FormItem>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isPending}
-                  placeholder="Cantidad (requerido)"
-                />
-              </FormControl>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Metodo de pago (requerido)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="credit">Crédito</SelectItem>
+                  <SelectItem value="debit">Débito</SelectItem>
+                  <SelectItem value="cash">Efectivo</SelectItem>
+                  <SelectItem value="transfer">Transferencia</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

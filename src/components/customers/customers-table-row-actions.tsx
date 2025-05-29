@@ -13,15 +13,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { Banknote, MoreHorizontal, SquarePen } from "lucide-react";
+import { MoreHorizontal, SquarePen } from "lucide-react";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { CustomerSchema } from "@/lib/zod";
 import { useState } from "react";
 import CustomerForm from "./customer-form";
-import CustomerPaymentForm from "./customer-pay-form";
 import CustomerSendSummary from "./customer-send-summary";
-import { toast } from "sonner";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -32,7 +30,6 @@ export function CustomersTableRowActions<TData>({
 }: DataTableRowActionsProps<TData>) {
   const customer = CustomerSchema.parse(row.original);
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-  const [isPayOpen, setIsPayOpen] = useState(false);
 
   return (
     <>
@@ -61,23 +58,6 @@ export function CustomersTableRowActions<TData>({
             <DropdownMenuItem asChild>
               <CustomerSendSummary customer={customer} />
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Button
-                className="flex justify-start pl-2"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (customer.debt === 0) {
-                    toast.error("El cliente no tiene deuda");
-                    return;
-                  }
-                  setTimeout(() => setIsPayOpen(true), 0);
-                }}
-              >
-                <Banknote className="text-primary" />
-                Pagar deuda
-              </Button>
-            </DropdownMenuItem>
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -91,21 +71,6 @@ export function CustomersTableRowActions<TData>({
             </DialogDescription>
           </DialogHeader>
           <CustomerForm customer={customer} onOpenChange={setIsUpdateOpen} />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isPayOpen} onOpenChange={setIsPayOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Pagar Deuda</DialogTitle>
-            <DialogDescription>
-              Use tabs para navegar mas rapido entre los diferentes campos.
-            </DialogDescription>
-          </DialogHeader>
-          <CustomerPaymentForm
-            customer={customer}
-            onOpenChange={setIsPayOpen}
-          />
         </DialogContent>
       </Dialog>
     </>

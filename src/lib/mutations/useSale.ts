@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
-import { Payment, Sale } from "../zod";
+import { Sale } from "../zod";
 
 export function GetSales(): Promise<Sale[]> {
   return Database.load("sqlite:mydatabase.db").then((db) =>
@@ -41,10 +41,9 @@ export function CreateSale() {
 
       // 2. Insertar en sales
       await db.execute(
-        `INSERT INTO sales (payment_method, surcharge_percent, customer_id, is_paid, total) VALUES ($1, $2, $3, $4, $5)`,
+        `INSERT INTO sales (payment_method, customer_id, is_paid, total) VALUES ($1, $2, $3, $4)`,
         [
           values.payment_method,
-          values.surcharge_percent,
           values.customer_id,
           values.is_paid,
           values.total,
@@ -125,48 +124,3 @@ export function DeleteSales() {
   });
 }
 
-export function PaySales() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (values: Payment) => {
-      const db = await Database.load("sqlite:mydatabase.db");
-
-      // 1. Buscar todas las ventas del cliente que no estén pagadas
-      const sales = await db.select<{ id: number }[]>(
-        `SELECT id FROM sales WHERE customer_id = $1 AND is_paid = 0`,
-        [values.customer_id]
-      );
-
-      // 2. Actualizar cada venta: total (con recargo), pagada, método de pago y recargo
-      for (const sale of sales) {
-        // Calcular el total base de la venta
-        const totalResult = await db.select<{ total: number }[]>(
-          `SELECT SUM(price * quantity) as total FROM sale_items WHERE sale_id = $1`,
-          [sale.id]
-        );
-        const totalBase = totalResult[0]?.total ?? 0;
-
-        // Calcular el total con recargo
-        const surchargePercent = values.surcharge_percent ?? 0;
-        const surcharge = (totalBase * surchargePercent) / 100;
-        const totalWithSurcharge = totalBase + surcharge;
-
-        await db.execute(
-          `UPDATE sales SET is_paid = 1, payment_method = $1, surcharge_percent = $2, total = $3 WHERE id = $4`,
-          [
-            values.payment_method,
-            values.surcharge_percent,
-            totalWithSurcharge,
-            sale.id,
-          ]
-        );
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sales"] });
-      queryClient.invalidateQueries({ queryKey: ["today_sales"] });
-      queryClient.invalidateQueries({ queryKey: ["customers"] });
-    },
-  });
-}

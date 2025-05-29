@@ -8,7 +8,7 @@ import { Customer, CustomerSchema } from "@/lib/zod";
 async function GetCustomers(): Promise<Customer[]> {
   const db = await Database.load("sqlite:mydatabase.db");
   const query = `
-         WITH sale_totals AS (
+WITH sale_totals AS (
   SELECT 
     sale_items.sale_id,
     SUM(sale_items.quantity * products.price) AS total

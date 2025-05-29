@@ -12,11 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { removeFromCart, updateQuantity } from "@/features/cart/cartSlice";
 
-export default function CartTable({
-  totalWithSurcharge,
-}: {
-  totalWithSurcharge: number;
-}) {
+export default function CartTable({ totalPrice }: { totalPrice: number }) {
   const products = useSelector((state: RootState) => state.cart.items);
 
   const dispatch = useDispatch();
@@ -83,7 +79,7 @@ export default function CartTable({
             {new Intl.NumberFormat("es-AR", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
-            }).format(totalWithSurcharge)}
+            }).format(totalPrice)}
           </TableCell>
         </TableRow>
       </TableFooter>

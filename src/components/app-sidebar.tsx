@@ -43,6 +43,11 @@ const data = {
       url: "/customers",
       icon: Users,
     },
+    {
+      name: "Pagos",
+      url: "/payments",
+      icon: BanknoteArrowUp,
+    },
   ],
   inventory: [
     {
@@ -75,8 +80,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     queryKey: ["today_sales"],
     queryFn: GetSales,
   });
-
-  console.log("sales", sales);
 
   // Obtener la fecha de hoy en formato YYYY-MM-DD
   const today = new Date();
