@@ -7,8 +7,8 @@ export const PurchaseSchema = z.object({
     required_error: "Seleccione un producto",
   }),
   product_name: z.string().optional(),
-  supplier_id: z.number().optional(),
-  supplier_name: z.string().optional(),
+  supplier_id: z.number().nullish(),
+  supplier_name: z.string().nullish(),
   quantity: z.coerce
     .number({
       invalid_type_error: "Ingrese la cantidad del producto",
@@ -69,39 +69,30 @@ export const ProductSchema = z.object({
 export const SaleSchema = z
   .object({
     id: z.number().optional(),
-    customer_id: z.number().optional(),
-    date: z.string().optional(),
     local_date: z.string().optional(),
+    is_paid: z.number(),
+    customer_id: z.number().nullish(),
+    customer_name: z.string().nullish(),
+    payment_method: z.string(),
+    surcharge: z.number(),
     total: z.number(),
-    payment_method: z.string().optional(),
-    is_paid: z.number().optional(),
     products: z.array(
       z.object({
         id: z.number(),
+        name: z.string().optional(),
         quantity: z.number(),
       })
     ),
   })
   .refine(
     (data) =>
-      data.payment_method !== "customer_account" ||
-      (data.customer_id !== undefined && data.customer_id !== null),
+      data.payment_method !== "account" ||
+      (data.customer_id !== null && data.customer_id !== undefined),
     {
-      message: "Debe seleccionar un cliente para cuenta corriente",
+      message: "Seleccione un cliente",
       path: ["customer_id"],
     }
   );
-
-export const SaleItemsSchema = z.object({
-  id: z.number(),
-  local_date: z.string(),
-  products: z.string(),
-  payment_method: z.string().nullable(),
-  total: z.number(),
-  customer_id: z.number().nullable(),
-  customer_name: z.string().nullable(),
-  is_paid: z.number(),
-});
 
 export const CustomerSchema = z.object({
   id: z.number().optional(),
@@ -119,8 +110,7 @@ export const CustomerSchema = z.object({
     .refine((val) => !val || val.length === 10, {
       message: "El número de teléfono debe tener 10 dígitos",
     }),
-  debt: z.number().optional(),
-  sales_summary: z.string().nullish(),
+  total_debt: z.number().optional(),
 });
 
 export const ExpenseSchema = z.object({
@@ -142,8 +132,14 @@ export const ExpenseSchema = z.object({
 export const PaymentSchema = z.object({
   id: z.number().optional(),
   local_date: z.string().optional(),
-  customer_id: z.number(),
+  customer_id: z.number({
+    required_error: "Seleccione un cliente",
+  }),
   customer_name: z.string().optional(),
+  type: z.string({
+    required_error: "Seleccione un tipo de pago",
+  }),
+  surcharge: z.number(),
   amount: z.coerce
     .number({
       required_error: "Ingrese el monto del pago",
@@ -152,7 +148,7 @@ export const PaymentSchema = z.object({
     .min(1, {
       message: "El monto del pago debe ser mayor a 0",
     }),
-  payment_method: z.string({
+  method: z.string({
     required_error: "Seleccione un método de pago",
   }),
 });
@@ -173,7 +169,28 @@ export const SupplierSchema = z.object({
       message: "El número de teléfono debe tener 10 dígitos",
     }),
   address: z.string().optional(),
-  products: z.string().optional(),
+  products: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string().optional(),
+      })
+    )
+    .nullish(),
+});
+
+export const MonthlySalesSchema = z.object({
+  customer_id: z.number(),
+  year: z.number(),
+  month: z.number(),
+  sales_summary: z.array(
+    z.object({
+      id: z.number(),
+      date: z.string(),
+      total: z.number(),
+    })
+  ),
+  debt: z.number(),
 });
 
 export type Payment = z.infer<typeof PaymentSchema>;
@@ -181,6 +198,6 @@ export type Purchase = z.infer<typeof PurchaseSchema>;
 export type Product = z.infer<typeof ProductSchema>;
 export type Sale = z.infer<typeof SaleSchema>;
 export type Expense = z.infer<typeof ExpenseSchema>;
-export type SaleItems = z.infer<typeof SaleItemsSchema>;
 export type Customer = z.infer<typeof CustomerSchema>;
 export type Supplier = z.infer<typeof SupplierSchema>;
+export type MonthlySales = z.infer<typeof MonthlySalesSchema>;

@@ -17,9 +17,13 @@ const pathnames: Record<string, string> = {
 };
 
 export function SiteHeader() {
-  const location = useLocation();
+   const location = useLocation();
 
-  const title = pathnames[location.pathname] || "Página";
+  // Buscar el path base que coincida con el inicio del pathname actual
+  const matchedPath = Object.keys(pathnames).find((key) =>
+    location.pathname.startsWith(key)
+  );
+  const title = matchedPath ? pathnames[matchedPath] : "Página";
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">

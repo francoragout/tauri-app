@@ -51,7 +51,7 @@ export const ProductsColumns: ColumnDef<Product>[] = [
   {
     accessorKey: "unit_price",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Precio unitario" />
+      <DataTableColumnHeader column={column} title="Precio compra" />
     ),
     cell: ({ row }) => {
       const unitPrice = row.getValue("unit_price") as number;

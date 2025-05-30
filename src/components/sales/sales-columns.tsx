@@ -3,12 +3,12 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/data-table-column-header";
-import { SaleItems } from "@/lib/zod";
+import { Sale } from "@/lib/zod";
 import { format, isValid, parse } from "date-fns";
 import { es } from "date-fns/locale";
 // import { SalesTableRowActions } from "./sales-table-row-actions";
 
-export const SalesColumns: ColumnDef<SaleItems>[] = [
+export const SalesColumns: ColumnDef<Sale>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -69,13 +69,20 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
       <DataTableColumnHeader column={column} title="Productos" />
     ),
     cell: ({ row }) => {
-      const productsSummary = row.getValue("products") as string;
-      if (!productsSummary) return <div>-</div>;
-      const products = productsSummary.split(", ");
+      const products = row.getValue("products") as {
+        id: number;
+        name: string;
+        quantity: number;
+      }[];
+
+      if (!products || products.length === 0) return <div>-</div>;
+
       return (
-        <div>
-          {products.map((product, index) => (
-            <div key={index}>{product}</div>
+        <div className="space-y-1">
+          {products.map((product) => (
+            <div key={product.id}>
+              {product.name} (x{product.quantity})
+            </div>
           ))}
         </div>
       );
@@ -88,11 +95,12 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
       <DataTableColumnHeader column={column} title="Metodo de pago" />
     ),
     cell: ({ row }) => {
-      const paymentMethod = row.getValue("payment_method") as string | null;
+      const paymentMethod = row.getValue("payment_method");
 
       const translatedPaymentMethod = {
         cash: "Efectivo",
         transfer: "Transferencia",
+        account: "Cuenta",
       };
 
       return (
@@ -105,6 +113,13 @@ export const SalesColumns: ColumnDef<SaleItems>[] = [
         </div>
       );
     },
+  },
+  {
+    accessorKey: "surcharge",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Recargo" />
+    ),
+    cell: ({ row }) => <div>{row.getValue("surcharge")}%</div>,
   },
   {
     accessorKey: "total",

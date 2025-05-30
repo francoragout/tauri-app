@@ -43,7 +43,12 @@ export function CustomersTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([
+    {
+      id: "full_name",
+      desc: false,
+    },
+  ])
 
   const table = useReactTable({
     data,

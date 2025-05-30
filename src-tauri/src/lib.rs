@@ -36,11 +36,12 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS sales (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_id INTEGER,              
             date TEXT DEFAULT CURRENT_TIMESTAMP,
             total REAL NOT NULL,
+            surcharge INTEGER NOT NULL DEFAULT 0,
             payment_method TEXT NOT NULL,
             is_paid INTEGER DEFAULT 0 CHECK (is_paid IN (0, 1)),
-            customer_id INTEGER,              
             FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
         );
 
@@ -64,9 +65,11 @@ pub fn run() {
         CREATE TABLE IF NOT EXISTS payments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_id INTEGER NOT NULL,
-            amount REAL NOT NULL,
-            payment_method TEXT NOT NULL,
             date TEXT DEFAULT CURRENT_TIMESTAMP,
+            type TEXT NOT NULL,
+            amount REAL NOT NULL,
+            surcharge INTEGER NOT NULL DEFAULT 0,
+            method TEXT NOT NULL,
             FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
         );
 
@@ -77,7 +80,6 @@ pub fn run() {
             amount REAL NOT NULL,
             description TEXT
         );
-
 
         CREATE TABLE IF NOT EXISTS notifications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

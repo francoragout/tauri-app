@@ -26,17 +26,16 @@ import {
 } from "@/components/ui/table";
 
 import { DataTablePagination } from "@/components/data-table-pagination";
-import { ProductsTableToolbar } from "./products-table-toolbar";
-import { toast } from "sonner";
-import { useDispatch } from "react-redux";
-import { addToCart } from "@/features/cart/cartSlice";
+import { Button } from "@/components/ui/button";
+import { Undo2 } from "lucide-react";
+import { NavLink } from "react-router";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function ProductsTable<TData, TValue>({
+export function MonthlySalesTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -46,12 +45,7 @@ export function ProductsTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [sorting, setSorting] = React.useState<SortingState>([
-    {
-      id: "name",
-      desc: false,
-    },
-  ]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const table = useReactTable({
     data,
@@ -75,23 +69,19 @@ export function ProductsTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
-  const dispatch = useDispatch();
-
-  const handleAddToCart = (product: any) => {
-    dispatch(
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-      })
-    );
-    toast.success("Agregado al carrito");
-  };
-
   return (
     <div className="space-y-4">
-      <ProductsTableToolbar table={table} />
+      <NavLink to="/customers" className="flex items-center gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-[150px] lg:w-[250px] justify-start text-left font-normal text-muted-foreground"
+        >
+          <Undo2 />
+          Volver atras
+        </Button>
+      </NavLink>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -118,7 +108,7 @@ export function ProductsTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => handleAddToCart(row.original)}
+                  className="h-13"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

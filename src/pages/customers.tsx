@@ -21,21 +21,11 @@ SELECT
   customers.full_name,
   customers.reference,
   customers.phone,
-  COALESCE(SUM(st.total), 0) AS debt,
-  (
-    SELECT GROUP_CONCAT(datetime(s.date, '-3 hours') || ' ' || st2.total, ', ')
-    FROM sales s
-    LEFT JOIN sale_totals st2 ON st2.sale_id = s.id
-    WHERE s.customer_id = customers.id
-      AND s.is_paid = 0
-    ORDER BY s.date
-  ) AS sales_summary
+  COALESCE(SUM(st.total), 0) AS total_debt
 FROM customers
 LEFT JOIN sales ON sales.customer_id = customers.id AND sales.is_paid = 0
 LEFT JOIN sale_totals st ON st.sale_id = sales.id
 GROUP BY customers.id;
-
-
   `;
   const result = await db.select(query);
   return CustomerSchema.array().parse(result);

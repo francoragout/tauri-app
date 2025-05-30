@@ -68,7 +68,9 @@ export default function PaymentForm({
     resolver: zodResolver(PaymentSchema),
     defaultValues: {
       customer_id: payment?.customer_id ?? undefined,
-      payment_method: payment?.payment_method ?? undefined,
+      type: payment?.type ?? undefined,
+      method: payment?.method ?? undefined,
+      surcharge: payment?.surcharge ?? 0,
       amount: payment?.amount ?? undefined,
     },
   });
@@ -186,7 +188,28 @@ export default function PaymentForm({
 
         <FormField
           control={form.control}
-          name="payment_method"
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Tipo de pago (requerido)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="partial">Parcial</SelectItem>
+                  <SelectItem value="full">Total</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="method"
           render={({ field }) => (
             <FormItem>
               <Select onValueChange={field.onChange} value={field.value}>
@@ -200,6 +223,38 @@ export default function PaymentForm({
                   <SelectItem value="debit">Débito</SelectItem>
                   <SelectItem value="cash">Efectivo</SelectItem>
                   <SelectItem value="transfer">Transferencia</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="surcharge"
+          render={() => (
+            <FormItem>
+              <Select
+                value={form.watch("surcharge").toString()}
+                onValueChange={(value) =>
+                  form.setValue("surcharge", Number(value), {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  })
+                }
+                disabled={isPending}
+              >
+                <SelectTrigger className="bg-background w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[0, 1, 2, 3, 4, 5].map((value) => (
+                    <SelectItem key={value} value={value.toString()}>
+                      {value}%
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -231,6 +286,29 @@ export default function PaymentForm({
             </FormItem>
           )}
         />
+
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">
+            Total con recargo
+          </label>
+          <Input
+            readOnly
+            value={
+              (() => {
+                const amount = form.watch("amount") ?? 0;
+                const surcharge = form.watch("surcharge") ?? 0;
+                const total = amount + (amount * surcharge) / 100;
+                // Formatear a dos decimales y con separador de miles
+                return total
+                  .toLocaleString("es-AR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  });
+              })()
+            }
+            className="bg-muted"
+          />
+        </div>
 
         <div className="flex justify-end space-x-2">
           <Button

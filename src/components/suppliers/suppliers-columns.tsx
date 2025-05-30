@@ -54,48 +54,31 @@ export const SuppliersColumns: ColumnDef<Supplier>[] = [
     ),
     cell: ({ row }) => <div>{row.getValue("address")}</div>,
   },
-  //   {
-  //     accessorKey: "sales_summary",
-  //     header: ({ column }) => (
-  //       <DataTableColumnHeader column={column} title="Resumen compras" />
-  //     ),
-  //     cell: ({ row }) => {
-  //       const saleSummary = row.getValue("sales_summary") as string | null;
+  {
+    accessorKey: "products",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Productos" />
+    ),
+    cell: ({ row }) => {
+      const products = row.getValue("products") as {
+        id: number;
+        name: string;
+      }[];
 
-  //       // If there are no sales, return null
-  //       if (!saleSummary) {
-  //         return null;
-  //       }
+      if (!products || products.length === 0) return null;
 
-  //       if (saleSummary) {
-  //         const sales = saleSummary.split(", ").map((sale) => {
-  //           const lastSpaceIndex = sale.lastIndexOf(" ");
-  //           const rawDateTime = sale.slice(0, lastSpaceIndex);
-  //           const rawAmount = sale.slice(lastSpaceIndex + 1);
-
-  //           const utcDate = new Date(rawDateTime.replace(" ", "T") + "Z");
-  //           const localDate = format(utcDate, "P", { locale: es });
-
-  //           const formattedAmount = Number(rawAmount).toLocaleString("es-AR", {
-  //             minimumFractionDigits: 2,
-  //             maximumFractionDigits: 2,
-  //           });
-
-  //           return `${localDate} - ${formattedAmount}`;
-  //         });
-
-  //         return (
-  //           <div className="space-y-1">
-  //             {sales.map((entry, index) => (
-  //               <div key={index}>{entry}</div>
-  //             ))}
-  //           </div>
-  //         );
-  //       }
-  //     },
-  //     enableSorting: false,
-  //   },
-
+      return (
+        <div className="space-y-1">
+          {products.map((product) => (
+            <div key={product.id}>
+              {product.name} 
+            </div>
+          ))}
+        </div>
+      );
+    },
+    enableSorting: false,
+  },
   {
     id: "actions",
     cell: ({ row }) => <SuppliersTableRowActions row={row} />,

@@ -5,8 +5,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { CustomersTableRowActions } from "./customers-table-row-actions";
 import { Customer } from "@/lib/zod";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 
 export const CustomersColumns: ColumnDef<Customer>[] = [
   {
@@ -62,58 +60,18 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "debt",
+    accessorKey: "total_debt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Deuda" />
+      <DataTableColumnHeader column={column} title="Deuda total" />
     ),
     cell: ({ row }) => {
-      const debt = row.getValue("debt") as number;
-      const formattedDebt = Number(debt).toLocaleString("es-AR", {
+      const totalDebt = row.getValue("total_debt") as number;
+      const formattedTotalDebt = Number(totalDebt).toLocaleString("es-AR", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
-      return <div>$ {formattedDebt}</div>;
+      return <div>$ {formattedTotalDebt}</div>;
     },
-  },
-  {
-    accessorKey: "sales_summary",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Resumen compras" />
-    ),
-    cell: ({ row }) => {
-      const saleSummary = row.getValue("sales_summary") as string | null;
-
-      if (!saleSummary) {
-        return null;
-      }
-
-      if (saleSummary) {
-        const sales = saleSummary.split(", ").map((sale) => {
-          const lastSpaceIndex = sale.lastIndexOf(" ");
-          const rawDateTime = sale.slice(0, lastSpaceIndex);
-          const rawAmount = sale.slice(lastSpaceIndex + 1);
-
-          const utcDate = new Date(rawDateTime.replace(" ", "T") + "Z");
-          const localDate = format(utcDate, "P", { locale: es });
-
-          const formattedAmount = Number(rawAmount).toLocaleString("es-AR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          });
-
-          return `${localDate} - ${formattedAmount}`;
-        });
-
-        return (
-          <div className="space-y-1">
-            {sales.map((entry, index) => (
-              <div key={index}>{entry}</div>
-            ))}
-          </div>
-        );
-      }
-    },
-    enableSorting: false,
   },
   {
     id: "actions",

@@ -46,18 +46,18 @@ import { useQuery } from "@tanstack/react-query";
 
 interface SaleCreateFormProps {
   products: any[];
+  surcharge: number;
+  total: number;
   onOpenChange: (open: boolean) => void;
-  paymentMethod: string;
-  setPaymentMethod: (method: string) => void;
-  totalPrice: number;
+  onSurchargeChange: (surcharge: number) => void;
 }
 
 export function SaleForm({
   products,
+  surcharge,
+  total,
   onOpenChange,
-  paymentMethod,
-  setPaymentMethod,
-  totalPrice,
+  onSurchargeChange,
 }: SaleCreateFormProps) {
   const { data: customers = [] } = useQuery({
     queryKey: ["customers"],
@@ -75,9 +75,10 @@ export function SaleForm({
   const form = useForm<z.infer<typeof SaleSchema>>({
     resolver: zodResolver(SaleSchema),
     defaultValues: {
-      payment_method: paymentMethod,
+      payment_method: "cash",
       customer_id: undefined,
-      total: totalPrice,
+      total: total,
+      surcharge: surcharge,
       is_paid: 1,
       products: [],
     },
@@ -91,26 +92,47 @@ export function SaleForm({
         quantity: product.quantity,
       }))
     );
-    form.setValue("total", totalPrice);
-  }, [products, totalPrice]);
+  }, [products]);
+
+  const paymentMethod = form.watch("payment_method");
 
   useEffect(() => {
-    form.setValue("payment_method", paymentMethod);
-    form.setValue("is_paid", paymentMethod === "customer_account" ? 0 : 1);
-    if (paymentMethod !== "customer_account") {
-      form.setValue("customer_id", undefined);
-      setSelectedCustomerId(undefined);
+    switch (paymentMethod) {
+      case "cash":
+        onSurchargeChange(0);
+        setSelectedCustomerId(undefined);
+        form.setValue("customer_id", undefined);
+        form.setValue("total", total);
+        form.setValue("surcharge", 0);
+        form.setValue("is_paid", 1);
+        break;
+
+      case "account":
+        onSurchargeChange(0);
+        form.setValue("total", 0);
+        form.setValue("surcharge", 0);
+        form.setValue("is_paid", 0);
+        break;
+
+      default:
+        onSurchargeChange(surcharge);
+        form.setValue("surcharge", surcharge);
+        form.setValue("total", total);
+        setSelectedCustomerId(undefined);
+        form.setValue("customer_id", undefined);
+        form.setValue("is_paid", 1);
+        break;
     }
-  }, [paymentMethod]);
+  }, [paymentMethod, surcharge, total]);
 
   function onSubmit(values: z.infer<typeof SaleSchema>) {
     mutate(values, {
       onSuccess: () => {
         toast.success("Venta registrada");
         dispatch(clearCart());
+        onSurchargeChange(0);
         setSelectedCustomerId(undefined);
         onOpenChange(false);
-        setPaymentMethod("cash");
       },
       onError: (error: any) => {
         const errorMessage = error?.message || "Error al registrar venta";
@@ -125,14 +147,12 @@ export function SaleForm({
         <FormField
           control={form.control}
           name="payment_method"
-          render={() => (
+          render={({ field }) => (
             <FormItem>
               <Select
-                value={form.watch("payment_method")}
-                onValueChange={(value) => {
-                  setPaymentMethod(value);
-                }}
+                onValueChange={field.onChange}
                 disabled={isPending}
+                defaultValue="cash"
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -142,9 +162,7 @@ export function SaleForm({
                 <SelectContent>
                   <SelectItem value="cash">Efectivo</SelectItem>
                   <SelectItem value="transfer">Transferencia</SelectItem>
-                  <SelectItem value="customer_account">
-                    Cuenta Corriente
-                  </SelectItem>
+                  <SelectItem value="account">Cuenta</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -152,7 +170,35 @@ export function SaleForm({
           )}
         />
 
-        {paymentMethod === "customer_account" && (
+        {paymentMethod === "transfer" && (
+          <FormField
+            control={form.control}
+            name="surcharge"
+            render={() => (
+              <FormItem>
+                <Select
+                  value={surcharge.toString()}
+                  onValueChange={(value) => onSurchargeChange(Number(value))}
+                  disabled={isPending}
+                >
+                  <SelectTrigger className="bg-background w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[0, 1, 2, 3, 4, 5].map((value) => (
+                      <SelectItem key={value} value={value.toString()}>
+                        {value}%
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {paymentMethod === "account" && (
           <FormField
             control={form.control}
             name="customer_id"
@@ -172,9 +218,15 @@ export function SaleForm({
                       )}
                     >
                       {selectedCustomerId
-                        ? customers.find(
-                            (customer) => customer.id === selectedCustomerId
-                          )?.full_name
+                        ? (() => {
+                            const customer = customers.find(
+                              (customer) => customer.id === selectedCustomerId
+                            );
+                            if (!customer) return null;
+                            return customer.reference
+                              ? `${customer.full_name} (${customer.reference})`
+                              : customer.full_name;
+                          })()
                         : "Cliente (opcional)"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -190,11 +242,10 @@ export function SaleForm({
                               key={customer.id}
                               value={`${customer.full_name} ${customer.reference}`}
                               onSelect={() => {
-                                const same = selectedCustomerId === customer.id;
-                                const newValue = same ? undefined : customer.id;
-
-                                setSelectedCustomerId(newValue);
-                                form.setValue("customer_id", newValue);
+                                setSelectedCustomerId(customer.id);
+                                form.setValue("customer_id", customer.id, {
+                                  shouldValidate: true,
+                                });
                                 setOpen(false);
                               }}
                             >
@@ -206,7 +257,11 @@ export function SaleForm({
                                     : "opacity-0"
                                 )}
                               />
-                              {`${customer.full_name} ${customer.reference}`}
+                              {`${customer.full_name}${
+                                customer.reference
+                                  ? ` (${customer.reference})`
+                                  : ""
+                              }`}
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -214,6 +269,7 @@ export function SaleForm({
                     </Command>
                   </PopoverContent>
                 </Popover>
+                <FormMessage />
               </FormItem>
             )}
           />

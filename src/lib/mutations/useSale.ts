@@ -41,12 +41,13 @@ export function CreateSale() {
 
       // 2. Insertar en sales
       await db.execute(
-        `INSERT INTO sales (payment_method, customer_id, is_paid, total) VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO sales (payment_method, customer_id, is_paid, total, surcharge) VALUES ($1, $2, $3, $4, $5)`,
         [
           values.payment_method,
           values.customer_id,
           values.is_paid,
           values.total,
+          values.surcharge,
         ]
       );
 
@@ -123,4 +124,3 @@ export function DeleteSales() {
     },
   });
 }
-
