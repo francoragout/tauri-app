@@ -75,12 +75,12 @@ export const PaymentsColumns: ColumnDef<Payment>[] = [
     },
   },
   {
-    accessorKey: "payment_method",
+    accessorKey: "method",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Método de pago" />
     ),
     cell: ({ row }) => {
-      const paymentMethod = row.getValue("payment_method") as string | null;
+      const paymentMethod = row.getValue("method") as string | null;
 
       const translatedPaymentMethod = {
         credit: "Crédito",

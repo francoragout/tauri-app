@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
-import { Sale } from "../zod";
+import { MonthlySales, MonthlySalesSchema, Sale } from "../zod";
 
 export function GetSales(): Promise<Sale[]> {
   return Database.load("sqlite:mydatabase.db").then((db) =>
@@ -123,4 +123,43 @@ export function DeleteSales() {
       queryClient.invalidateQueries({ queryKey: ["today_sales"] });
     },
   });
+}
+
+export async function GetMonthlySalesByCustomerId(
+  id: number
+): Promise<MonthlySales[]> {
+  const db = await Database.load("sqlite:mydatabase.db");
+  const query = `
+SELECT
+  s.customer_id AS customer_id,
+  strftime('%Y-%m', datetime(s.date, '-3 hours')) AS period,
+  json_group_array(
+    json_object(
+      'id', s.id,
+      'date', datetime(s.date, '-3 hours'),
+      'total', sale_total
+    )
+  ) AS sales_summary,
+  SUM(sale_total) AS debt
+FROM sales s
+JOIN (
+  SELECT
+    sale_id,
+    SUM(quantity * price) AS sale_total
+  FROM sale_items
+  GROUP BY sale_id
+) AS totals ON totals.sale_id = s.id
+WHERE s.customer_id = $1
+  AND s.is_paid = 0
+GROUP BY s.customer_id, period
+ORDER BY period;
+  `;
+  const result = (await db.select(query, [id])) as any[];
+
+  const parsed = result.map((row: any) => ({
+    ...row,
+    sales_summary: JSON.parse(row.sales_summary),
+  }));
+
+  return MonthlySalesSchema.array().parse(parsed);
 }

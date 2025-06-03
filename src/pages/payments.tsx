@@ -12,7 +12,7 @@ async function GetPayments(): Promise<Payment[]> {
       datetime(payments.date, '-3 hours') AS local_date,
 	  payments.customer_id,
 	  customers.full_name AS customer_name,
-	  payments.payment_method,
+	  payments.method,
       payments.amount
     FROM payments
 	LEFT JOIN 

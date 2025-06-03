@@ -136,21 +136,12 @@ export const PaymentSchema = z.object({
     required_error: "Seleccione un cliente",
   }),
   customer_name: z.string().optional(),
-  type: z.string({
-    required_error: "Seleccione un tipo de pago",
-  }),
-  surcharge: z.number(),
-  amount: z.coerce
-    .number({
-      required_error: "Ingrese el monto del pago",
-      invalid_type_error: "Ingrese el monto del pago",
-    })
-    .min(1, {
-      message: "El monto del pago debe ser mayor a 0",
-    }),
   method: z.string({
     required_error: "Seleccione un método de pago",
   }),
+  surcharge: z.number(),
+  amount: z.number(),
+  period: z.string().optional(),
 });
 
 export const SupplierSchema = z.object({
@@ -181,8 +172,7 @@ export const SupplierSchema = z.object({
 
 export const MonthlySalesSchema = z.object({
   customer_id: z.number(),
-  year: z.number(),
-  month: z.number(),
+  period: z.string(),
   sales_summary: z.array(
     z.object({
       id: z.number(),

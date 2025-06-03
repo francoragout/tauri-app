@@ -66,7 +66,7 @@ pub fn run() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_id INTEGER NOT NULL,
             date TEXT DEFAULT CURRENT_TIMESTAMP,
-            type TEXT NOT NULL,
+            period TEXT NOT NULL,
             amount REAL NOT NULL,
             surcharge INTEGER NOT NULL DEFAULT 0,
             method TEXT NOT NULL,

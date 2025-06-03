@@ -14,7 +14,6 @@ import Expenses from "./pages/expenses";
 import Purchases from "./pages/purchases";
 import Suppliers from "./pages/suppliers";
 import Payments from "./pages/payments";
-import MonthlySales from "./pages/customers/monthly-sales";
 
 const queryClient = new QueryClient();
 
@@ -29,10 +28,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="expenses" element={<Expenses />} />
               <Route path="customers" element={<Customers />} />
-              <Route
-                path="customers/:id/monthly-sales"
-                element={<MonthlySales />}
-              />
               <Route path="payments" element={<Payments />} />
               <Route path="suppliers" element={<Suppliers />} />
               <Route path="purchases" element={<Purchases />} />

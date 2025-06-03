@@ -37,12 +37,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { CreatePayment, UpdatePayment } from "@/lib/mutations/usePayment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { GetCustomers } from "@/lib/mutations/useCustomer";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { NumericFormat } from "react-number-format";
+import { GetMonthlySalesByCustomerId } from "@/lib/mutations/useSale";
+import { format, parse } from "date-fns";
+import { es } from "date-fns/locale";
 
 type PaymentFormProps = {
   payment?: Payment;
@@ -60,6 +63,7 @@ export default function PaymentForm({
 
   const isEditMode = Boolean(payment);
   const [isOpen, setIsOpen] = useState(false);
+  const [isPeriodOpen, setIsPeriodOpen] = useState(false);
 
   const { mutate: createPayment, isPending: isCreating } = CreatePayment();
   const { mutate: updatePayment, isPending: isUpdating } = UpdatePayment();
@@ -68,11 +72,21 @@ export default function PaymentForm({
     resolver: zodResolver(PaymentSchema),
     defaultValues: {
       customer_id: payment?.customer_id ?? undefined,
-      type: payment?.type ?? undefined,
+      period: payment?.period ?? undefined,
       method: payment?.method ?? undefined,
       surcharge: payment?.surcharge ?? 0,
       amount: payment?.amount ?? undefined,
     },
+  });
+
+  const customerId = form.watch("customer_id");
+  const period = form.watch("period");
+  const surcharge = form.watch("surcharge");
+
+  const { data: sales = [] } = useQuery({
+    queryKey: ["monthly-sales", customerId],
+    queryFn: () => GetMonthlySalesByCustomerId(customerId),
+    enabled: !!customerId, // evitar llamadas sin customer
   });
 
   function onSubmit(values: z.infer<typeof PaymentSchema>) {
@@ -103,6 +117,27 @@ export default function PaymentForm({
   }
 
   const isPending = isCreating || isUpdating;
+
+  const selectedSale = sales.find((sale) => sale.period === period);
+
+  useEffect(() => {
+    if (selectedSale) {
+      const debt = Number(selectedSale.debt) || 0;
+      const surchargeValue = Number(surcharge) || 0;
+      const amount = debt + (debt * surchargeValue) / 100;
+      form.setValue("amount", Number(amount.toFixed(2)), {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    } else {
+      form.setValue("amount", 0, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    }
+  }, [period, surcharge, selectedSale]);
 
   return (
     <Form {...form}>
@@ -188,20 +223,89 @@ export default function PaymentForm({
 
         <FormField
           control={form.control}
-          name="type"
+          name="period"
           render={({ field }) => (
-            <FormItem>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Tipo de pago (requerido)" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="partial">Parcial</SelectItem>
-                  <SelectItem value="full">Total</SelectItem>
-                </SelectContent>
-              </Select>
+            <FormItem className="flex flex-col">
+              <PopoverDialog open={isPeriodOpen} onOpenChange={setIsPeriodOpen}>
+                <PopoverDialogTrigger>
+                  <FormControl>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "justify-between h-9 hover:bg-background font-normal w-full",
+                        !field.value &&
+                          "hover:text-muted-foreground font-normal text-muted-foreground"
+                      )}
+                    >
+                      {field.value
+                        ? (() => {
+                            const sale = sales.find(
+                              (sale) => sale.period === field.value
+                            );
+                            return sale
+                              ? // Formatea y capitaliza el mes
+                                format(
+                                  parse(sale.period, "yyyy-MM", new Date()),
+                                  "MMMM yyyy",
+                                  { locale: es }
+                                ).replace(/^./, (c) => c.toUpperCase())
+                              : "";
+                          })()
+                        : "Periodo (requerido)"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverDialogTrigger>
+                <PopoverDialogContent className="w-[462px]">
+                  <Command>
+                    <CommandInput placeholder="Buscar periodo..." />
+                    <CommandList>
+                      <CommandEmpty>Sin resultados.</CommandEmpty>
+                      <CommandGroup>
+                        {sales.map((sale) => (
+                          <CommandItem
+                            value={sale.period}
+                            key={sale.period}
+                            onSelect={() => {
+                              form.setValue("period", sale.period, {
+                                shouldDirty: true,
+                                shouldTouch: true,
+                                shouldValidate: true,
+                              });
+                              setIsPeriodOpen(false);
+                            }}
+                          >
+                            {
+                              // Formatea y capitaliza el mes
+                              format(
+                                parse(sale.period, "yyyy-MM", new Date()),
+                                "MMMM yyyy",
+                                { locale: es }
+                              ).replace(/^./, (c) => c.toUpperCase())
+                            }
+                            <span className="text-muted-foreground">
+                              $
+                              {Number(sale.debt).toLocaleString("es-AR", {
+                                minimumFractionDigits: 2,
+                              })}
+                            </span>
+                            <Check
+                              className={cn(
+                                "ml-auto",
+                                sale.period === field.value
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverDialogContent>
+              </PopoverDialog>
               <FormMessage />
             </FormItem>
           )}
@@ -280,35 +384,13 @@ export default function PaymentForm({
                   customInput={Input}
                   disabled={isPending}
                   placeholder="Monto (requerido)"
+                  readOnly
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">
-            Total con recargo
-          </label>
-          <Input
-            readOnly
-            value={
-              (() => {
-                const amount = form.watch("amount") ?? 0;
-                const surcharge = form.watch("surcharge") ?? 0;
-                const total = amount + (amount * surcharge) / 100;
-                // Formatear a dos decimales y con separador de miles
-                return total
-                  .toLocaleString("es-AR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  });
-              })()
-            }
-            className="bg-muted"
-          />
-        </div>
 
         <div className="flex justify-end space-x-2">
           <Button

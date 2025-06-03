@@ -10,29 +10,42 @@ export function CreatePayment() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
-        `INSERT INTO payments (customer_id, payment_method, amount)
-           VALUES ($1, $2, $3)`,
-        [values.customer_id, values.payment_method, values.amount]
+        `INSERT INTO payments (customer_id, method, amount, surcharge)
+           VALUES ($1, $2, $3, $4)`,
+        [values.customer_id, values.method, values.amount, values.surcharge]
+      );
+
+      await db.execute(
+        `UPDATE sales
+           SET is_paid = 1
+         WHERE customer_id = $1 AND strftime('%Y-%m', date) = $2`,
+        [values.customer_id, values.period]
       );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
     },
   });
 }
 
 export function UpdatePayment() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (values: Payment) => {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
         `UPDATE payments
-           SET customer_id = $1, payment_method = $2, amount = $3
-           WHERE id = $4`,
-        [values.customer_id, values.payment_method, values.amount, values.id]
+           SET customer_id = $1, payment_method = $2, amount = $3, surcharge = $4
+         WHERE id = $5`,
+        [
+          values.customer_id,
+          values.method,
+          values.amount,
+          values.surcharge,
+          values.id,
+        ]
       );
     },
     onSuccess: () => {
