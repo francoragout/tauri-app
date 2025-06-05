@@ -1,6 +1,3 @@
-"use client"
-
-import * as React from "react"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -14,7 +11,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -23,32 +20,33 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
-import { DataTablePagination } from "@/components/data-table-pagination"
-import { SuppliersTableToolbar } from "./suppliers-table-toolbar"
+import * as React from "react";
+import { DataTablePagination } from "@/components/data-table-pagination";
+import { SuppliersTableToolbar } from "./suppliers-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
 }
 
 export function SuppliersTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
+    React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  )
+  );
   const [sorting, setSorting] = React.useState<SortingState>([
     {
       id: "name",
       desc: false,
     },
-  ])
+  ]);
 
   const table = useReactTable({
     data,
@@ -70,7 +68,7 @@ export function SuppliersTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-  })
+  });
 
   return (
     <div className="space-y-4">
@@ -90,7 +88,7 @@ export function SuppliersTable<TData, TValue>({
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -127,5 +125,5 @@ export function SuppliersTable<TData, TValue>({
       </div>
       <DataTablePagination table={table} />
     </div>
-  )
+  );
 }

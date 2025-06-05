@@ -16,9 +16,9 @@ export function CreateCustomer() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
-        `INSERT INTO customers (full_name, reference, phone)
+        `INSERT INTO customers (name, reference, phone)
          VALUES ($1, $2, $3)`,
-        [values.full_name, values.reference, values.phone]
+        [values.name, values.reference, values.phone]
       );
     },
     onSuccess: () => {
@@ -35,8 +35,8 @@ export function UpdateCustomer() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
-        `UPDATE customers SET full_name = $1, reference = $2, phone = $3 WHERE id = $4`,
-        [values.full_name, values.reference, values.phone, values.id]
+        `UPDATE customers SET name = $1, reference = $2, phone = $3 WHERE id = $4`,
+        [values.name, values.reference, values.phone, values.id]
       );
     },
     onSuccess: () => {

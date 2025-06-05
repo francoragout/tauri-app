@@ -166,7 +166,7 @@ export default function PaymentForm({
                               (customer) => customer.id === field.value
                             );
                             return customer
-                              ? `${customer.full_name}${
+                              ? `${customer.name}${
                                   customer.reference
                                     ? ` (${customer.reference})`
                                     : ""
@@ -186,7 +186,7 @@ export default function PaymentForm({
                       <CommandGroup>
                         {customers.map((customer) => (
                           <CommandItem
-                            value={customer.full_name}
+                            value={customer.name}
                             key={customer.id}
                             onSelect={() => {
                               if (typeof customer.id === "number") {
@@ -199,7 +199,7 @@ export default function PaymentForm({
                               setIsOpen(false);
                             }}
                           >
-                            {customer.full_name}{" "}
+                            {customer.name}{" "}
                             {customer.reference && `(${customer.reference})`}
                             <Check
                               className={cn(

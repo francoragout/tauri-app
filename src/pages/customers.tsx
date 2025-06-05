@@ -18,7 +18,7 @@ WITH sale_totals AS (
 )
 SELECT 
   customers.id,
-  customers.full_name,
+  customers.name,
   customers.reference,
   customers.phone,
   COALESCE(SUM(st.total), 0) AS total_debt

@@ -6,6 +6,7 @@ import Notifications from "./notifications";
 
 const pathnames: Record<string, string> = {
   "/dashboard": "Análisis",
+  "/owners": "Propietarios",
   "/expenses": "Expensas",
   "/customers": "Clientes",
   "/payments": "Pagos",

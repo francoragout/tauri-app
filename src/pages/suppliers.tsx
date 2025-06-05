@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/skeletons";
 import { SuppliersColumns } from "@/components/suppliers/suppliers-columns";
 import { SuppliersTable } from "@/components/suppliers/suppliers-table";
 import { Supplier, SupplierSchema } from "@/lib/zod";
@@ -12,10 +13,10 @@ async function GetSuppliers(): Promise<Supplier[]> {
       suppliers.name,
       suppliers.phone,
       suppliers.address,
-      CASE 
-        WHEN COUNT(products.id) = 0 THEN NULL
+      CASE
+        WHEN COUNT(DISTINCT products.id) = 0 THEN NULL
         ELSE json_group_array(
-          json_object(
+          DISTINCT json_object(
             'id', products.id,
             'name', products.name
           )
@@ -37,9 +38,14 @@ async function GetSuppliers(): Promise<Supplier[]> {
 }
 
 export default function Suppliers() {
-  const { data = [] } = useQuery({
+  const { data = [], isPending } = useQuery({
     queryKey: ["suppliers"],
     queryFn: GetSuppliers,
   });
+
+  if (isPending) {
+    return <LoadingSkeleton />;
+  }
+
   return <SuppliersTable data={data} columns={SuppliersColumns} />;
 }

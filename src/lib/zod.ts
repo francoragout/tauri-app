@@ -64,6 +64,43 @@ export const ProductSchema = z.object({
     }),
   unit_price: z.number().nullish(),
   times_sold: z.number().optional(),
+  owners: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        percentage: z.number(),
+      })
+    )
+    .refine((owners) => owners.length > 0, {
+      message: "Seleccione al menos un propietario",
+    })
+    .refine(
+      (owners) => owners.reduce((acc, o) => acc + o.percentage, 0) === 100,
+      {
+        message: "La suma de los porcentajes de los propietarios debe ser 100.",
+      }
+    ),
+});
+
+export const OwnerSchema = z.object({
+  id: z.number().optional(),
+  name: z
+    .string({
+      required_error: "Ingrese el nombre del propietario",
+    })
+    .nonempty({
+      message: "Ingrese el nombre del propietario",
+    }),
+  products: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        percentage: z.number(),
+      })
+    )
+    .nullish(),
 });
 
 export const SaleSchema = z
@@ -96,7 +133,7 @@ export const SaleSchema = z
 
 export const CustomerSchema = z.object({
   id: z.number().optional(),
-  full_name: z
+  name: z
     .string({
       required_error: "Ingrese el nombre completo del cliente",
     })
@@ -141,7 +178,7 @@ export const PaymentSchema = z.object({
   }),
   surcharge: z.number(),
   amount: z.number(),
-  period: z.string().optional(),
+  period: z.string(),
 });
 
 export const SupplierSchema = z.object({
@@ -150,6 +187,7 @@ export const SupplierSchema = z.object({
     .string({
       required_error: "Ingrese el nombre del proveedor",
     })
+    .trim()
     .nonempty({
       message: "Ingrese el nombre del proveedor",
     }),
@@ -159,7 +197,7 @@ export const SupplierSchema = z.object({
     .refine((val) => !val || val.length === 10, {
       message: "El número de teléfono debe tener 10 dígitos",
     }),
-  address: z.string().optional(),
+  address: z.string().trim().optional(),
   products: z
     .array(
       z.object({
@@ -191,3 +229,4 @@ export type Expense = z.infer<typeof ExpenseSchema>;
 export type Customer = z.infer<typeof CustomerSchema>;
 export type Supplier = z.infer<typeof SupplierSchema>;
 export type MonthlySales = z.infer<typeof MonthlySalesSchema>;
+export type Owner = z.infer<typeof OwnerSchema>;

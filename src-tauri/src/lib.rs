@@ -9,7 +9,7 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS suppliers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
+            name TEXT NOT NULL UNIQUE,
             phone TEXT,
             address TEXT
         );
@@ -24,6 +24,20 @@ pub fn run() {
             payment_method TEXT NOT NULL,
             FOREIGN KEY (product_id) REFERENCES products(id),
             FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE SET NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS owners (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS product_owners (
+            product_id INTEGER NOT NULL,
+            owner_id INTEGER NOT NULL,
+            percentage REAL NOT NULL,
+            FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+            FOREIGN KEY (owner_id) REFERENCES owners(id) ON DELETE CASCADE,
+            PRIMARY KEY (product_id, owner_id)
         );
                 
         CREATE TABLE IF NOT EXISTS products (
@@ -57,7 +71,7 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS customers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            full_name TEXT NOT NULL,
+            name TEXT NOT NULL,
             reference TEXT,
             phone TEXT
         );
@@ -71,6 +85,15 @@ pub fn run() {
             surcharge INTEGER NOT NULL DEFAULT 0,
             method TEXT NOT NULL,
             FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS expense_owners (
+            expense_id INTEGER NOT NULL,
+            owner_id INTEGER NOT NULL,
+            percentage REAL NOT NULL,
+            FOREIGN KEY (expense_id) REFERENCES expenses(id) ON DELETE CASCADE,
+            FOREIGN KEY (owner_id) REFERENCES owners(id) ON DELETE CASCADE,
+            PRIMARY KEY (expense_id, owner_id)
         );
 
         CREATE TABLE IF NOT EXISTS expenses (

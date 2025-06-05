@@ -32,11 +32,11 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "full_name",
+    accessorKey: "name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Nombre" />
     ),
-    cell: ({ row }) => <div>{row.getValue("full_name")}</div>,
+    cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
     accessorKey: "reference",

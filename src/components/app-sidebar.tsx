@@ -34,6 +34,11 @@ const data = {
       icon: ChartNoAxesCombined,
     },
     {
+      name: "Propietarios",
+      url: "/owners",
+      icon: Users,
+    },
+    {
       name: "Expensas",
       url: "/expenses",
       icon: BanknoteArrowDown,

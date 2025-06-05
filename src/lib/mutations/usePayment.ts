@@ -10,9 +10,15 @@ export function CreatePayment() {
       const db = await Database.load("sqlite:mydatabase.db");
 
       await db.execute(
-        `INSERT INTO payments (customer_id, method, amount, surcharge)
-           VALUES ($1, $2, $3, $4)`,
-        [values.customer_id, values.method, values.amount, values.surcharge]
+        `INSERT INTO payments (customer_id, method, amount, surcharge, period)
+     VALUES ($1, $2, $3, $4, $5)`,
+        [
+          values.customer_id,
+          values.method,
+          values.amount,
+          values.surcharge,
+          values.period,
+        ]
       );
 
       await db.execute(

@@ -6,14 +6,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+import { Supplier, SupplierSchema } from "@/lib/zod";
+import { CreateSupplier, UpdateSupplier } from "@/lib/mutations/useSupplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Supplier, SupplierSchema } from "@/lib/zod";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { CreateSupplier, UpdateSupplier } from "@/lib/mutations/useSupplier";
 
 type SupplierFormProps = {
   supplier?: Supplier;
@@ -47,8 +47,9 @@ export default function SupplierForm({
             onOpenChange(false);
             toast.success("Cliente actualizado");
           },
-          onError: () => {
-            toast.error("Error al actualizar cliente");
+          onError: (error: any) => {
+            const errorMessage = error?.message || "Error al registrar cliente";
+            toast.error(errorMessage);
           },
         }
       );
@@ -58,8 +59,9 @@ export default function SupplierForm({
           onOpenChange(false);
           toast.success("Cliente registrado");
         },
-        onError: () => {
-          toast.error("Error al registrar cliente");
+        onError: (error: any) => {
+          const errorMessage = error?.message || "Error al registrar cliente";
+          toast.error(errorMessage);
         },
       });
     }

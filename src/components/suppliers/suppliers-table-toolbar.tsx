@@ -19,14 +19,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { PlusCircle, Trash2 } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
-import { PlusCircle, Trash2 } from "lucide-react";
-import { DeleteCustomers } from "@/lib/mutations/useCustomer";
 import { toast } from "sonner";
 import { useState } from "react";
 import SupplierForm from "./supplier-form";
+import { DeleteSuppliers } from "@/lib/mutations/useSupplier";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -36,7 +36,7 @@ export function SuppliersTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
-  const { mutate, isPending } = DeleteCustomers();
+  const { mutate, isPending } = DeleteSuppliers();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const handleDeleteSelected = () => {

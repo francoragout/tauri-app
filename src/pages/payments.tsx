@@ -10,15 +10,19 @@ async function GetPayments(): Promise<Payment[]> {
     SELECT 
       payments.id,
       datetime(payments.date, '-3 hours') AS local_date,
-	  payments.customer_id,
-	  customers.full_name AS customer_name,
-	  payments.method,
+	    payments.customer_id,
+	    customers.name AS customer_name,
+      payments.period,
+	    payments.method,
+      payments.surcharge,
       payments.amount
     FROM payments
-	LEFT JOIN 
+	  LEFT JOIN 
       customers ON payments.customer_id = customers.id
   `;
   const result = await db.select(query);
+
+  console.log("Raw payments data:", result);
   return PaymentSchema.array().parse(result);
 }
 
@@ -27,6 +31,8 @@ export default function Payments() {
     queryKey: ["payments"],
     queryFn: GetPayments,
   });
+
+  console.log("Payments data:", data);
 
   return <PaymentsTable data={data} columns={PaymentsColumns} />;
 }

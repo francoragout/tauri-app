@@ -1,12 +1,12 @@
+"use client";
+
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "../data-table-column-header";
-import { Supplier } from "@/lib/zod";
-import { SuppliersTableRowActions } from "./suppliers-table-row-actions";
-import { IconBrandWhatsapp } from "@tabler/icons-react";
-import { Button } from "../ui/button";
+import { Owner } from "@/lib/zod";
+import { OwnersTableRowActions } from "./owners-table-row-actions";
 
-export const SuppliersColumns: ColumnDef<Supplier>[] = [
+export const OwnersColumns: ColumnDef<Owner>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -39,39 +39,6 @@ export const SuppliersColumns: ColumnDef<Supplier>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "phone",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Teléfono" />
-    ),
-    cell: ({ row }) => {
-      const phone = row.getValue("phone") as string;
-      if (!phone) return null;
-      return (
-        <div className="flex items-center space-x-2">
-          <span>{phone}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              window.open(`https://wa.me/${phone}`, "_blank");
-            }}
-          >
-            <IconBrandWhatsapp />
-          </Button>
-        </div>
-      );
-    },
-    enableSorting: false,
-  },
-  {
-    accessorKey: "address",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Dirección" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("address")}</div>,
-    enableSorting: false,
-  },
-  {
     accessorKey: "products",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Productos" />
@@ -80,14 +47,17 @@ export const SuppliersColumns: ColumnDef<Supplier>[] = [
       const products = row.getValue("products") as {
         id: number;
         name: string;
+        percentage: number;
       }[];
 
-      if (!products || products.length === 0) return null;
+      if (!products || products.length === 0) return;
 
       return (
         <div className="space-y-1">
           {products.map((product) => (
-            <div key={product.id}>{product.name}</div>
+            <div key={product.id}>
+              {product.name} - {product.percentage}%
+            </div>
           ))}
         </div>
       );
@@ -96,6 +66,6 @@ export const SuppliersColumns: ColumnDef<Supplier>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <SuppliersTableRowActions row={row} />,
+    cell: ({ row }) => <OwnersTableRowActions row={row} />,
   },
 ];

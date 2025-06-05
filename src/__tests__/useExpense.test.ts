@@ -12,7 +12,7 @@ vi.mock("@tauri-apps/plugin-sql", () => {
   return {
     default: {
       load: vi.fn(async () => ({
-        execute: vi.fn(async () => Promise.resolve(true)),
+        execute: vi.fn().mockResolvedValue(true),
       })),
     },
   };

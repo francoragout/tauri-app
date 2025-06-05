@@ -32,7 +32,7 @@ export default function CustomerForm({
   const form = useForm<z.infer<typeof CustomerSchema>>({
     resolver: zodResolver(CustomerSchema),
     defaultValues: {
-      full_name: customer?.full_name ?? "",
+      name: customer?.name ?? "",
       reference: customer?.reference ?? "",
       phone: customer?.phone ?? "",
     },
@@ -72,7 +72,7 @@ export default function CustomerForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="full_name"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormControl>

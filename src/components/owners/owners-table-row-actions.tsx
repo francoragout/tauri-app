@@ -9,26 +9,19 @@ import {
 
 import { useState } from "react";
 import { Row } from "@tanstack/react-table";
-import { ProductSchema } from "@/lib/zod";
+import { OwnerSchema } from "@/lib/zod";
 import { Button } from "../ui/button";
 import { SquarePen } from "lucide-react";
-import ProductForm from "./product-form";
+import OwnerForm from "./owner-form";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
 }
 
-export function ProductsTableRowActions<TData>({
+export function OwnersTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const parsed = ProductSchema.safeParse(row.original);
-
-  if (!parsed.success) {
-    return null;
-  }
-
-  const product = parsed.data;
-
+  const owner = OwnerSchema.parse(row.original);
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 
   return (
@@ -47,12 +40,12 @@ export function ProductsTableRowActions<TData>({
       </DialogTrigger>
       <DialogContent onClick={(event) => event.stopPropagation()}>
         <DialogHeader>
-          <DialogTitle>Editar producto</DialogTitle>
+          <DialogTitle>Editar propietario</DialogTitle>
           <DialogDescription>
             Use tabs para navegar mas rapido entre los diferentes campos.
           </DialogDescription>
         </DialogHeader>
-        <ProductForm product={product} onOpenChange={setIsUpdateOpen} />
+        <OwnerForm owner={owner} onOpenChange={setIsUpdateOpen} />
       </DialogContent>
     </Dialog>
   );

@@ -99,7 +99,7 @@ export function CustomersTableRowActions<TData>({
       <Dialog open={isSalesOpen} onOpenChange={setIsSalesOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ventas mensuales de {customer.full_name}</DialogTitle>
+            <DialogTitle>Ventas mensuales de {customer.name}</DialogTitle>
             <DialogDescription>
               Ventas agrupadas por mes. Solo se muestran ventas no pagadas.
             </DialogDescription>

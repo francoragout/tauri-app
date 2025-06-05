@@ -64,7 +64,7 @@ export default function CustomerSendSummary({
           maximumFractionDigits: 2,
         });
 
-        const message = `Hola! ¿Cómo estás?\nTe dejo el resumen de compras de ${customer.full_name}\n\n${formattedSales}\n\nTotal: $${totalFormatted}`;
+        const message = `Hola! ¿Cómo estás?\nTe dejo el resumen de compras de ${customer.name}\n\n${formattedSales}\n\nTotal: $${totalFormatted}`;
 
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(
           message

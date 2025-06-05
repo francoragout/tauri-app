@@ -75,6 +75,26 @@ export const PaymentsColumns: ColumnDef<Payment>[] = [
     },
   },
   {
+    accessorKey: "period",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Período" />
+    ),
+    cell: ({ row }) => {
+      const period = row.getValue("period") as string | null;
+      if (!period) return <div>-</div>;
+
+      const parsedPeriod = parse(period, "yyyy-MM", new Date());
+      if (!isValid(parsedPeriod)) return <div>{period}</div>;
+
+      const formatted = format(parsedPeriod, "LLLL yyyy", { locale: es });
+      // Capitaliza la primera letra del mes
+      const capitalized =
+        formatted.charAt(0).toUpperCase() + formatted.slice(1);
+
+      return <div>{capitalized}</div>;
+    },
+  },
+  {
     accessorKey: "method",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Método de pago" />
@@ -99,6 +119,13 @@ export const PaymentsColumns: ColumnDef<Payment>[] = [
         </div>
       );
     },
+  },
+  {
+    accessorKey: "surcharge",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Recargo" />
+    ),
+    cell: ({ row }) => <div>{row.getValue("surcharge")}%</div>,
   },
   {
     accessorKey: "amount",

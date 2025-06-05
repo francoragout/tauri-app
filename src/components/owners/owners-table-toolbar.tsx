@@ -23,36 +23,36 @@ import { Table } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { PlusCircle, Trash2 } from "lucide-react";
-import { DeleteCustomers } from "@/lib/mutations/useCustomer";
 import { toast } from "sonner";
-import CustomerForm from "./customer-form";
 import { useState } from "react";
+import { DeleteOwners } from "@/lib/mutations/useOwner";
+import OwnerForm from "./owner-form";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
 }
 
-export function CustomersTableToolbar<TData>({
+export function OwnersTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
-  const { mutate, isPending } = DeleteCustomers();
+  const { mutate, isPending } = DeleteOwners();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
-    const customersIds = selectedRows.map(
+    const ownersIds = selectedRows.map(
       (row) => (row.original as { id: number }).id
     );
 
-    mutate(customersIds, {
+    mutate(ownersIds, {
       onSuccess: () => {
         table.resetRowSelection();
         toast.success(
           `Se ${
             selectedRowsCount > 1
-              ? `han eliminado ${selectedRowsCount} clientes seleccionados`
-              : "ha eliminado el cliente seleccionado"
+              ? `han eliminado ${selectedRowsCount} propietarios seleccionados`
+              : "ha eliminado el propietario seleccionado"
           }`
         );
       },
@@ -67,7 +67,7 @@ export function CustomersTableToolbar<TData>({
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-4">
         <Input
-          placeholder="Filtrar clientes..."
+          placeholder="Filtrar propietarios..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -97,8 +97,8 @@ export function CustomersTableToolbar<TData>({
                     Esta acción no se puede deshacer. Esto eliminará
                     permanentemente{" "}
                     {selectedRowsCount > 1
-                      ? `los ${selectedRowsCount} clientes seleccionados`
-                      : "el cliente seleccionado"}
+                      ? `los ${selectedRowsCount} propietarios seleccionados`
+                      : "el propietario seleccionado"}
                     .
                   </span>
                 </AlertDialogDescription>
@@ -131,7 +131,7 @@ export function CustomersTableToolbar<TData>({
                 Use tabs para navegar mas rapido entre los diferentes campos.
               </DialogDescription>
             </DialogHeader>
-            <CustomerForm onOpenChange={setIsCreateOpen} />
+            <OwnerForm onOpenChange={setIsCreateOpen} />
           </DialogContent>
         </Dialog>
       </div>

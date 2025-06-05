@@ -224,8 +224,8 @@ export function SaleForm({
                             );
                             if (!customer) return null;
                             return customer.reference
-                              ? `${customer.full_name} (${customer.reference})`
-                              : customer.full_name;
+                              ? `${customer.name} (${customer.reference})`
+                              : customer.name;
                           })()
                         : "Cliente (opcional)"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -240,7 +240,7 @@ export function SaleForm({
                           {customers.map((customer) => (
                             <CommandItem
                               key={customer.id}
-                              value={`${customer.full_name} ${customer.reference}`}
+                              value={`${customer.name} ${customer.reference}`}
                               onSelect={() => {
                                 setSelectedCustomerId(customer.id);
                                 form.setValue("customer_id", customer.id, {
@@ -257,7 +257,7 @@ export function SaleForm({
                                     : "opacity-0"
                                 )}
                               />
-                              {`${customer.full_name}${
+                              {`${customer.name}${
                                 customer.reference
                                   ? ` (${customer.reference})`
                                   : ""
