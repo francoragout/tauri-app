@@ -32,7 +32,5 @@ export default function Payments() {
     queryFn: GetPayments,
   });
 
-  console.log("Payments data:", data);
-
   return <PaymentsTable data={data} columns={PaymentsColumns} />;
 }

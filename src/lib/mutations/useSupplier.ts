@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function GetSuppliers(): Promise<Supplier[]> {
   return Database.load("sqlite:mydatabase.db").then((db) =>
-    db.select(`SELECT * FROM suppliers`)
+    db.select(`SELECT id, name FROM suppliers`)
   );
 }
 

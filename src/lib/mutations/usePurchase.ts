@@ -5,7 +5,7 @@ import Database from "@tauri-apps/plugin-sql";
 export function GetPurchases(): Promise<Purchase[]> {
   return Database.load("sqlite:mydatabase.db").then((db) =>
     db.select(
-      `SELECT id, total, date, datetime(date, '-3 hours') AS local_date FROM purchases`
+      `SELECT id, total, datetime(date, '-3 hours') AS local_date FROM purchases`
     )
   );
 }

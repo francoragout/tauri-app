@@ -5,6 +5,7 @@ import {
   CreateSupplier,
   UpdateSupplier,
   DeleteSuppliers,
+  GetSuppliers,
 } from "@/lib/mutations/useSupplier";
 
 const mockExecute = vi.fn(async () => true);
@@ -24,6 +25,27 @@ vi.mock("@tauri-apps/plugin-sql", () => {
 beforeEach(() => {
   mockSelect.mockReset();
   mockExecute.mockReset();
+});
+
+describe("GetSuppliers", () => {
+  it("debería retornar una lista de proveedores", async () => {
+    const mockData = [
+      { id: 1, name: "Proveedor 1" },
+      { id: 2, name: "Proveedor 2" },
+    ];
+    mockSelect.mockResolvedValueOnce(mockData);
+
+    const result = await GetSuppliers();
+
+    expect(mockSelect).toHaveBeenCalledWith("SELECT id, name FROM suppliers");
+    expect(result).toEqual(mockData);
+  });
+
+  it("debería lanzar un error si la consulta falla", async () => {
+    mockSelect.mockRejectedValueOnce(new Error("Fallo en la base de datos"));
+
+    await expect(GetSuppliers()).rejects.toThrow("Fallo en la base de datos");
+  });
 });
 
 describe("CreateSupplier", () => {

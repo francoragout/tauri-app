@@ -45,7 +45,7 @@ export default function SupplierForm({
         {
           onSuccess: () => {
             onOpenChange(false);
-            toast.success("Cliente actualizado");
+            toast.success("Proveedor actualizado");
           },
           onError: (error: any) => {
             const errorMessage = error?.message || "Error al registrar cliente";
@@ -57,7 +57,7 @@ export default function SupplierForm({
       createSupplier(values, {
         onSuccess: () => {
           onOpenChange(false);
-          toast.success("Cliente registrado");
+          toast.success("Proveedor registrado");
         },
         onError: (error: any) => {
           const errorMessage = error?.message || "Error al registrar cliente";

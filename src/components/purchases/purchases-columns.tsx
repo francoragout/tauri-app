@@ -1,11 +1,9 @@
-"use client";
-
+import { format, isValid, parse } from "date-fns";
+import { es } from "date-fns/locale";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Purchase } from "@/lib/zod";
 import { DataTableColumnHeader } from "../data-table-column-header";
-import { format, isValid, parse } from "date-fns";
-import { es } from "date-fns/locale";
 import { PurchasesTableRowActions } from "./purchases-table-row-actions";
 
 export const PurchasesColumns: ColumnDef<Purchase>[] = [
@@ -76,10 +74,7 @@ export const PurchasesColumns: ColumnDef<Purchase>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Cantidad" />
     ),
-    cell: ({ row }) => {
-      const quantity = row.getValue("quantity") as number | null;
-      return <div>{quantity !== null ? quantity : ""}</div>;
-    },
+    cell: ({ row }) => <div>{row.getValue("quantity")}</div>,
   },
   {
     accessorKey: "supplier_name",
@@ -94,7 +89,7 @@ export const PurchasesColumns: ColumnDef<Purchase>[] = [
       <DataTableColumnHeader column={column} title="Metodo de pago" />
     ),
     cell: ({ row }) => {
-      const paymentMethod = row.getValue("payment_method") as string | null;
+      const paymentMethod = row.getValue("payment_method");
 
       const translatedPaymentMethod = {
         credit: "Crédito",
@@ -120,7 +115,7 @@ export const PurchasesColumns: ColumnDef<Purchase>[] = [
       <DataTableColumnHeader column={column} title="Total" />
     ),
     cell: ({ row }) => {
-      const total = row.getValue("total") as number;
+      const total = row.getValue("total");
 
       const formattedTotal = Number(total).toLocaleString("es-AR", {
         minimumFractionDigits: 2,

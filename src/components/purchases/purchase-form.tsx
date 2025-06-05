@@ -1,12 +1,4 @@
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -14,6 +6,14 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import {
   Form,
@@ -101,7 +101,7 @@ export default function PurchaseForm({
       createPurchase(values, {
         onSuccess: () => {
           onOpenChange(false);
-          toast.success("Compra creada");
+          toast.success("Compra registrada");
         },
         onError: () => {
           toast.error("Error al crear compra");
@@ -127,6 +127,7 @@ export default function PurchaseForm({
                       type="button"
                       variant="outline"
                       role="combobox"
+                      disabled={isPending}
                       className={cn(
                         "justify-between h-9 hover:bg-background font-normal w-full",
                         !field.value &&
@@ -195,6 +196,7 @@ export default function PurchaseForm({
                       type="button"
                       variant="outline"
                       role="combobox"
+                      disabled={isPending}
                       className={cn(
                         "justify-between h-9 hover:bg-background font-normal w-full",
                         !field.value &&
@@ -260,6 +262,7 @@ export default function PurchaseForm({
                   {...field}
                   disabled={isPending}
                   placeholder="Cantidad (requerido)"
+                  type="number"
                 />
               </FormControl>
               <FormMessage />
@@ -299,7 +302,7 @@ export default function PurchaseForm({
             <FormItem>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full" disabled={isPending}>
                     <SelectValue placeholder="Metodo de pago (requerido)" />
                   </SelectTrigger>
                 </FormControl>

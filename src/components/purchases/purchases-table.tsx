@@ -1,6 +1,3 @@
-"use client";
-
-import * as React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -25,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import * as React from "react";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { PurchasesTableToolbar } from "./purchases-table-toolbar";
 
