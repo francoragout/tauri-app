@@ -113,9 +113,11 @@ describe("DeleteCustomers", () => {
     expect(mockSelect).toHaveBeenCalledWith(
       expect.stringContaining("SELECT COUNT(*)")
     );
+
     expect(mockExecute).toHaveBeenCalledWith(
       `DELETE FROM customers WHERE id IN (${idsToDelete.join(",")})`
     );
+    
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
       queryKey: ["customers"],
     });

@@ -108,8 +108,10 @@ describe("UpdateOwner", () => {
 });
 
 describe("DeleteOwners", () => {
-  it("should delete owners if they have no expenses", async () => {
-    mockSelect.mockResolvedValueOnce([{ count: 0 }]); // No expenses
+  it("should delete owners if they have no products or expenses", async () => {
+    mockSelect
+      .mockResolvedValueOnce([{ count: 0 }]) // product_owners check
+      .mockResolvedValueOnce([{ count: 0 }]); // expense_owners check
 
     const { result } = renderHook(() => DeleteOwners(), {
       wrapper: createWrapper(),
@@ -123,62 +125,18 @@ describe("DeleteOwners", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
+    expect(mockSelect).toHaveBeenCalledTimes(2);
     expect(mockExecute).toHaveBeenCalledWith(
-      expect.stringContaining(
-        `DELETE FROM customers WHERE id IN (${idsToDelete.join(",")})`
-      ),
-      [1, 2]
+      `DELETE FROM owners WHERE id IN (${idsToDelete.map(() => "?").join(",")})`,
+      idsToDelete
     );
-
-    expect(mockInvalidateQueries).toHaveBeenCalledWith({
-      queryKey: ["owners"],
-    });
-
-    it("should throw if any owner has expenses", async () => {
-      mockSelect.mockResolvedValueOnce([{ count: 2 }]);
-
-      const { result } = renderHook(() => DeleteOwners(), {
-        wrapper: createWrapper(),
-      });
-
-      await expect(result.current.mutateAsync([1])).rejects.toThrow(
-        "No se puede eliminar un propietario con expensas asociadas"
-      );
-
-      expect(mockExecute).not.toHaveBeenCalled();
-      expect(mockInvalidateQueries).not.toHaveBeenCalled();
-    });
-  });
-
-  it("should delete owners if they have no products", async () => {
-    mockSelect.mockResolvedValueOnce([{ count: 0 }]);
-
-    const { result } = renderHook(() => DeleteOwners(), {
-      wrapper: createWrapper(),
-    });
-
-    const idsToDelete = [1, 2];
-
-    await result.current.mutateAsync(idsToDelete);
-
-    await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
-    });
-
-    expect(mockExecute).toHaveBeenCalledWith(
-      expect.stringContaining(
-        `DELETE FROM products WHERE id IN (${idsToDelete.join(",")})`
-      ),
-      [1, 2]
-    );
-
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
       queryKey: ["owners"],
     });
   });
 
-  it("should throw if any owner has expenses", async () => {
-    mockSelect.mockResolvedValueOnce([{ count: 2 }]);
+  it("should throw error if any owner has products", async () => {
+    mockSelect.mockResolvedValueOnce([{ count: 2 }]); // product_owners check
 
     const { result } = renderHook(() => DeleteOwners(), {
       wrapper: createWrapper(),
@@ -191,4 +149,22 @@ describe("DeleteOwners", () => {
     expect(mockExecute).not.toHaveBeenCalled();
     expect(mockInvalidateQueries).not.toHaveBeenCalled();
   });
+
+  it("should throw error if any owner has expenses", async () => {
+    mockSelect
+      .mockResolvedValueOnce([{ count: 0 }]) // product_owners check
+      .mockResolvedValueOnce([{ count: 2 }]); // expense_owners check
+
+    const { result } = renderHook(() => DeleteOwners(), {
+      wrapper: createWrapper(),
+    });
+
+    await expect(result.current.mutateAsync([1])).rejects.toThrow(
+      "No se puede eliminar un propietario con expensas asociadas"
+    );
+
+    expect(mockExecute).not.toHaveBeenCalled();
+    expect(mockInvalidateQueries).not.toHaveBeenCalled();
+  });
 });
+
