@@ -82,7 +82,7 @@ describe("CreatePurchase", () => {
 
 describe("UpdatePurchase", () => {
   it("should update an existing purchase and invalidate the query", async () => {
-    const { result } = renderHook(() => CreatePurchase(), {
+    const { result } = renderHook(() => UpdatePurchase(), {
       wrapper: createWrapper(),
     });
 

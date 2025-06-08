@@ -1,11 +1,9 @@
-"use client";
-
+import { format, isValid, parse } from "date-fns";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Expense } from "@/lib/zod";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { ExpensesTableRowActions } from "./expenses-table-row-actions";
-import { format, isValid, parse } from "date-fns";
 import { es } from "date-fns/locale";
 
 export const ExpensesColumns: ColumnDef<Expense>[] = [
@@ -96,6 +94,32 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
       });
       return <div>$ {formattedAmount}</div>;
     },
+  },
+  {
+    accessorKey: "owners",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Propietarios" />
+    ),
+    cell: ({ row }) => {
+      const owners = row.getValue("owners") as {
+        id: number;
+        name: string;
+        percentage: number;
+      }[];
+
+      if (!owners || owners.length === 0) return <div>-</div>;
+
+      return (
+        <div className="space-y-1">
+          {owners.map((owner) => (
+            <div key={owner.id}>
+              {owner.name} ({owner.percentage}%)
+            </div>
+          ))}
+        </div>
+      );
+    },
+    enableSorting: false,
   },
   {
     id: "actions",

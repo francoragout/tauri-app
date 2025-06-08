@@ -25,6 +25,7 @@ import { NavLink, useLocation } from "react-router";
 import { GetSales } from "@/lib/mutations/useSale";
 import { useQuery } from "@tanstack/react-query";
 import { Sale } from "@/lib/zod";
+import clsx from "clsx";
 
 const data = {
   store: [
@@ -47,11 +48,6 @@ const data = {
       name: "Clientes",
       url: "/customers",
       icon: Users,
-    },
-    {
-      name: "Pagos",
-      url: "/payments",
-      icon: BanknoteArrowUp,
     },
   ],
   inventory: [
@@ -129,7 +125,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenuItem key={s.name}>
                 <SidebarMenuButton
                   asChild
-                  className={location.pathname === s.url ? "bg-accent" : ""}
+                  className={clsx(
+                    "cursor-default",
+                    location.pathname === s.url ? "bg-accent" : ""
+                  )}
                 >
                   <NavLink to={s.url}>
                     <s.icon />
@@ -147,7 +146,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenuItem key={i.name}>
                 <SidebarMenuButton
                   asChild
-                  className={location.pathname === i.url ? "bg-accent" : ""}
+                  className={clsx(
+                    "cursor-default",
+                    location.pathname === i.url ? "bg-accent" : ""
+                  )}
                 >
                   <NavLink to={i.url}>
                     <i.icon />
@@ -161,7 +163,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup className="group-data-[collapsible=icon]:hidden mt-auto">
           <SidebarMenu>
             <SidebarMenuItem className="active">
-              <SidebarMenuButton asChild className="">
+              <SidebarMenuButton asChild className="cursor-default">
                 <NavLink to="/configuration">
                   <Cog />
                   <span>Configuración</span>

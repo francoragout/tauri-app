@@ -25,7 +25,7 @@ export function CreateSupplier() {
       );
 
       if (existing.length > 0) {
-        throw new Error("Ya existe un proveedor con ese nombre.");
+        throw new Error("Ya existe un proveedor con ese nombre");
       }
 
       await db.execute(
@@ -55,7 +55,7 @@ export function UpdateSupplier() {
       );
 
       if (existing.length > 0) {
-        throw new Error("Ya existe un proveedor con ese nombre.");
+        throw new Error("Ya existe un proveedor con ese nombre");
       }
 
       await db.execute(

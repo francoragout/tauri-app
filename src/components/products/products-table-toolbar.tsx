@@ -58,13 +58,15 @@ export function ProductsTableToolbar<TData>({
         toast.success(
           `Se ${
             productsIds.length > 1
-              ? `han eliminado ${selectedRowsCount} productos seleccionados`
+              ? `han eliminado ${productsIds.length} productos seleccionados`
               : "ha eliminado el producto seleccionado"
           }`
         );
       },
-      onError: () => {
-        toast.error("Error al eliminar");
+      onError: (error: unknown) => {
+        const message =
+          error instanceof Error ? error.message : "Error al eliminar";
+        toast.error(message);
       },
     });
   };

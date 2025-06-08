@@ -19,10 +19,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { PlusCircle, Trash2 } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
-import { PlusCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { DeleteOwners } from "@/lib/mutations/useOwner";
@@ -50,15 +50,16 @@ export function OwnersTableToolbar<TData>({
         table.resetRowSelection();
         toast.success(
           `Se ${
-            selectedRowsCount > 1
-              ? `han eliminado ${selectedRowsCount} propietarios seleccionados`
+            ownersIds.length > 1
+              ? `han eliminado ${ownersIds.length} propietarios seleccionados`
               : "ha eliminado el propietario seleccionado"
           }`
         );
       },
-      onError: (error: any) => {
-        const errorMessage = error?.message || "Error al eliminar";
-        toast.error(errorMessage);
+      onError: (error: unknown) => {
+        const message =
+          error instanceof Error ? error.message : "Error al eliminar";
+        toast.error(message);
       },
     });
   };
@@ -126,7 +127,7 @@ export function OwnersTableToolbar<TData>({
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Registrar cliente</DialogTitle>
+              <DialogTitle>Registrar propietario</DialogTitle>
               <DialogDescription>
                 Use tabs para navegar mas rapido entre los diferentes campos.
               </DialogDescription>

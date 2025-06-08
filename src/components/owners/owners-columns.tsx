@@ -1,5 +1,3 @@
-"use client";
-
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "../data-table-column-header";
@@ -39,30 +37,29 @@ export const OwnersColumns: ColumnDef<Owner>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "products",
+    accessorKey: "product_count",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Productos" />
     ),
+    cell: ({ row }) => <div>{row.getValue("product_count")}</div>,
+  },
+  {
+    accessorKey: "net_gain",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Ganancia neta" />
+    ),
     cell: ({ row }) => {
-      const products = row.getValue("products") as {
-        id: number;
-        name: string;
-        percentage: number;
-      }[];
+      const netGain = row.getValue("net_gain") as number;
 
-      if (!products || products.length === 0) return;
+      const formattedNetGain = Number(netGain).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
 
-      return (
-        <div className="space-y-1">
-          {products.map((product) => (
-            <div key={product.id}>
-              {product.name} - {product.percentage}%
-            </div>
-          ))}
-        </div>
-      );
+      if (netGain) {
+        return <div>$ {formattedNetGain}</div>;
+      }
     },
-    enableSorting: false,
   },
   {
     id: "actions",

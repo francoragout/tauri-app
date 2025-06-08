@@ -15,6 +15,19 @@ export function CreateProduct() {
     mutationFn: async (values: Product) => {
       const db = await Database.load("sqlite:mydatabase.db");
 
+      // Normaliza el nombre: elimina espacios y convierte a minúsculas
+      const cleanName = values.name.trim().toLowerCase();
+
+      // Verifica si ya existe un producto con ese nombre normalizado
+      const existing = await db.select<{ id: number }[]>(
+        `SELECT id FROM products WHERE LOWER(TRIM(name)) = $1`,
+        [cleanName]
+      );
+
+      if (existing.length > 0) {
+        throw new Error("Ya existe un producto con ese nombre");
+      }
+
       // 1. Insertar producto
       await db.execute(
         `INSERT INTO products (name, category, price, stock)
@@ -49,6 +62,19 @@ export function UpdateProduct() {
     mutationFn: async (values: Product) => {
       const db = await Database.load("sqlite:mydatabase.db");
 
+      // Normaliza el nombre: elimina espacios y convierte a minúsculas
+      const cleanName = values.name.trim().toLowerCase();
+
+      // Verifica si ya existe un producto con ese nombre normalizado, excepto el actual
+      const existing = await db.select<{ id: number }[]>(
+        `SELECT id FROM products WHERE LOWER(TRIM(name)) = $1 AND id != $2`,
+        [cleanName, values.id]
+      );
+
+      if (existing.length > 0) {
+        throw new Error("Ya existe un producto con ese nombre");
+      }
+
       // 1. Actualizar producto
       await db.execute(
         `UPDATE products 
@@ -77,30 +103,28 @@ export function UpdateProduct() {
   });
 }
 
-export function DeleteProduct() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      const db = await Database.load("sqlite:mydatabase.db");
-
-      await db.execute(`DELETE FROM products WHERE id = $1`, [id]);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    },
-  });
-}
-
 export function DeleteProducts() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (ids: number[]) => {
       const db = await Database.load("sqlite:mydatabase.db");
+      const placeholders = ids.map(() => "?").join(",");
+
+      // Verificar si los productos seleccionados tienen compras asociadas
+      const purchases = await db.select<{ product_id: number }[]>(
+        `SELECT product_id FROM purchases WHERE product_id IN (${placeholders})`,
+        ids
+      );
+
+      if (purchases.length > 0) {
+        throw new Error(
+          "No se pueden eliminar productos con compras asociadas"
+        );
+      }
 
       await db.execute(
-        `DELETE FROM products WHERE id IN (${ids.map(() => "?").join(",")})`,
+        `DELETE FROM products WHERE id IN (${placeholders})`,
         ids
       );
     },

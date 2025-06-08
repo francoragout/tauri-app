@@ -10,23 +10,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
-import { Calendar as CalendarIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Table } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { es } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import { useState } from "react";
 import { DeleteSales } from "@/lib/mutations/useSale";
 import { format } from "date-fns";
+import { DatePickerWithRange } from "../date-picker-with-range";
+import { DateRange } from "react-day-picker";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -36,8 +28,25 @@ export function SalesTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
-  const [date, setDate] = useState<Date>();
+  // const [date, setDate] = useState<Date>();
+  const [rangeDate, setRangeDate] = useState<DateRange | undefined>(undefined);
   const { mutate } = DeleteSales();
+
+  useEffect(() => {
+    if (rangeDate?.from && rangeDate?.to) {
+      table.setColumnFilters([
+        {
+          id: "local_date",
+          value: {
+            from: format(rangeDate.from, "yyyy-MM-dd HH:mm:ss"),
+            to: format(rangeDate.to, "yyyy-MM-dd HH:mm:ss"),
+          },
+        },
+      ]);
+    } else {
+      table.setColumnFilters([]);
+    }
+  }, [rangeDate, table]);
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
@@ -65,7 +74,7 @@ export function SalesTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-4">
-        <Popover>
+        {/* <Popover>
           <PopoverTrigger asChild>
             <Button
               variant={"outline"}
@@ -88,25 +97,24 @@ export function SalesTableToolbar<TData>({
               locale={es}
               mode="single"
               selected={date}
-              onSelect={
-                (selectedDate) => {
-                  setDate(selectedDate);
-                  if (selectedDate) {
-                    table.setColumnFilters([
-                      {
-                        id: "local_date",
-                        value: format(selectedDate, "yyyy-MM-dd"),
-                      },
-                    ]);
-                  } else {
-                    table.setColumnFilters([]);
-                  }
+              onSelect={(selectedDate) => {
+                setDate(selectedDate);
+                if (selectedDate) {
+                  table.setColumnFilters([
+                    {
+                      id: "local_date",
+                      value: format(selectedDate, "yyyy-MM-dd"),
+                    },
+                  ]);
+                } else {
+                  table.setColumnFilters([]);
                 }
-              }
+              }}
               initialFocus
             />
           </PopoverContent>
-        </Popover>
+        </Popover> */}
+        <DatePickerWithRange date={rangeDate} setDate={setRangeDate} />
       </div>
       <div className="flex space-x-2">
         {selectedRowsCount > 0 && (

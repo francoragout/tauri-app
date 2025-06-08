@@ -36,7 +36,7 @@ pub fn run() {
             owner_id INTEGER NOT NULL,
             percentage REAL NOT NULL,
             FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-            FOREIGN KEY (owner_id) REFERENCES owners(id) ON DELETE CASCADE,
+            FOREIGN KEY (owner_id) REFERENCES owners(id) ON DELETE RESTRICT,
             PRIMARY KEY (product_id, owner_id)
         );
                 
@@ -56,6 +56,7 @@ pub fn run() {
             surcharge INTEGER NOT NULL DEFAULT 0,
             payment_method TEXT NOT NULL,
             is_paid INTEGER DEFAULT 0 CHECK (is_paid IN (0, 1)),
+            paid_at TEXT,
             FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
         );
 
@@ -65,7 +66,7 @@ pub fn run() {
             price REAL NOT NULL,
             quantity INTEGER NOT NULL,
             FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
-            FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+            FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
             PRIMARY KEY (sale_id, product_id)
         );             
 
@@ -76,23 +77,12 @@ pub fn run() {
             phone TEXT
         );
 
-        CREATE TABLE IF NOT EXISTS payments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            customer_id INTEGER NOT NULL,
-            date TEXT DEFAULT CURRENT_TIMESTAMP,
-            period TEXT NOT NULL,
-            amount REAL NOT NULL,
-            surcharge INTEGER NOT NULL DEFAULT 0,
-            method TEXT NOT NULL,
-            FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
-        );
-
         CREATE TABLE IF NOT EXISTS expense_owners (
             expense_id INTEGER NOT NULL,
             owner_id INTEGER NOT NULL,
             percentage REAL NOT NULL,
             FOREIGN KEY (expense_id) REFERENCES expenses(id) ON DELETE CASCADE,
-            FOREIGN KEY (owner_id) REFERENCES owners(id) ON DELETE CASCADE,
+            FOREIGN KEY (owner_id) REFERENCES owners(id) ON DELETE RESTRICT,
             PRIMARY KEY (expense_id, owner_id)
         );
 

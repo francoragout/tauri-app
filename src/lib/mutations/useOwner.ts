@@ -51,8 +51,44 @@ export function DeleteOwners() {
   return useMutation({
     mutationFn: async (ids: number[]) => {
       const db = await Database.load("sqlite:mydatabase.db");
+      const placeholders = ids.map(() => "?").join(",");
 
-      await db.execute(`DELETE FROM owners WHERE id IN (${ids.join(",")})`);
+      // Verificar si el propietario tiene productos
+      const productCheck = await db.select<{ count: number }[]>(
+        `SELECT COUNT(*) as count FROM product_owners WHERE owner_id IN (${placeholders})`,
+        ids
+      );
+
+      const totalProductCount = productCheck.reduce(
+        (acc, row) => acc + row.count,
+        0
+      );
+
+      if (totalProductCount > 0) {
+        throw new Error(
+          "No se puede eliminar un propietario con productos asociados"
+        );
+      }
+
+      // Verificar si el propietario tiene expensas
+      const expenseCheck = await db.select<{ count: number }[]>(
+        `SELECT COUNT(*) as count FROM expense_owners WHERE owner_id IN (${placeholders})`,
+        ids
+      );
+
+      const totalExpenseCount = expenseCheck.reduce(
+        (acc, row) => acc + row.count,
+        0
+      );
+
+      if (totalExpenseCount > 0) {
+        throw new Error(
+          "No se puede eliminar un propietario con expensas asociadas"
+        );
+      }
+
+      // Si no hay asociaciones, eliminar
+      await db.execute(`DELETE FROM owners WHERE id IN (${placeholders})`, ids);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["owners"] });

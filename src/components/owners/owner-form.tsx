@@ -6,14 +6,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+import { Owner, OwnerSchema } from "@/lib/zod";
+import { CreateOwner, UpdateOwner } from "@/lib/mutations/useOwner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Owner, OwnerSchema } from "@/lib/zod";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { CreateOwner, UpdateOwner } from "@/lib/mutations/useOwner";
 
 type OwnerFormProps = {
   owner?: Owner;

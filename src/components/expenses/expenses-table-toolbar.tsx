@@ -62,7 +62,7 @@ export function ExpensesTableToolbar<TData>({
         toast.success(
           `Se ${
             expensesIds.length > 1
-              ? `han eliminado ${selectedRowsCount} expensas seleccionadas`
+              ? `han eliminado ${expensesIds.length} expensas seleccionadas`
               : "ha eliminado la expensa seleccionada"
           }`
         );

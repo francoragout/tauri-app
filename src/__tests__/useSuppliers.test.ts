@@ -88,7 +88,7 @@ describe("CreateSupplier", () => {
         phone: "000000",
         address: "Repetido",
       })
-    ).rejects.toThrow("Ya existe un proveedor con ese nombre.");
+    ).rejects.toThrow("Ya existe un proveedor con ese nombre");
   });
 
   it("debería lanzar un error si la inserción falla por un error interno", async () => {
@@ -153,7 +153,7 @@ describe("UpdateSupplier", () => {
         phone: "000000",
         address: "Ya existe",
       })
-    ).rejects.toThrow("Ya existe un proveedor con ese nombre.");
+    ).rejects.toThrow("Ya existe un proveedor con ese nombre");
   });
 
   it("debería lanzar error si la actualización falla", async () => {

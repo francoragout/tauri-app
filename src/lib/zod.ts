@@ -35,6 +35,7 @@ export const ProductSchema = z.object({
     .string({
       required_error: "Ingrese el nombre del producto",
     })
+    .trim()
     .nonempty({
       message: "Ingrese el nombre del producto",
     }),
@@ -42,6 +43,7 @@ export const ProductSchema = z.object({
     .string({
       required_error: "Ingrese la categoría del producto",
     })
+    .trim()
     .nonempty({
       message: "Ingrese la categoría del producto",
     }),
@@ -50,9 +52,6 @@ export const ProductSchema = z.object({
       invalid_type_error: "Ingrese el precio del producto",
     })
     .min(1, {
-      message: "El precio del producto debe ser mayor a 0",
-    })
-    .positive({
       message: "El precio del producto debe ser mayor a 0",
     }),
   stock: z.coerce
@@ -89,18 +88,12 @@ export const OwnerSchema = z.object({
     .string({
       required_error: "Ingrese el nombre del propietario",
     })
+    .trim()
     .nonempty({
       message: "Ingrese el nombre del propietario",
     }),
-  products: z
-    .array(
-      z.object({
-        id: z.number(),
-        name: z.string(),
-        percentage: z.number(),
-      })
-    )
-    .nullish(),
+  product_count: z.number().optional(),
+  net_gain: z.number().optional(),
 });
 
 export const SaleSchema = z
@@ -137,10 +130,11 @@ export const CustomerSchema = z.object({
     .string({
       required_error: "Ingrese el nombre completo del cliente",
     })
+    .trim()
     .nonempty({
       message: "Ingrese el nombre completo del cliente",
     }),
-  reference: z.string().optional(),
+  reference: z.string().trim().optional(),
   phone: z
     .string()
     .optional()
@@ -153,9 +147,10 @@ export const CustomerSchema = z.object({
 export const ExpenseSchema = z.object({
   id: z.number().optional(),
   local_date: z.string().optional(),
-  category: z.string().nonempty({
+  category: z.string().trim().nonempty({
     message: "Ingrese la categoría del gasto",
   }),
+  description: z.string().trim().optional(),
   amount: z.coerce
     .number({
       invalid_type_error: "Ingrese el total del gasto",
@@ -163,22 +158,23 @@ export const ExpenseSchema = z.object({
     .min(1, {
       message: "El total del gasto debe ser mayor a 0",
     }),
-  description: z.string().optional(),
-});
-
-export const PaymentSchema = z.object({
-  id: z.number().optional(),
-  local_date: z.string().optional(),
-  customer_id: z.number({
-    required_error: "Seleccione un cliente",
-  }),
-  customer_name: z.string().optional(),
-  method: z.string({
-    required_error: "Seleccione un método de pago",
-  }),
-  surcharge: z.number(),
-  amount: z.number(),
-  period: z.string(),
+  owners: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        percentage: z.number(),
+      })
+    )
+    .refine((owners) => owners.length > 0, {
+      message: "Seleccione al menos un propietario",
+    })
+    .refine(
+      (owners) => owners.reduce((acc, o) => acc + o.percentage, 0) === 100,
+      {
+        message: "La suma de los porcentajes de los propietarios debe ser 100.",
+      }
+    ),
 });
 
 export const SupplierSchema = z.object({
@@ -208,25 +204,10 @@ export const SupplierSchema = z.object({
     .nullish(),
 });
 
-export const MonthlySalesSchema = z.object({
-  customer_id: z.number(),
-  period: z.string(),
-  sales_summary: z.array(
-    z.object({
-      id: z.number(),
-      date: z.string(),
-      total: z.number(),
-    })
-  ),
-  debt: z.number(),
-});
-
-export type Payment = z.infer<typeof PaymentSchema>;
 export type Purchase = z.infer<typeof PurchaseSchema>;
 export type Product = z.infer<typeof ProductSchema>;
 export type Sale = z.infer<typeof SaleSchema>;
 export type Expense = z.infer<typeof ExpenseSchema>;
 export type Customer = z.infer<typeof CustomerSchema>;
 export type Supplier = z.infer<typeof SupplierSchema>;
-export type MonthlySales = z.infer<typeof MonthlySalesSchema>;
 export type Owner = z.infer<typeof OwnerSchema>;

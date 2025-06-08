@@ -9,7 +9,6 @@ const pathnames: Record<string, string> = {
   "/owners": "Propietarios",
   "/expenses": "Expensas",
   "/customers": "Clientes",
-  "/payments": "Pagos",
   "/suppliers": "Proveedores",
   "/purchases": "Compras",
   "/products": "Productos",

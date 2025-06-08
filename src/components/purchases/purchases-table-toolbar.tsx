@@ -62,7 +62,7 @@ export function PurchasesTableToolbar<TData>({
         toast.success(
           `Se ${
             purchasesIds.length > 1
-              ? `han eliminado ${selectedRowsCount} compras seleccionadas`
+              ? `han eliminado ${purchasesIds.length} compras seleccionadas`
               : "ha eliminado la compra seleccionada"
           }`
         );

@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { Sale } from "@/lib/zod";
-import { format, isValid, parse } from "date-fns";
+import { endOfDay, format, isValid, parse, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
 // import { SalesTableRowActions } from "./sales-table-row-actions";
 
@@ -46,6 +46,17 @@ export const SalesColumns: ColumnDef<Sale>[] = [
 
       const formatted = format(parsed, "PP", { locale: es });
       return <div>{formatted}</div>;
+    },
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue?.from || !filterValue?.to) return true;
+      const rawDate = row.getValue(columnId) as string;
+      const parsed = parse(rawDate, "yyyy-MM-dd HH:mm:ss", new Date());
+      if (!isValid(parsed)) return false;
+      // Incluye ambos extremos del rango
+      return (
+        parsed >= startOfDay(new Date(filterValue.from)) &&
+        parsed <= endOfDay(new Date(filterValue.to))
+      );
     },
   },
   {

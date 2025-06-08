@@ -48,7 +48,8 @@ export default function SupplierForm({
             toast.success("Proveedor actualizado");
           },
           onError: (error: any) => {
-            const errorMessage = error?.message || "Error al registrar cliente";
+            const errorMessage =
+              error?.message || "Error al actualizar proveedor";
             toast.error(errorMessage);
           },
         }
@@ -60,7 +61,7 @@ export default function SupplierForm({
           toast.success("Proveedor registrado");
         },
         onError: (error: any) => {
-          const errorMessage = error?.message || "Error al registrar cliente";
+          const errorMessage = error?.message || "Error al registrar proveedor";
           toast.error(errorMessage);
         },
       });

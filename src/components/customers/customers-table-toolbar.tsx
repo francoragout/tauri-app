@@ -19,10 +19,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { PlusCircle, Trash2 } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
-import { PlusCircle, Trash2 } from "lucide-react";
 import { DeleteCustomers } from "@/lib/mutations/useCustomer";
 import { toast } from "sonner";
 import CustomerForm from "./customer-form";
@@ -50,15 +50,16 @@ export function CustomersTableToolbar<TData>({
         table.resetRowSelection();
         toast.success(
           `Se ${
-            selectedRowsCount > 1
-              ? `han eliminado ${selectedRowsCount} clientes seleccionados`
+            customersIds.length > 1
+              ? `han eliminado ${customersIds.length} clientes seleccionados`
               : "ha eliminado el cliente seleccionado"
           }`
         );
       },
-      onError: (error: any) => {
-        const errorMessage = error?.message || "Error al eliminar";
-        toast.error(errorMessage);
+      onError: (error: unknown) => {
+        const message =
+          error instanceof Error ? error.message : "Error al eliminar";
+        toast.error(message);
       },
     });
   };

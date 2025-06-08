@@ -6,14 +6,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+import { Customer, CustomerSchema } from "@/lib/zod";
+import { CreateCustomer, UpdateCustomer } from "@/lib/mutations/useCustomer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Customer, CustomerSchema } from "@/lib/zod";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { CreateCustomer, UpdateCustomer } from "@/lib/mutations/useCustomer";
 
 type CustomerFormProps = {
   customer?: Customer;
