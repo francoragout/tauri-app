@@ -74,46 +74,6 @@ export function SalesTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-4">
-        {/* <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={"outline"}
-              size="sm"
-              className={cn(
-                "w-[150px] lg:w-[250px] justify-start text-left font-normal",
-                !date && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? (
-                format(date, "PP", { locale: es })
-              ) : (
-                <span>Filtrar gastos...</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              locale={es}
-              mode="single"
-              selected={date}
-              onSelect={(selectedDate) => {
-                setDate(selectedDate);
-                if (selectedDate) {
-                  table.setColumnFilters([
-                    {
-                      id: "local_date",
-                      value: format(selectedDate, "yyyy-MM-dd"),
-                    },
-                  ]);
-                } else {
-                  table.setColumnFilters([]);
-                }
-              }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover> */}
         <DatePickerWithRange date={rangeDate} setDate={setRangeDate} />
       </div>
       <div className="flex space-x-2">

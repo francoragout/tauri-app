@@ -7,26 +7,33 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Calendar, DollarSign } from "lucide-react";
+import { MonthlyFinancialReport } from "@/lib/types";
 
 type SectionCardsProps = {
-  currentMonthSalesTotal: number;
-  currentMonthExpensesTotal: number;
-  currentMonthPurchasesTotal: number;
-  currentMonthEarningsTotal: number;
+  monthlyReports: MonthlyFinancialReport[];
 };
 
-export function SectionCards({
-  currentMonthSalesTotal,
-  currentMonthExpensesTotal,
-  currentMonthPurchasesTotal,
-  currentMonthEarningsTotal,
-}: SectionCardsProps) {
+export function SectionCards({ monthlyReports }: SectionCardsProps) {
+  // 1. Obtener el mes actual en formato YYYY-MM
+  const currentMonth = new Date().toISOString().slice(0, 7);
+
+  // 2. Buscar el reporte del mes actual usando local_month
+  const currentMonthReport = monthlyReports.find(
+    (r) => r.local_month.slice(0, 7) === currentMonth
+  );
+
+  // 3. Definir los valores, usando 0 si no hay datos
+  const sales = currentMonthReport?.sales ?? 0;
+  const purchases = currentMonthReport?.purchases ?? 0;
+  const expenses = currentMonthReport?.expenses ?? 0;
+  const earnings = currentMonthReport?.net_profit ?? 0;
+
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       <Card className="@container/card">
         <CardHeader>
           <CardDescription className="flex items-center justify-between">
-            <span>Ganancias</span>
+            <span>Ventas</span>
             <Badge variant="outline">
               <Calendar />
               Este mes
@@ -40,7 +47,7 @@ export function SectionCards({
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })
-                  .format(currentMonthSalesTotal)
+                  .format(sales)
                   .split(",");
                 return (
                   <>
@@ -72,7 +79,7 @@ export function SectionCards({
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })
-                  .format(currentMonthPurchasesTotal)
+                  .format(purchases)
                   .split(",");
                 return (
                   <>
@@ -90,7 +97,7 @@ export function SectionCards({
       <Card className="@container/card">
         <CardHeader>
           <CardDescription className="flex items-center justify-between">
-            <span>Expensas</span>
+            <span>Gastos</span>
             <Badge variant="outline">
               <Calendar />
               Este mes
@@ -104,7 +111,7 @@ export function SectionCards({
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })
-                  .format(currentMonthExpensesTotal)
+                  .format(expenses)
                   .split(",");
                 return (
                   <>
@@ -136,7 +143,7 @@ export function SectionCards({
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })
-                  .format(currentMonthEarningsTotal)
+                  .format(earnings)
                   .split(",");
                 return (
                   <>

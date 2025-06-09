@@ -53,41 +53,32 @@ export function DeleteOwners() {
       const db = await Database.load("sqlite:mydatabase.db");
       const placeholders = ids.map(() => "?").join(",");
 
-      // Verificar si el propietario tiene productos
+      // Verificar si el propietario tiene productos o expensas asociadas
       const productCheck = await db.select<{ count: number }[]>(
-        `SELECT COUNT(*) as count FROM product_owners WHERE owner_id IN (${placeholders})`,
+        `SELECT owner_id FROM product_owners WHERE owner_id IN (${placeholders})`,
         ids
       );
 
-      const totalProductCount = productCheck.reduce(
-        (acc, row) => acc + row.count,
-        0
-      );
-
-      if (totalProductCount > 0) {
-        throw new Error(
-          "No se puede eliminar un propietario con productos asociados"
-        );
-      }
-
-      // Verificar si el propietario tiene expensas
       const expenseCheck = await db.select<{ count: number }[]>(
-        `SELECT COUNT(*) as count FROM expense_owners WHERE owner_id IN (${placeholders})`,
+        `SELECT owner_id FROM expense_owners WHERE owner_id IN (${placeholders})`,
         ids
       );
 
-      const totalExpenseCount = expenseCheck.reduce(
-        (acc, row) => acc + row.count,
-        0
-      );
-
-      if (totalExpenseCount > 0) {
+      if (productCheck.length > 0 && expenseCheck.length > 0) {
         throw new Error(
-          "No se puede eliminar un propietario con expensas asociadas"
+          "No se pueden eliminar propietarios con productos o expensas asociadas"
+        );
+      } else if (productCheck.length > 0) {
+        throw new Error(
+          "No se pueden eliminar propietarios con productos asociados"
+        );
+      } else if (expenseCheck.length > 0) {
+        throw new Error(
+          "No se pueden eliminar propietarios con expensas asociadas"
         );
       }
 
-      // Si no hay asociaciones, eliminar
+      // Eliminar los propietarios
       await db.execute(`DELETE FROM owners WHERE id IN (${placeholders})`, ids);
     },
     onSuccess: () => {

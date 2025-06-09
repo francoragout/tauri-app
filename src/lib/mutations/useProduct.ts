@@ -111,18 +111,29 @@ export function DeleteProducts() {
       const db = await Database.load("sqlite:mydatabase.db");
       const placeholders = ids.map(() => "?").join(",");
 
-      // Verificar si los productos seleccionados tienen compras asociadas
+      // Verificar si los productos seleccionados tienen compras o ventas asociadas
       const purchases = await db.select<{ product_id: number }[]>(
         `SELECT product_id FROM purchases WHERE product_id IN (${placeholders})`,
         ids
       );
+      const sales = await db.select<{ product_id: number }[]>(
+        `SELECT product_id FROM sale_items WHERE product_id IN (${placeholders})`,
+        ids
+      );
 
-      if (purchases.length > 0) {
+      if (purchases.length > 0 && sales.length > 0) {
+        throw new Error(
+          "No se pueden eliminar productos con compras y ventas asociadas"
+        );
+      } else if (purchases.length > 0) {
         throw new Error(
           "No se pueden eliminar productos con compras asociadas"
         );
+      } else if (sales.length > 0) {
+        throw new Error("No se pueden eliminar productos con ventas asociadas");
       }
 
+      // Eliminar los productos
       await db.execute(
         `DELETE FROM products WHERE id IN (${placeholders})`,
         ids
@@ -133,4 +144,3 @@ export function DeleteProducts() {
     },
   });
 }
-
