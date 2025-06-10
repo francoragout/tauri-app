@@ -1,20 +1,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DailyFinancialReport, MonthlyFinancialReport } from "@/lib/types";
 import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interactive";
-import { SectionCards } from "@/components/dashboard/section-cards";
 import { useQuery } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
 import { DailyFinancialReportTable } from "@/components/dashboard/daily-financial-report-table";
 import { DailyFinancialReportColumns } from "@/components/dashboard/daily-financial-report-columns";
 import { MonthlyFinancialReportTable } from "@/components/dashboard/monthly-financial-report-table";
 import { MonthlyFinancialReportColumns } from "@/components/dashboard/monthly-financial-report-columns";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { ChartBarInteractive } from "@/components/dashboard/chart-bar-interactive";
 
 async function GetDailyFinancialReport(): Promise<DailyFinancialReport[]> {
   const db = await Database.load("sqlite:mydatabase.db");
@@ -113,43 +106,32 @@ export default function Dashboard() {
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 md:gap-6">
-          <SectionCards monthlyReports={monthlyReports} />
-          <ChartAreaInteractive dailyReports={dailyReports} />
-          <Card className="@container/card">
-            <Tabs defaultValue="daily_report">
-              <CardHeader className="flex justify-between items-center mb-4">
-                <div className="space-y-2">
-                  <CardTitle>Reportes</CardTitle>
-                  <CardDescription>
-                    <span className="hidden @[540px]/card:block">
-                      Total for the last 3 months
-                    </span>
-                    <span className="@[540px]/card:hidden">Last 3 months</span>
-                  </CardDescription>
-                </div>
-                <TabsList>
-                  <TabsTrigger value="daily_report">Diarios</TabsTrigger>
-                  <TabsTrigger value="monthly_report">Mensuales</TabsTrigger>
-                </TabsList>
-              </CardHeader>
-              <CardContent>
-                <TabsContent value="daily_report">
-                  <DailyFinancialReportTable
-                    data={dailyReports}
-                    columns={DailyFinancialReportColumns}
-                  />
-                </TabsContent>
-                <TabsContent value="monthly_report">
-                  <MonthlyFinancialReportTable
-                    data={monthlyReports}
-                    columns={MonthlyFinancialReportColumns}
-                  />
-                </TabsContent>
-              </CardContent>
-            </Tabs>
-          </Card>
-        </div>
+        <Tabs defaultValue="daily_report" className="space-y-2">
+          <TabsList>
+            <TabsTrigger value="daily_report">Diarios</TabsTrigger>
+            <TabsTrigger value="monthly_report">Mensuales</TabsTrigger>
+          </TabsList>
+          <TabsContent
+            value="daily_report"
+            className="flex flex-col gap-4 md:gap-6"
+          >
+            <ChartAreaInteractive />
+            <DailyFinancialReportTable
+              data={dailyReports}
+              columns={DailyFinancialReportColumns}
+            />
+          </TabsContent>
+          <TabsContent
+            value="monthly_report"
+            className="flex flex-col gap-4 md:gap-6"
+          >
+            <ChartBarInteractive />
+            <MonthlyFinancialReportTable
+              data={monthlyReports}
+              columns={MonthlyFinancialReportColumns}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
