@@ -13,3 +13,15 @@ export type MonthlyFinancialReport = {
   expenses: number;
   net_profit: number;
 };
+
+export type Bill = {
+  customer_id: number;
+  customer_name: string;
+  year_month: string;
+  sales_summary: {
+    day: string;
+    sale_id: number;
+    total: number;
+  };
+  total_debt: number;
+};

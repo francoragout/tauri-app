@@ -107,9 +107,9 @@ export default function Dashboard() {
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
         <Tabs defaultValue="daily_report" className="space-y-2">
-          <TabsList>
-            <TabsTrigger value="daily_report">Diarios</TabsTrigger>
-            <TabsTrigger value="monthly_report">Mensuales</TabsTrigger>
+          <TabsList className="h-[32px] w-[250px]">
+            <TabsTrigger value="daily_report" className="h-7">Diarios</TabsTrigger>
+            <TabsTrigger value="monthly_report" className="h-7">Mensuales</TabsTrigger>
           </TabsList>
           <TabsContent
             value="daily_report"

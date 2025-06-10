@@ -149,6 +149,16 @@ export const SalesColumns: ColumnDef<Sale>[] = [
     },
   },
   {
+    accessorKey: "customer_id",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Cliente" />
+    ),
+    cell: ({ row }) => {
+      const customerId = row.getValue("customer_id") as string | null;
+      return <div>{customerId}</div>;
+    },
+  },
+  {
     accessorKey: "customer_name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Cliente" />
