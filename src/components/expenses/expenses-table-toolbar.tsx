@@ -62,8 +62,8 @@ export function ExpensesTableToolbar<TData>({
         toast.success(
           `Se ${
             expensesIds.length > 1
-              ? `han eliminado ${expensesIds.length} expensas seleccionadas`
-              : "ha eliminado la expensa seleccionada"
+              ? `han eliminado ${expensesIds.length} gastos seleccionados`
+              : "ha eliminado el gasto seleccionado"
           }`
         );
       },
@@ -90,7 +90,7 @@ export function ExpensesTableToolbar<TData>({
               {date ? (
                 format(date, "PP", { locale: es })
               ) : (
-                <span>Filtrar expensas...</span>
+                <span>Filtrar gastos...</span>
               )}
             </Button>
           </PopoverTrigger>
@@ -152,8 +152,8 @@ export function ExpensesTableToolbar<TData>({
                     Esta acción no se puede deshacer. Esto eliminará
                     permanentemente{" "}
                     {selectedRowsCount > 1
-                      ? `las ${selectedRowsCount} expensas seleccionadas`
-                      : "la expensa seleccionada"}
+                      ? `las ${selectedRowsCount} gastos seleccionados`
+                      : "el gasto seleccionado"}
                     .
                   </span>
                 </AlertDialogDescription>
@@ -181,7 +181,7 @@ export function ExpensesTableToolbar<TData>({
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Registrar expensa</DialogTitle>
+              <DialogTitle>Registrar gasto</DialogTitle>
               <DialogDescription>
                 Use tabs para navegar mas rapido entre los diferentes campos.
               </DialogDescription>

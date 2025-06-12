@@ -7,8 +7,9 @@ import Notifications from "./notifications";
 const pathnames: Record<string, string> = {
   "/dashboard": "Análisis",
   "/owners": "Propietarios",
-  "/expenses": "Expensas",
+  "/expenses": "Gastos",
   "/customers": "Clientes",
+  "/bills": "Cuentas",
   "/suppliers": "Proveedores",
   "/purchases": "Compras",
   "/products": "Productos",
@@ -17,7 +18,7 @@ const pathnames: Record<string, string> = {
 };
 
 export function SiteHeader() {
-   const location = useLocation();
+  const location = useLocation();
 
   // Buscar el path base que coincida con el inicio del pathname actual
   const matchedPath = Object.keys(pathnames).find((key) =>

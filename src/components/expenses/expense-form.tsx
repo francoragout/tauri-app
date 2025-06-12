@@ -99,10 +99,10 @@ export default function ExpenseForm({
         {
           onSuccess: () => {
             onOpenChange(false);
-            toast.success("Expensa actualizada");
+            toast.success("Gasto actualizado");
           },
           onError: () => {
-            toast.error("Error al actualizar expensa");
+            toast.error("Error al actualizar gasto");
           },
         }
       );
@@ -110,10 +110,10 @@ export default function ExpenseForm({
       createExpense(values, {
         onSuccess: () => {
           onOpenChange(false);
-          toast.success("Expensa registrada");
+          toast.success("Gasto registrado");
         },
         onError: () => {
-          toast.error("Error al registrar expensa");
+          toast.error("Error al registrar gasto");
         },
       });
     }

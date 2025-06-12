@@ -40,7 +40,7 @@ const data = {
       icon: Users,
     },
     {
-      name: "Expensas",
+      name: "Gastos",
       url: "/expenses",
       icon: BanknoteArrowDown,
     },
@@ -48,6 +48,11 @@ const data = {
       name: "Clientes",
       url: "/customers",
       icon: Users,
+    },
+    {
+      name: "Cuentas",
+      url: "/bills",
+      icon: BanknoteArrowUp,
     },
   ],
   inventory: [

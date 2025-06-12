@@ -53,7 +53,7 @@ export function DeleteOwners() {
       const db = await Database.load("sqlite:mydatabase.db");
       const placeholders = ids.map(() => "?").join(",");
 
-      // Verificar si el propietario tiene productos o expensas asociadas
+      // Verificar si el propietario tiene productos o gastos asociadas
       const productCheck = await db.select<{ count: number }[]>(
         `SELECT owner_id FROM product_owners WHERE owner_id IN (${placeholders})`,
         ids
@@ -66,7 +66,7 @@ export function DeleteOwners() {
 
       if (productCheck.length > 0 && expenseCheck.length > 0) {
         throw new Error(
-          "No se pueden eliminar propietarios con productos o expensas asociadas"
+          "No se pueden eliminar propietarios con productos o gastos asociados"
         );
       } else if (productCheck.length > 0) {
         throw new Error(
@@ -74,7 +74,7 @@ export function DeleteOwners() {
         );
       } else if (expenseCheck.length > 0) {
         throw new Error(
-          "No se pueden eliminar propietarios con expensas asociadas"
+          "No se pueden eliminar propietarios con gastos asociados"
         );
       }
 

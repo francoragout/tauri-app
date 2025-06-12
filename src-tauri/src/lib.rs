@@ -42,10 +42,11 @@ pub fn run() {
                 
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
+            name TEXT NOT NULL UNIQUE,
             category TEXT NOT NULL,
             price REAL NOT NULL,
-            stock INTEGER NOT NULL
+            stock INTEGER NOT NULL,
+            low_stock_threshold INTEGER NOT NULL DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS sales (
@@ -99,6 +100,7 @@ pub fn run() {
             date TEXT DEFAULT CURRENT_TIMESTAMP,
             title TEXT NOT NULL,
             message TEXT NOT NULL,
+            link TEXT NOT NULL,
             is_read INTEGER DEFAULT 0 CHECK (is_read IN (0, 1))
         );
             ",

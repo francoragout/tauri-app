@@ -11,7 +11,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 
 import {
   Table,
@@ -20,37 +20,32 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
 
-import * as React from "react";
-import { DataTablePagination } from "@/components/data-table-pagination";
-import { ProductsTableToolbar } from "./products-table-toolbar";
-import { toast } from "sonner";
-import { useDispatch } from "react-redux";
-import { addToCart } from "@/features/cart/cartSlice";
-import { Product } from "@/lib/zod";
+import * as React from "react"
+import { DataTablePagination } from "@/components/data-table-pagination"
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
 }
 
-export function ProductsTable<TData, TValue>({
+export function BillsTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+    React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  );
+  )
   const [sorting, setSorting] = React.useState<SortingState>([
     {
-      id: "name",
+      id: "year_month",
       desc: false,
     },
-  ]);
+  ])
 
   const table = useReactTable({
     data,
@@ -72,33 +67,11 @@ export function ProductsTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-  });
-
-  const dispatch = useDispatch();
-
-  const handleAddToCart = (product: Product) => {
-    if (product.id === undefined) {
-      toast.error("El producto no tiene ID y no puede agregarse al carrito.");
-      return;
-    }
-
-    dispatch(
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        stock: product.stock,
-        low_stock_threshold: product.low_stock_threshold,
-        quantity: 1,
-      })
-    );
-
-    toast.success("Agregado al carrito");
-  };
+  })
 
   return (
     <div className="space-y-4">
-      <ProductsTableToolbar table={table} />
+      {/* <CustomersTableToolbar table={table} /> */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -114,7 +87,7 @@ export function ProductsTable<TData, TValue>({
                             header.getContext()
                           )}
                     </TableHead>
-                  );
+                  )
                 })}
               </TableRow>
             ))}
@@ -125,7 +98,6 @@ export function ProductsTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => handleAddToCart(row.original as Product)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -152,5 +124,5 @@ export function ProductsTable<TData, TValue>({
       </div>
       <DataTablePagination table={table} />
     </div>
-  );
+  )
 }

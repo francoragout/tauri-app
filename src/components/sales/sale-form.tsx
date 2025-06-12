@@ -37,15 +37,15 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { SaleSchema } from "@/lib/zod";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { CreateSale } from "@/lib/mutations/useSale";
 import { useDispatch } from "react-redux";
-import { clearCart } from "@/features/cart/cartSlice";
+import { CartItem, clearCart } from "@/features/cart/cartSlice";
 import { GetCustomers } from "@/lib/mutations/useCustomer";
 import { useQuery } from "@tanstack/react-query";
 
 interface SaleCreateFormProps {
-  products: any[];
+  products: CartItem[];
   surcharge: number;
   total: number;
   onOpenChange: (open: boolean) => void;
@@ -64,10 +64,7 @@ export function SaleForm({
     queryFn: GetCustomers,
   });
 
-  const [selectedCustomerId, setSelectedCustomerId] = useState<
-    number | undefined
-  >(undefined);
-
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number>();
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
   const { mutate, isPending } = CreateSale();
@@ -77,53 +74,54 @@ export function SaleForm({
     defaultValues: {
       payment_method: "cash",
       customer_id: undefined,
-      total: total,
-      surcharge: surcharge,
+      total,
+      surcharge,
       is_paid: 1,
       products: [],
     },
   });
 
   useEffect(() => {
-    form.setValue(
-      "products",
-      products.map((product) => ({
-        id: product.id,
-        quantity: product.quantity,
-      }))
-    );
-  }, [products]);
+    const formattedProducts = products.map((product) => ({
+      id: product.id,
+      quantity: product.quantity,
+      price: product.price,
+      name: product.name,
+      stock: product.stock,
+      low_stock_threshold: product.low_stock_threshold,
+    }));
+    form.setValue("products", formattedProducts);
+  }, [products, form]);
 
   const paymentMethod = form.watch("payment_method");
 
   useEffect(() => {
-    switch (paymentMethod) {
-      case "cash":
-        onSurchargeChange(0);
-        setSelectedCustomerId(undefined);
-        form.setValue("customer_id", undefined);
-        form.setValue("total", total);
-        form.setValue("surcharge", 0);
-        form.setValue("is_paid", 1);
-        break;
-
-      case "account":
-        onSurchargeChange(0);
-        form.setValue("total", 0);
-        form.setValue("surcharge", 0);
-        form.setValue("is_paid", 0);
-        break;
-
-      default:
-        onSurchargeChange(surcharge);
-        form.setValue("surcharge", surcharge);
-        form.setValue("total", total);
-        setSelectedCustomerId(undefined);
-        form.setValue("customer_id", undefined);
-        form.setValue("is_paid", 1);
-        break;
+    if (paymentMethod === "cash") {
+      onSurchargeChange(0);
+      setSelectedCustomerId(undefined);
+      form.setValue("customer_id", undefined);
+      form.setValue("total", total);
+      form.setValue("surcharge", 0);
+      form.setValue("is_paid", 1);
+    } else if (paymentMethod === "account") {
+      onSurchargeChange(0);
+      form.setValue("total", 0);
+      form.setValue("surcharge", 0);
+      form.setValue("is_paid", 0);
+    } else {
+      onSurchargeChange(surcharge);
+      form.setValue("surcharge", surcharge);
+      form.setValue("total", total);
+      setSelectedCustomerId(undefined);
+      form.setValue("customer_id", undefined);
+      form.setValue("is_paid", 1);
     }
-  }, [paymentMethod, surcharge, total]);
+  }, [paymentMethod, surcharge, total, form, onSurchargeChange]);
+
+  const selectedCustomer = useMemo(
+    () => customers.find((c) => c.id === selectedCustomerId),
+    [selectedCustomerId, customers]
+  );
 
   function onSubmit(values: z.infer<typeof SaleSchema>) {
     mutate(values, {
@@ -135,8 +133,7 @@ export function SaleForm({
         onOpenChange(false);
       },
       onError: (error: any) => {
-        const errorMessage = error?.message || "Error al registrar venta";
-        toast.error(errorMessage);
+        toast.error(error?.message || "Error al registrar venta");
       },
     });
   }
@@ -150,9 +147,9 @@ export function SaleForm({
           render={({ field }) => (
             <FormItem>
               <Select
+                value={field.value}
                 onValueChange={field.onChange}
                 disabled={isPending}
-                defaultValue="cash"
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -213,20 +210,13 @@ export function SaleForm({
                       disabled={isPending}
                       className={cn(
                         "justify-between h-9 hover:bg-background font-normal",
-                        !field.value &&
-                          "hover:text-muted-foreground font-normal text-muted-foreground"
+                        !field.value && "text-muted-foreground"
                       )}
                     >
-                      {selectedCustomerId
-                        ? (() => {
-                            const customer = customers.find(
-                              (customer) => customer.id === selectedCustomerId
-                            );
-                            if (!customer) return null;
-                            return customer.reference
-                              ? `${customer.name} (${customer.reference})`
-                              : customer.name;
-                          })()
+                      {selectedCustomer
+                        ? selectedCustomer.reference
+                          ? `${selectedCustomer.name} (${selectedCustomer.reference})`
+                          : selectedCustomer.name
                         : "Cliente (opcional)"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -257,7 +247,7 @@ export function SaleForm({
                                     : "opacity-0"
                                 )}
                               />
-                              {`${customer.name}${
+                              {`${customer.name} ${
                                 customer.reference
                                   ? ` (${customer.reference})`
                                   : ""

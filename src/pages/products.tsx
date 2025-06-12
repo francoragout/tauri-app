@@ -39,6 +39,7 @@ async function GetProducts(): Promise<Product[]> {
       ) AS unit_price,
       p.price,
       p.stock,
+      p.low_stock_threshold,
       IFNULL(s.times_sold, 0) AS times_sold,
       json_group_array(
         DISTINCT json_object(

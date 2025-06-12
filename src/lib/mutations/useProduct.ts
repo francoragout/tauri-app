@@ -30,9 +30,15 @@ export function CreateProduct() {
 
       // 1. Insertar producto
       await db.execute(
-        `INSERT INTO products (name, category, price, stock)
-         VALUES ($1, $2, $3, $4)`,
-        [values.name, values.category, values.price, values.stock]
+        `INSERT INTO products (name, category, price, stock, low_stock_threshold)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [
+          values.name,
+          values.category,
+          values.price,
+          values.stock,
+          values.low_stock_threshold,
+        ]
       );
 
       // 2. Obtener el id del producto recién creado
@@ -78,9 +84,16 @@ export function UpdateProduct() {
       // 1. Actualizar producto
       await db.execute(
         `UPDATE products 
-         SET name = $1, category = $2, price = $3, stock = $4 
-         WHERE id = $5`,
-        [values.name, values.category, values.price, values.stock, values.id]
+         SET name = $1, category = $2, price = $3, stock = $4, low_stock_threshold = $5 
+         WHERE id = $6`,
+        [
+          values.name,
+          values.category,
+          values.price,
+          values.stock,
+          values.low_stock_threshold,
+          values.id,
+        ]
       );
 
       // 2. Eliminar dueños existentes

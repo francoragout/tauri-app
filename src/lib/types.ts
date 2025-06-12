@@ -19,7 +19,7 @@ export type Bill = {
   customer_name: string;
   year_month: string;
   sales_summary: {
-    day: string;
+    date: string;
     sale_id: number;
     total: number;
   };

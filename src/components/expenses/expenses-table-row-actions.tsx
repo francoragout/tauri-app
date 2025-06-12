@@ -39,7 +39,7 @@ export function ExpensesTableRowActions<TData>({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar expensa</DialogTitle>
+          <DialogTitle>Editar gasto</DialogTitle>
           <DialogDescription>
             Use tabs para navegar mas rapido entre los diferentes campos.
           </DialogDescription>

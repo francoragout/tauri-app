@@ -61,6 +61,13 @@ export const ProductSchema = z.object({
     .int({
       message: "El stock debe ser un número entero",
     }),
+  low_stock_threshold: z.coerce
+    .number({
+      invalid_type_error: "Ingrese el umbral de bajo stock del producto",
+    })
+    .int({
+      message: "El umbral de stock bajo debe ser un número entero",
+    }),
   unit_price: z.number().nullish(),
   times_sold: z.number().optional(),
   owners: z
@@ -101,6 +108,7 @@ export const SaleSchema = z
     id: z.number().optional(),
     local_date: z.string().optional(),
     is_paid: z.number(),
+    paid_at: z.string().nullish(),
     customer_id: z.number().nullish(),
     customer_name: z.string().nullish(),
     payment_method: z.string(),
@@ -109,8 +117,11 @@ export const SaleSchema = z
     products: z.array(
       z.object({
         id: z.number(),
-        name: z.string().optional(),
+        name: z.string(),
         quantity: z.number(),
+        price: z.number().optional(),
+        stock: z.number().optional(),
+        low_stock_threshold: z.number().optional(),
       })
     ),
   })
@@ -204,6 +215,33 @@ export const SupplierSchema = z.object({
     .nullish(),
 });
 
+export const BillSchema = z.object({
+  customer_id: z.number(),
+  customer_name: z.string(),
+  year_month: z.string(),
+  sales_summary: z.array(
+    z.object({
+      date: z.string(),
+      sale_id: z.number(),
+      total: z.number(),
+    })
+  ),
+  payment_method: z.string().optional(),
+  surcharge: z.number().optional(),
+  total_debt: z.number(),
+});
+
+export const NotificationSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  message: z.string(),
+  link: z.string(),
+  is_read: z.boolean(),
+  date: z.string(),
+});
+
+export type Notification = z.infer<typeof NotificationSchema>;
+export type Bill = z.infer<typeof BillSchema>;
 export type Purchase = z.infer<typeof PurchaseSchema>;
 export type Product = z.infer<typeof ProductSchema>;
 export type Sale = z.infer<typeof SaleSchema>;

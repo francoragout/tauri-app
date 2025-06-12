@@ -75,6 +75,7 @@ export default function ProductForm({
       category: product?.category ?? "",
       price: product?.price ?? undefined,
       stock: product?.stock ?? undefined,
+      low_stock_threshold: product?.low_stock_threshold ?? undefined,
       owners:
         product?.owners?.map((owner) => ({
           id: owner.id,
@@ -206,6 +207,23 @@ export default function ProductForm({
                   {...field}
                   disabled={isPending}
                   placeholder="Stock (requerido)"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="low_stock_threshold"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input
+                  {...field}
+                  disabled={isPending}
+                  placeholder="Umbral de bajo stock (requerido)"
                 />
               </FormControl>
               <FormMessage />
