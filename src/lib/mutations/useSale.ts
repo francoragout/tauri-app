@@ -2,17 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sale } from "../zod";
 import { getDb } from "../db";
 
-export async function GetTodaySales(): Promise<Sale[]> {
-  const db = await getDb();
-  return db.select(
-    `
-      SELECT id, total, paid_at, datetime(paid_at, '-3 hours') AS local_date
-      FROM sales
-      WHERE paid_at IS NOT NULL;
-    `
-  );
-}
-
 function formatDateToSql(date: Date) {
   return date.toISOString().replace("T", " ").substring(0, 19);
 }
@@ -129,10 +118,12 @@ export function CreateSale() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
-      queryClient.invalidateQueries({ queryKey: ["today_sales"] });
+      queryClient.invalidateQueries({ queryKey: ["balance"] });
+      queryClient.invalidateQueries({ queryKey: ["bills"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["customers"] });
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["daily_financial_report"] });
+      queryClient.invalidateQueries({ queryKey: ["monthly_financial_report"] });
     },
   });
 }
@@ -179,7 +170,7 @@ export function DeleteSales() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
-      queryClient.invalidateQueries({ queryKey: ["today_sales"] });
+      queryClient.invalidateQueries({ queryKey: ["balance"] });
     },
   });
 }

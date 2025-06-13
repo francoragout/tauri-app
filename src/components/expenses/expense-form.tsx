@@ -101,8 +101,12 @@ export default function ExpenseForm({
             onOpenChange(false);
             toast.success("Gasto actualizado");
           },
-          onError: () => {
-            toast.error("Error al actualizar gasto");
+          onError: (error: unknown) => {
+            const message =
+              error instanceof Error
+                ? error.message
+                : "Error al registrar gasto";
+            toast.error(message);
           },
         }
       );
@@ -112,8 +116,10 @@ export default function ExpenseForm({
           onOpenChange(false);
           toast.success("Gasto registrado");
         },
-        onError: () => {
-          toast.error("Error al registrar gasto");
+        onError: (error: unknown) => {
+          const message =
+            error instanceof Error ? error.message : "Error al registrar gasto";
+          toast.error(message);
         },
       });
     }

@@ -53,7 +53,7 @@ export const SuppliersColumns: ColumnDef<Supplier>[] = [
             variant="ghost"
             size="sm"
             onClick={() => {
-              window.open(`https://wa.me/${phone}`, "_blank");
+              window.open(`https://wa.me/+549${phone}`, "_blank");
             }}
           >
             <IconBrandWhatsapp />

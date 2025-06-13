@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { BillSchema } from "@/lib/zod";
 import { useState } from "react";
 import BillForm from "./bill-form";
+import BillSend from "./bill-send";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -40,8 +41,9 @@ export function BillsTableRowActions<TData>({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px] z-50">
           <div className="flex flex-col w-full">
-            <DropdownMenuItem asChild></DropdownMenuItem>
-            <DropdownMenuItem asChild></DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <BillSend bill={bill} />
+            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Button
                 className="flex justify-start pl-2"

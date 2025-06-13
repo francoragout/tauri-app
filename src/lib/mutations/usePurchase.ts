@@ -1,22 +1,24 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Purchase } from "../zod";
-import Database from "@tauri-apps/plugin-sql";
-
-export function GetPurchases(): Promise<Purchase[]> {
-  return Database.load("sqlite:mydatabase.db").then((db) =>
-    db.select(
-      `SELECT id, total, datetime(date, '-3 hours') AS local_date FROM purchases`
-    )
-  );
-}
+import { getDb } from "../db";
+import { GetBalance } from "./useBalance";
 
 export function CreatePurchase() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (values: Purchase) => {
-      const db = await Database.load("sqlite:mydatabase.db");
+      const db = await getDb();
 
+      // 1. Obtener el balance actual
+      const balance = await GetBalance();
+
+      // 2. Verificar si la compra supera el balance actual
+      if (values.total > balance) {
+        throw new Error("La compra no puede ser mayor que el balance actual");
+      }
+
+      // 3. Insertar compra
       await db.execute(
         `INSERT INTO purchases (product_id, supplier_id, quantity, total, payment_method)
            VALUES ($1, $2, $3, $4, $5)`,
@@ -29,6 +31,7 @@ export function CreatePurchase() {
         ]
       );
 
+      // 4. Editar stock del producto
       await db.execute(
         `UPDATE products
              SET stock = stock + $1
@@ -38,6 +41,7 @@ export function CreatePurchase() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
+      queryClient.invalidateQueries({ queryKey: ["balance"] });
     },
   });
 }
@@ -47,8 +51,17 @@ export function UpdatePurchase() {
 
   return useMutation({
     mutationFn: async (values: Purchase) => {
-      const db = await Database.load("sqlite:mydatabase.db");
+      const db = await getDb();
 
+      // 1. Obtener el balance actual
+      const balance = await GetBalance();
+
+      // 2. Verificar si la compra supera el balance actual
+      if (values.total > balance) {
+        throw new Error("La compra no puede ser mayor que el balance actual");
+      }
+
+      // 3. Actualizar compra
       await db.execute(
         `UPDATE purchases
            SET product_id = $1, supplier_id = $2, quantity = $3, total = $4, payment_method = $5
@@ -65,6 +78,7 @@ export function UpdatePurchase() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
+      queryClient.invalidateQueries({ queryKey: ["balance"] });
     },
   });
 }
@@ -74,12 +88,13 @@ export function DeletePurchases() {
 
   return useMutation({
     mutationFn: async (ids: number[]) => {
-      const db = await Database.load("sqlite:mydatabase.db");
+      const db = await getDb();
 
       await db.execute(`DELETE FROM purchases WHERE id IN (${ids.join(",")})`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
+      queryClient.invalidateQueries({ queryKey: ["balance"] });
     },
   });
 }

@@ -46,7 +46,7 @@ export const OwnersColumns: ColumnDef<Owner>[] = [
   {
     accessorKey: "net_gain",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Ganancia neta" />
+      <DataTableColumnHeader column={column} title="Ganancia" />
     ),
     cell: ({ row }) => {
       const netGain = row.getValue("net_gain") as number;

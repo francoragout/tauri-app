@@ -13,16 +13,15 @@ import {
   BanknoteArrowDown,
   BanknoteArrowUp,
   ChartNoAxesCombined,
-  DollarSign,
-  NotepadText,
+  Landmark,
+  ShoppingBasket,
   Truck,
   Users,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
-import { GetTodaySales } from "@/lib/mutations/useSale";
 import { useQuery } from "@tanstack/react-query";
-import { Sale } from "@/lib/zod";
 import clsx from "clsx";
+import { GetBalance } from "@/lib/mutations/useBalance";
 
 const data = {
   store: [
@@ -66,7 +65,7 @@ const data = {
     {
       name: "Productos",
       url: "/products",
-      icon: NotepadText,
+      icon: ShoppingBasket,
     },
     {
       name: "Ventas",
@@ -79,41 +78,24 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
 
-  const { data: sales = [] } = useQuery<Sale[]>({
-    queryKey: ["today_sales"],
-    queryFn: GetTodaySales,
+  const { data: balance = 0 } = useQuery<number>({
+    queryKey: ["balance"],
+    queryFn: GetBalance,
   });
-
-  // Obtener la fecha de hoy en formato YYYY-MM-DD
-  const today = new Date();
-  const todayStr =
-    today.getFullYear() +
-    "-" +
-    String(today.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(today.getDate()).padStart(2, "0");
-
-  // Sumar los totales de las ventas del día actual
-  const todaySalesTotal = sales
-    .filter((sale: Sale) => sale.local_date?.slice(0, 10) === todayStr)
-    .reduce((sum: number, sale: Sale) => sum + (sale.total || 0), 0);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center gap-2">
-            <SidebarMenuButton
-              tooltip="Quick Create"
-              className="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
-            >
-              Hoy
-              <DollarSign />
+            <SidebarMenuButton className="bg-accent text-accent-foreground">
+              <Landmark />
               <span>
+                ${" "}
                 {new Intl.NumberFormat("es-AR", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
-                }).format(todaySalesTotal)}
+                }).format(balance)}
               </span>
             </SidebarMenuButton>
           </SidebarMenuItem>

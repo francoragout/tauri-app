@@ -26,6 +26,7 @@ async function getBills(): Promise<Bill[]> {
     SELECT 
       c.id AS customer_id,
       c.name AS customer_name,
+      c.phone AS customer_phone,
       st.year_month,
 
       json_group_array(

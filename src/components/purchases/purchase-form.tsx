@@ -92,8 +92,12 @@ export default function PurchaseForm({
             onOpenChange(false);
             toast.success("Compra actualizada");
           },
-          onError: () => {
-            toast.error("Error al actualizar compra");
+          onError: (error: unknown) => {
+            const message =
+              error instanceof Error
+                ? error.message
+                : "Error al registrar compra";
+            toast.error(message);
           },
         }
       );
@@ -103,8 +107,12 @@ export default function PurchaseForm({
           onOpenChange(false);
           toast.success("Compra registrada");
         },
-        onError: () => {
-          toast.error("Error al crear compra");
+        onError: (error: unknown) => {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Error al registrar compra";
+          toast.error(message);
         },
       });
     }

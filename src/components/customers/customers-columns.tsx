@@ -3,6 +3,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { CustomersTableRowActions } from "./customers-table-row-actions";
 import { Customer } from "@/lib/zod";
+import { Button } from "../ui/button";
+import { IconBrandWhatsapp } from "@tabler/icons-react";
 
 export const CustomersColumns: ColumnDef<Customer>[] = [
   {
@@ -53,23 +55,23 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
     ),
     cell: ({ row }) => {
       const phone = row.getValue("phone") as string;
-      return <div>{phone}</div>;
+      if (!phone) return null;
+      return (
+        <div className="flex items-center space-x-2">
+          <span>{phone}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              window.open(`https://wa.me/+549${phone}`, "_blank");
+            }}
+          >
+            <IconBrandWhatsapp />
+          </Button>
+        </div>
+      );
     },
     enableSorting: false,
-  },
-  {
-    accessorKey: "total_debt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Deuda total" />
-    ),
-    cell: ({ row }) => {
-      const totalDebt = row.getValue("total_debt") as number;
-      const formattedTotalDebt = Number(totalDebt).toLocaleString("es-AR", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-      return <div>$ {formattedTotalDebt}</div>;
-    },
   },
   {
     id: "actions",

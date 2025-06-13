@@ -14,7 +14,7 @@ async function GetOwners(): Promise<Owner[]> {
         o.name,
         SUM(
           CASE
-            WHEN s.is_paid = 1 THEN (si.price * si.quantity * po.percentage / 100.0)
+            WHEN s.is_paid = 1 THEN (s.total * po.percentage / 100.0)
             ELSE 0
           END
         ) AS sale_gains

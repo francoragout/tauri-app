@@ -1,9 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "../data-table-column-header";
-import { Bill, Supplier } from "@/lib/zod";
-import { IconBrandWhatsapp } from "@tabler/icons-react";
-import { Button } from "../ui/button";
+import { Bill } from "@/lib/zod";
 import { format, isValid, parse } from "date-fns";
 import { es } from "date-fns/locale";
 import { BillsTableRowActions } from "./bills-table-row-actions";
@@ -73,16 +71,20 @@ export const BillsColumns: ColumnDef<Bill>[] = [
 
       return (
         <div className="space-y-1">
-          {sales.map((sale) => (
-            <div key={sale.sale_id}>
-              {format(new Date(sale.date), "P", { locale: es })} - ($
-              {sale.total.toLocaleString("es-AR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-              )
-            </div>
-          ))}
+          {sales.map((sale) => {
+            // Parsea la fecha como local
+            const parsedDate = parse(sale.date, "yyyy-MM-dd", new Date());
+            return (
+              <div key={sale.sale_id}>
+                {format(parsedDate, "P", { locale: es })} - ($
+                {sale.total.toLocaleString("es-AR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+                )
+              </div>
+            );
+          })}
         </div>
       );
     },

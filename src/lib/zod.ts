@@ -152,7 +152,6 @@ export const CustomerSchema = z.object({
     .refine((val) => !val || val.length === 10, {
       message: "El número de teléfono debe tener 10 dígitos",
     }),
-  total_debt: z.number().optional(),
 });
 
 export const ExpenseSchema = z.object({
@@ -218,6 +217,7 @@ export const SupplierSchema = z.object({
 export const BillSchema = z.object({
   customer_id: z.number(),
   customer_name: z.string(),
+  customer_phone: z.string().optional(),
   year_month: z.string(),
   sales_summary: z.array(
     z.object({
