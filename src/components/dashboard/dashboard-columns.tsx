@@ -3,9 +3,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { es } from "date-fns/locale";
-import { DailyFinancialReport } from "@/lib/types";
+import { FinancialReport } from "@/lib/types";
 
-export const DailyFinancialReportColumns: ColumnDef<DailyFinancialReport>[] = [
+export const DashboardColumns: ColumnDef<FinancialReport>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -37,12 +37,28 @@ export const DailyFinancialReportColumns: ColumnDef<DailyFinancialReport>[] = [
     ),
     cell: ({ row }) => {
       const rawDate = row.getValue("local_date") as string;
-      const parsed = parse(rawDate, "yyyy-MM-dd", new Date());
 
-      if (!isValid(parsed)) return <div>-</div>;
+      // Determinar y parsear formato
+      let parsedDate: Date | null = null;
+      let formatted = "-";
 
-      const formatted = format(parsed, "PP", { locale: es });
-      return <div>{formatted}</div>;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+        parsedDate = parse(rawDate, "yyyy-MM-dd", new Date());
+        if (isValid(parsedDate)) {
+          formatted = format(parsedDate, "PP", {
+            locale: es,
+          });
+        }
+      } else if (/^\d{4}-\d{2}$/.test(rawDate)) {
+        parsedDate = parse(rawDate, "yyyy-MM", new Date());
+        if (isValid(parsedDate)) {
+          formatted = format(parsedDate, "MMMM yyyy", { locale: es });
+        }
+      }
+
+      return (
+        <div>{formatted.charAt(0).toUpperCase() + formatted.slice(1)}</div>
+      );
     },
   },
   {
@@ -58,7 +74,7 @@ export const DailyFinancialReportColumns: ColumnDef<DailyFinancialReport>[] = [
         maximumFractionDigits: 2,
       });
 
-      return <div>$ {formattedSales}</div>;
+      return <div className="text-chart-2 font-medium">$ {formattedSales}</div>;
     },
   },
   {
@@ -74,7 +90,9 @@ export const DailyFinancialReportColumns: ColumnDef<DailyFinancialReport>[] = [
         maximumFractionDigits: 2,
       });
 
-      return <div>$ {formattedPurchases}</div>;
+      return (
+        <div className="text-chart-1 font-medium">$ {formattedPurchases}</div>
+      );
     },
   },
   {
@@ -90,7 +108,9 @@ export const DailyFinancialReportColumns: ColumnDef<DailyFinancialReport>[] = [
         maximumFractionDigits: 2,
       });
 
-      return <div>$ {formattedExpenses}</div>;
+      return (
+        <div className="text-chart-3 font-medium">$ {formattedExpenses}</div>
+      );
     },
   },
   {

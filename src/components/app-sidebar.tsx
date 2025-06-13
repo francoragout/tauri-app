@@ -2,7 +2,6 @@ import * as React from "react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
@@ -14,15 +13,13 @@ import {
   BanknoteArrowDown,
   BanknoteArrowUp,
   ChartNoAxesCombined,
-  Cog,
   DollarSign,
   NotepadText,
-  Power,
   Truck,
   Users,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
-import { GetSales } from "@/lib/mutations/useSale";
+import { GetTodaySales } from "@/lib/mutations/useSale";
 import { useQuery } from "@tanstack/react-query";
 import { Sale } from "@/lib/zod";
 import clsx from "clsx";
@@ -84,7 +81,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const { data: sales = [] } = useQuery<Sale[]>({
     queryKey: ["today_sales"],
-    queryFn: GetSales,
+    queryFn: GetTodaySales,
   });
 
   // Obtener la fecha de hoy en formato YYYY-MM-DD
@@ -165,22 +162,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ))}
           </SidebarMenu>
         </SidebarGroup>
-        <SidebarGroup className="group-data-[collapsible=icon]:hidden mt-auto">
-          <SidebarMenu>
-            <SidebarMenuItem className="active">
-              <SidebarMenuButton asChild className="cursor-default">
-                <NavLink to="/configuration">
-                  <Cog />
-                  <span>Configuración</span>
-                </NavLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <Power className="!size-5" />
-      </SidebarFooter>
     </Sidebar>
   );
 }

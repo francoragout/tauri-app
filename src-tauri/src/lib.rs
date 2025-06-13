@@ -101,7 +101,8 @@ pub fn run() {
             title TEXT NOT NULL,
             message TEXT NOT NULL,
             link TEXT NOT NULL,
-            is_read INTEGER DEFAULT 0 CHECK (is_read IN (0, 1))
+            is_read INTEGER DEFAULT 0 CHECK (is_read IN (0, 1)),
+            read_at TEXT
         );
             ",
         kind: MigrationKind::Up,

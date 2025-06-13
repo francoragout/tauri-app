@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -24,9 +24,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { FinancialReport } from "@/lib/types";
-import { format, parse } from "date-fns";
+import { parse, format } from "date-fns";
 import { es } from "date-fns/locale";
+import { FinancialReport } from "@/lib/types";
 
 export const description = "An interactive area chart";
 
@@ -46,45 +46,50 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 function parseLocalDate(dateStr: string) {
-  return parse(dateStr, "yyyy-MM", new Date());
+  return parse(dateStr, "yyyy-MM-dd", new Date());
 }
 
-export function ChartBarInteractive({
-  monthlyReports,
+export function ChartAreaInteractive({
+  dailyReports,
 }: {
-  monthlyReports: FinancialReport[];
+  dailyReports: FinancialReport[];
 }) {
   const ismobile = useIsMobile();
-  const [timeRange, setTimeRange] = React.useState("12mo");
+  const [timeRange, setTimeRange] = React.useState("90d");
 
   React.useEffect(() => {
     if (ismobile) {
-      setTimeRange("6mo");
+      setTimeRange("7d");
     }
   }, [ismobile]);
 
-  const filteredData = monthlyReports
+  const filteredData = dailyReports
     .filter((item) => {
       const date = parseLocalDate(item.local_date);
       const referenceDate = new Date();
-      let monthsToSubtract =
-        timeRange === "9mo" ? 9 : timeRange === "12mo" ? 12 : 6;
+      let daysToSubtract = 90;
+      if (timeRange === "30d") {
+        daysToSubtract = 30;
+      } else if (timeRange === "7d") {
+        daysToSubtract = 7;
+      }
       const startDate = new Date(referenceDate);
-      startDate.setMonth(startDate.getMonth() - monthsToSubtract + 1);
-      return date >= startDate && date <= referenceDate;
+      startDate.setDate(startDate.getDate() - daysToSubtract);
+      return date >= startDate;
     })
     .sort(
       (a, b) =>
-        new Date(a.local_date).getTime() - new Date(b.local_date).getTime()
+        parseLocalDate(a.local_date).getTime() -
+        parseLocalDate(b.local_date).getTime()
     );
 
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Reportes Mensuales</CardTitle>
+        <CardTitle>Reportes Diarios</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Total por los últimos 12 meses
+            Total por los últimos 3 meses
           </span>
           <span className="@[540px]/card:hidden">Last 3 months</span>
         </CardDescription>
@@ -98,14 +103,14 @@ export function ChartBarInteractive({
               <SelectValue placeholder="Seleccionar periodo" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="6mo" className="rounded-lg">
-                Últimos 6 meses
+              <SelectItem value="90d" className="rounded-lg">
+                Últimos 3 meses
               </SelectItem>
-              <SelectItem value="9mo" className="rounded-lg">
-                Últimos 9 meses
+              <SelectItem value="30d" className="rounded-lg">
+                Últimos 30 días
               </SelectItem>
-              <SelectItem value="12mo" className="rounded-lg">
-                Últimos 12 meses
+              <SelectItem value="7d" className="rounded-lg">
+                Últimos 7 días
               </SelectItem>
             </SelectContent>
           </Select>
@@ -116,7 +121,8 @@ export function ChartBarInteractive({
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <BarChart
+          <LineChart
+            accessibilityLayer
             data={filteredData}
             margin={{
               left: 12,
@@ -133,9 +139,10 @@ export function ChartBarInteractive({
               minTickGap={32}
               tickFormatter={(value) => {
                 const date = parseLocalDate(value);
-                return format(date, "MMM yyyy", { locale: es });
+                return format(date, "MMM d", { locale: es });
               }}
             />
+
             <ChartTooltip
               content={
                 <ChartTooltipContent
@@ -149,18 +156,28 @@ export function ChartBarInteractive({
                 />
               }
             />
-            <Bar dataKey="sales" fill="var(--color-sales)" name="Ventas" />
-            <Bar
+            <Line
+              dataKey="sales"
+              type="monotone"
+              stroke="var(--color-sales)"
+              strokeWidth={2}
+              dot={false}
+            />
+            <Line
               dataKey="purchases"
-              fill="var(--color-purchases)"
-              name="Compras"
+              type="monotone"
+              stroke="var(--color-purchases)"
+              strokeWidth={2}
+              dot={false}
             />
-            <Bar
+            <Line
               dataKey="expenses"
-              fill="var(--color-expenses)"
-              name="Gastos"
+              type="monotone"
+              stroke="var(--color-expenses)"
+              strokeWidth={2}
+              dot={false}
             />
-          </BarChart>
+          </LineChart>
         </ChartContainer>
       </CardContent>
     </Card>

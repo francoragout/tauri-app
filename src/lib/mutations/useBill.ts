@@ -40,6 +40,7 @@ export function PayBill() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bills"] });
+      queryClient.invalidateQueries({ queryKey: ["today_sales"] });
     },
   });
 }

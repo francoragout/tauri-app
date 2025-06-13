@@ -1,21 +1,20 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DailyFinancialReport, MonthlyFinancialReport } from "@/lib/types";
-import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interactive";
-import { useQuery } from "@tanstack/react-query";
-import Database from "@tauri-apps/plugin-sql";
-import { DailyFinancialReportTable } from "@/components/dashboard/daily-financial-report-table";
-import { DailyFinancialReportColumns } from "@/components/dashboard/daily-financial-report-columns";
-import { MonthlyFinancialReportTable } from "@/components/dashboard/monthly-financial-report-table";
-import { MonthlyFinancialReportColumns } from "@/components/dashboard/monthly-financial-report-columns";
+import { ChartAreaInteractive } from "@/components/dashboard/chart-line-interactive";
 import { ChartBarInteractive } from "@/components/dashboard/chart-bar-interactive";
+import { useQuery } from "@tanstack/react-query";
+import { FinancialReport } from "@/lib/types";
+import { getDb } from "@/lib/db";
+import { DashboardTable } from "@/components/dashboard/dashboard-table";
+import { DashboardColumns } from "@/components/dashboard/dashboard-columns";
 
-async function GetDailyFinancialReport(): Promise<DailyFinancialReport[]> {
-  const db = await Database.load("sqlite:mydatabase.db");
-  return db.select<DailyFinancialReport[]>(
+async function GetDailyFinancialReport(): Promise<FinancialReport[]> {
+  const db = await getDb();
+  return db.select<FinancialReport[]>(
     `
       WITH sales_by_day AS (
-      SELECT date(datetime(date, '-3 hours')) AS local_date, SUM(total) AS sales
+      SELECT date(datetime(paid_at, '-3 hours')) AS local_date, SUM(total) AS sales
       FROM sales
+      WHERE paid_at IS NOT NULL
       GROUP BY local_date
       ),
       purchases_by_day AS (
@@ -50,55 +49,55 @@ async function GetDailyFinancialReport(): Promise<DailyFinancialReport[]> {
   );
 }
 
-async function GetMonthlyFinancialReport(): Promise<MonthlyFinancialReport[]> {
-  const db = await Database.load("sqlite:mydatabase.db");
-  return db.select<MonthlyFinancialReport[]>(
+async function GetMonthlyFinancialReport(): Promise<FinancialReport[]> {
+  const db = await getDb();
+  return db.select<FinancialReport[]>(
     `
       WITH sales_by_month AS (
-      SELECT strftime('%Y-%m', datetime(date, '-3 hours')) AS local_month, SUM(total) AS sales
+      SELECT strftime('%Y-%m', datetime(paid_at, '-3 hours')) AS local_date, SUM(total) AS sales
       FROM sales
-      GROUP BY local_month
+      WHERE paid_at IS NOT NULL
+      GROUP BY local_date
       ),
       purchases_by_month AS (
-        SELECT strftime('%Y-%m', datetime(date, '-3 hours')) AS local_month, SUM(total) AS purchases
+        SELECT strftime('%Y-%m', datetime(date, '-3 hours')) AS local_date, SUM(total) AS purchases
         FROM purchases
-        GROUP BY local_month
+        GROUP BY local_date
       ),
       expenses_by_month AS (
-        SELECT strftime('%Y-%m', datetime(date, '-3 hours')) AS local_month, SUM(amount) AS expenses
+        SELECT strftime('%Y-%m', datetime(date, '-3 hours')) AS local_date, SUM(amount) AS expenses
         FROM expenses
-        GROUP BY local_month
+        GROUP BY local_date
       )
 
       SELECT
-        m.local_month,
+        m.local_date,
         IFNULL(s.sales, 0) AS sales,
         IFNULL(p.purchases, 0) AS purchases,
         IFNULL(e.expenses, 0) AS expenses,
         IFNULL(s.sales, 0) - IFNULL(p.purchases, 0) - IFNULL(e.expenses, 0) AS net_profit
       FROM (
-        -- union de todos los meses involucrados
-        SELECT local_month FROM sales_by_month
+        SELECT local_date FROM sales_by_month
         UNION
-        SELECT local_month FROM purchases_by_month
+        SELECT local_date FROM purchases_by_month
         UNION
-        SELECT local_month FROM expenses_by_month
+        SELECT local_date FROM expenses_by_month
       ) m
-      LEFT JOIN sales_by_month s ON m.local_month = s.local_month
-      LEFT JOIN purchases_by_month p ON m.local_month = p.local_month
-      LEFT JOIN expenses_by_month e ON m.local_month = e.local_month
-      ORDER BY m.local_month DESC;
+      LEFT JOIN sales_by_month s ON m.local_date = s.local_date
+      LEFT JOIN purchases_by_month p ON m.local_date = p.local_date
+      LEFT JOIN expenses_by_month e ON m.local_date = e.local_date
+      ORDER BY m.local_date DESC;
     `
   );
 }
 
 export default function Dashboard() {
-  const { data: dailyReports = [] } = useQuery<DailyFinancialReport[]>({
+  const { data: dailyReports = [] } = useQuery<FinancialReport[]>({
     queryKey: ["daily_financial_report"],
     queryFn: GetDailyFinancialReport,
   });
 
-  const { data: monthlyReports = [] } = useQuery<MonthlyFinancialReport[]>({
+  const { data: monthlyReports = [] } = useQuery<FinancialReport[]>({
     queryKey: ["monthly_financial_report"],
     queryFn: GetMonthlyFinancialReport,
   });
@@ -108,28 +107,26 @@ export default function Dashboard() {
       <div className="@container/main flex flex-1 flex-col gap-2">
         <Tabs defaultValue="daily_report" className="space-y-2">
           <TabsList className="h-[32px] w-[250px]">
-            <TabsTrigger value="daily_report" className="h-7">Diarios</TabsTrigger>
-            <TabsTrigger value="monthly_report" className="h-7">Mensuales</TabsTrigger>
+            <TabsTrigger value="daily_report" className="h-7">
+              Diario
+            </TabsTrigger>
+            <TabsTrigger value="monthly_report" className="h-7">
+              Mensual
+            </TabsTrigger>
           </TabsList>
           <TabsContent
             value="daily_report"
             className="flex flex-col gap-4 md:gap-6"
           >
-            <ChartAreaInteractive />
-            <DailyFinancialReportTable
-              data={dailyReports}
-              columns={DailyFinancialReportColumns}
-            />
+            <ChartAreaInteractive dailyReports={dailyReports} />
+            <DashboardTable data={dailyReports} columns={DashboardColumns} />
           </TabsContent>
           <TabsContent
             value="monthly_report"
             className="flex flex-col gap-4 md:gap-6"
           >
-            <ChartBarInteractive />
-            <MonthlyFinancialReportTable
-              data={monthlyReports}
-              columns={MonthlyFinancialReportColumns}
-            />
+            <ChartBarInteractive monthlyReports={monthlyReports} />
+            <DashboardTable data={monthlyReports} columns={DashboardColumns} />
           </TabsContent>
         </Tabs>
       </div>

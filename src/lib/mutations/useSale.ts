@@ -2,10 +2,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sale } from "../zod";
 import { getDb } from "../db";
 
-export async function GetSales(): Promise<Sale[]> {
+export async function GetTodaySales(): Promise<Sale[]> {
   const db = await getDb();
   return db.select(
-    `SELECT id, total, date, datetime(date, '-3 hours') AS local_date FROM sales`
+    `
+      SELECT id, total, paid_at, datetime(paid_at, '-3 hours') AS local_date
+      FROM sales
+      WHERE paid_at IS NOT NULL;
+    `
   );
 }
 
@@ -99,7 +103,7 @@ export function CreateSale() {
 
           if (newStock === 0) {
             await createNotification(
-              "Sin stock",
+              "Sin Stock",
               product.name,
               "/products",
               db
@@ -109,8 +113,8 @@ export function CreateSale() {
             newStock < product.low_stock_threshold
           ) {
             await createNotification(
-              "Stock bajo",
-              `Últimas ${newStock} unidades de ${product.name}`,
+              "Ultimas Unidades",
+              `${product.name} (${newStock})`,
               "/products",
               db
             );
@@ -125,8 +129,10 @@ export function CreateSale() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
+      queryClient.invalidateQueries({ queryKey: ["today_sales"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["customers"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 }

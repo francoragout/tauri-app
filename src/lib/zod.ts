@@ -237,7 +237,7 @@ export const NotificationSchema = z.object({
   message: z.string(),
   link: z.string(),
   is_read: z.boolean(),
-  date: z.string(),
+  local_date: z.string(),
 });
 
 export type Notification = z.infer<typeof NotificationSchema>;

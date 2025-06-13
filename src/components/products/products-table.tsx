@@ -26,9 +26,10 @@ import * as React from "react";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { ProductsTableToolbar } from "./products-table-toolbar";
 import { toast } from "sonner";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/features/cart/cartSlice";
 import { Product } from "@/lib/zod";
+import { RootState } from "@/store";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -76,9 +77,20 @@ export function ProductsTable<TData, TValue>({
 
   const dispatch = useDispatch();
 
+  const cart = useSelector((state: RootState) => state.cart.items);
+
   const handleAddToCart = (product: Product) => {
     if (product.id === undefined) {
       toast.error("El producto no tiene ID y no puede agregarse al carrito.");
+      return;
+    }
+
+    // Busca cuántas unidades ya hay en el carrito
+    const cartItem = cart.find((item: any) => item.id === product.id);
+    const quantityInCart = cartItem ? cartItem.quantity : 0;
+
+    if (product.stock - quantityInCart <= 0) {
+      toast.error(`Sin stock: ${product.name}`);
       return;
     }
 
