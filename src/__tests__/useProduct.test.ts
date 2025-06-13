@@ -83,6 +83,7 @@ describe("CreateProduct", () => {
       category: "Alimentos",
       price: 120,
       stock: 30,
+      low_stock_threshold: 5,
       owners: [
         { id: 1, name: "Owner 1", percentage: 70 },
         { id: 2, name: "Owner 2", percentage: 30 },
@@ -127,6 +128,7 @@ describe("CreateProduct", () => {
         category: "Alimentos",
         price: 100,
         stock: 20,
+        low_stock_threshold: 5,
         owners: [],
       });
     } catch (err) {
@@ -158,6 +160,7 @@ describe("UpdateProduct", () => {
       category: "Snacks",
       price: 50,
       stock: 100,
+      low_stock_threshold: 5,
       owners: [
         { id: 1, name: "Owner 1", percentage: 60 },
         { id: 2, name: "Owner 2", percentage: 40 },
@@ -213,6 +216,7 @@ describe("UpdateProduct", () => {
         category: "Limpieza",
         price: 30,
         stock: 10,
+        low_stock_threshold: 5,
         owners: [],
       });
     } catch (err) {

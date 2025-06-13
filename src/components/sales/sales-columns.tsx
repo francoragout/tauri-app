@@ -168,6 +168,29 @@ export const SalesColumns: ColumnDef<Sale>[] = [
       return <div>{customerName}</div>;
     },
   },
+  {
+    accessorKey: "payment_date",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Fecha de pago" />
+    ),
+    cell: ({ row }) => {
+      const customerId = row.getValue("customer_id") as number | null;
+      const rawDate = row.getValue("payment_date") as string | null;
+
+      // Si no hay cliente o no hay fecha, mostrar "-"
+      if (!customerId || !rawDate) return;
+
+      const parsed = parse(rawDate, "yyyy-MM-dd HH:mm:ss", new Date());
+
+      // Si no se pudo parsear correctamente, mostrar "-"
+      if (!isValid(parsed)) return;
+
+      const formatted = format(parsed, "Pp", { locale: es });
+
+      return <div>{formatted}</div>;
+    },
+  },
+
   // {
   //   id: "actions",
   //   cell: ({ row }) => <SalesTableRowActions row={row} />,

@@ -12,6 +12,7 @@ async function GetSales(): Promise<Sale[]> {
     SELECT
       s.id,
       datetime(s.date, '-3 hours') AS local_date,
+      datetime(s.paid_at, '-3 hours') AS payment_date,
       s.is_paid,
       s.customer_id,
       c.name AS customer_name,

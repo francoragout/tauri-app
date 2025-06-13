@@ -5,7 +5,6 @@ import {
   CreateExpense,
   UpdateExpense,
   DeleteExpenses,
-  GetExpenses,
 } from "@/lib/mutations/useExpense";
 
 const mockExecute = vi.fn();
@@ -37,35 +36,6 @@ beforeEach(() => {
   mockExecute.mockReset();
   mockSelect.mockReset();
   mockInvalidateQueries.mockReset();
-});
-
-describe("GetExpenses", () => {
-  it("should fetch expenses from database", async () => {
-    const mockData = [
-      {
-        id: 1,
-        amount: 1000,
-        date: "2025-06-01",
-        local_date: "2025-05-31 21:00:00",
-      },
-      {
-        id: 2,
-        amount: 2500,
-        date: "2025-06-02",
-        local_date: "2025-06-01 21:00:00",
-      },
-    ];
-
-    mockSelect.mockResolvedValueOnce(mockData);
-
-    const result = await GetExpenses();
-
-    expect(mockSelect).toHaveBeenCalledWith(
-      `SELECT id, amount, date, datetime(date, '-3 hours') AS local_date FROM expenses`
-    );
-
-    expect(result).toEqual(mockData);
-  });
 });
 
 describe("CreateExpense", () => {

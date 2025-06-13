@@ -11,16 +11,14 @@ import { useState } from "react";
 import { Row } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { SquarePen } from "lucide-react";
-import { SaleSchema } from "@/lib/zod";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
 }
 
-export function SalesTableRowActions<TData>({
-  row,
-}: DataTableRowActionsProps<TData>) {
-  const sale = SaleSchema.parse(row.original);
+export function SalesTableRowActions<
+  TData
+>({}: DataTableRowActionsProps<TData>) {
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 
   return (

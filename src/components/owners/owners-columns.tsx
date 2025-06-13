@@ -43,24 +43,24 @@ export const OwnersColumns: ColumnDef<Owner>[] = [
     ),
     cell: ({ row }) => <div>{row.getValue("product_count")}</div>,
   },
-  {
-    accessorKey: "net_gain",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Ganancia" />
-    ),
-    cell: ({ row }) => {
-      const netGain = row.getValue("net_gain") as number;
+  // {
+  //   accessorKey: "net_gain",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Ganancia" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const netGain = row.getValue("net_gain") as number;
 
-      const formattedNetGain = Number(netGain).toLocaleString("es-AR", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
+  //     const formattedNetGain = Number(netGain).toLocaleString("es-AR", {
+  //       minimumFractionDigits: 2,
+  //       maximumFractionDigits: 2,
+  //     });
 
-      if (netGain) {
-        return <div>$ {formattedNetGain}</div>;
-      }
-    },
-  },
+  //     if (netGain) {
+  //       return <div>$ {formattedNetGain}</div>;
+  //     }
+  //   },
+  // },
   {
     id: "actions",
     cell: ({ row }) => <OwnersTableRowActions row={row} />,

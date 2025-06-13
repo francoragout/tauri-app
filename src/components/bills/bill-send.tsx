@@ -21,7 +21,7 @@ export default function BillSend({ bill }: { bill: Bill }) {
         const billSummary = bill.sales_summary
           .map(
             (sale) =>
-              `${format(new Date(sale.date), "P", {
+              `${format(parse(sale.date, "yyyy-MM-dd", new Date()), "P", {
                 locale: es,
               })} - $${sale.total.toLocaleString("es-AR", {
                 minimumFractionDigits: 2,
@@ -49,14 +49,12 @@ export default function BillSend({ bill }: { bill: Bill }) {
           { locale: es }
         );
 
-        const message = `¡Buenas! ¿Cómo estás?\nTe comparto el resumen de compras correspondiente al perdiodo ${yearMonth} de ${bill.customer_name}\n\n${billSummary}\n\nComo siempre, están disponibles todos los medios de pago:\n- Efectivo (5% de descuento)\n- Transferencia o tarjeta (5% de recargo)\n\nPodés elegir el medio que te resulte más cómodo. Te pido, por favor, que me avises una vez que lo tengan definido.\nCualquier duda o consulta, quedo a disposición.\n\nDatos para transferencia:\nALIAS: biancascalora.bru\n\n- Monto con transferencia o tarjeta: $${totalWithSurcharge}\n- Monto con efectivo (con descuento): $${totalFormatted}`;
+        const message = `¡Hola! ¿Cómo estás?\nTe comparto el resumen de compras de *${bill.customer_name}* correspondiente a *${yearMonth}*:\n\n${billSummary}\n\nTotal: *$${totalFormatted}*\n\n*Formas de pago disponibles:*\n- Efectivo: *$${totalFormatted}* (sin recargo)\n- Transferencia o tarjeta: *$${totalWithSurcharge}* (5% de recargo)\n\nPor favor avisar el medio de pago una vez definido.\n\n*Datos para transferencia:*\nALIAS: \`biancascalora\`\n\nAnte cualquier duda o consulta, quedo a disposición.`;
 
-        console.log(message);
-
-        // const url = `https://wa.me/+549${
-        //   bill.customer_phone
-        // }?text=${encodeURIComponent(message)}`;
-        // window.open(url, "_blank");
+        const url = `https://wa.me/+549${
+          bill.customer_phone
+        }?text=${encodeURIComponent(message)}`;
+        window.open(url, "_blank");
       }}
     >
       <IconBrandWhatsapp />
