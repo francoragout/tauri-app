@@ -1,6 +1,5 @@
 import { BillsColumns } from "@/components/bills/bills-columns";
 import { BillsTable } from "@/components/bills/bills-table";
-import { LoadingSkeleton } from "@/components/skeletons";
 import { Bill, BillSchema } from "@/lib/zod";
 import { useQuery } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
@@ -53,14 +52,12 @@ async function getBills(): Promise<Bill[]> {
 }
 
 export default function Bills() {
-  const { data = [], isPending } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["bills"],
     queryFn: getBills,
   });
 
-  if (isPending) {
-    return <LoadingSkeleton />;
-  }
-
-  return <BillsTable data={data} columns={BillsColumns} />;
+  return (
+    <BillsTable data={data} columns={BillsColumns} isLoading={isLoading} />
+  );
 }

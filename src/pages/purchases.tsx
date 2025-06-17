@@ -1,6 +1,5 @@
 import { PurchasesColumns } from "@/components/purchases/purchases-columns";
 import { PurchasesTable } from "@/components/purchases/purchases-table";
-import { LoadingSkeleton } from "@/components/skeletons";
 import { Purchase, PurchaseSchema } from "@/lib/zod";
 import { useQuery } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
@@ -28,14 +27,16 @@ async function getPurchases(): Promise<Purchase[]> {
 }
 
 export default function Purchases() {
-  const { data = [], isPending } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["purchases"],
     queryFn: getPurchases,
   });
 
-  if (isPending) {
-    return <LoadingSkeleton />;
-  }
-
-  return <PurchasesTable data={data} columns={PurchasesColumns} />;
+  return (
+    <PurchasesTable
+      data={data}
+      columns={PurchasesColumns}
+      isLoading={isLoading}
+    />
+  );
 }

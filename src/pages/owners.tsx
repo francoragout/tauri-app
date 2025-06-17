@@ -1,6 +1,5 @@
 import { OwnersColumns } from "@/components/owners/owners-columns";
 import { OwnersTable } from "@/components/owners/owners-table";
-import { LoadingSkeleton } from "@/components/skeletons";
 import { Owner, OwnerSchema } from "@/lib/zod";
 import { useQuery } from "@tanstack/react-query";
 import Database from "@tauri-apps/plugin-sql";
@@ -31,14 +30,12 @@ async function GetOwners(): Promise<Owner[]> {
 }
 
 export default function Owners() {
-  const { data = [], isPending } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["owners"],
     queryFn: GetOwners,
   });
 
-  if (isPending) {
-    return <LoadingSkeleton />;
-  }
-
-  return <OwnersTable data={data} columns={OwnersColumns} />;
+  return (
+    <OwnersTable data={data} columns={OwnersColumns} isLoading={isLoading} />
+  );
 }

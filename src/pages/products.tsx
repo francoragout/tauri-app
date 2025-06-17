@@ -4,7 +4,6 @@ import { ProductsColumns } from "@/components/products/products-columns";
 import { ProductsTable } from "@/components/products/products-table";
 import { Product, ProductSchema } from "@/lib/zod";
 import Database from "@tauri-apps/plugin-sql";
-import { LoadingSkeleton } from "@/components/skeletons";
 
 async function GetProducts(): Promise<Product[]> {
   const db = await Database.load("sqlite:mydatabase.db");
@@ -70,14 +69,16 @@ async function GetProducts(): Promise<Product[]> {
 }
 
 export default function Products() {
-  const { data = [], isPending } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: GetProducts,
   });
 
-  if (isPending) {
-    return <LoadingSkeleton />;
-  }
-
-  return <ProductsTable data={data} columns={ProductsColumns} />;
+  return (
+    <ProductsTable
+      data={data}
+      columns={ProductsColumns}
+      isLoading={isLoading}
+    />
+  );
 }

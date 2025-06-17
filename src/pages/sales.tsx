@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { SalesTable } from "@/components/sales/sales-table";
 import { SalesColumns } from "@/components/sales/sales-columns";
 import { Sale, SaleSchema } from "@/lib/zod";
-import { LoadingSkeleton } from "@/components/skeletons";
 
 async function GetSales(): Promise<Sale[]> {
   const db = await Database.load("sqlite:mydatabase.db");
@@ -37,14 +36,12 @@ async function GetSales(): Promise<Sale[]> {
 }
 
 export default function Sales() {
-  const { data = [], isPending } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["sales"],
     queryFn: GetSales,
   });
 
-  if (isPending) {
-    return <LoadingSkeleton />;
-  }
-
-  return <SalesTable data={data} columns={SalesColumns} />;
+  return (
+    <SalesTable data={data} columns={SalesColumns} isLoading={isLoading} />
+  );
 }

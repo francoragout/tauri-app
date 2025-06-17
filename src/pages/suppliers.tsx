@@ -1,4 +1,3 @@
-import { LoadingSkeleton } from "@/components/skeletons";
 import { SuppliersColumns } from "@/components/suppliers/suppliers-columns";
 import { SuppliersTable } from "@/components/suppliers/suppliers-table";
 import { Supplier, SupplierSchema } from "@/lib/zod";
@@ -38,14 +37,16 @@ async function GetSuppliers(): Promise<Supplier[]> {
 }
 
 export default function Suppliers() {
-  const { data = [], isPending } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
     queryFn: GetSuppliers,
   });
 
-  if (isPending) {
-    return <LoadingSkeleton />;
-  }
-
-  return <SuppliersTable data={data} columns={SuppliersColumns} />;
+  return (
+    <SuppliersTable
+      data={data}
+      columns={SuppliersColumns}
+      isLoading={isLoading}
+    />
+  );
 }

@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ExpensesTable } from "@/components/expenses/expenses-table";
 import { ExpensesColumns } from "@/components/expenses/expenses-columns";
 import { Expense, ExpenseSchema } from "@/lib/zod";
-import { LoadingSkeleton } from "@/components/skeletons";
 
 async function GetExpenses(): Promise<Expense[]> {
   const db = await Database.load("sqlite:mydatabase.db");
@@ -38,14 +37,16 @@ async function GetExpenses(): Promise<Expense[]> {
 }
 
 export default function Expenses() {
-  const { data = [], isPending } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["expenses"],
     queryFn: GetExpenses,
   });
 
-  if (isPending) {
-    return <LoadingSkeleton />;
-  }
-
-  return <ExpensesTable data={data} columns={ExpensesColumns} />;
+  return (
+    <ExpensesTable
+      data={data}
+      columns={ExpensesColumns}
+      isLoading={isLoading}
+    />
+  );
 }
