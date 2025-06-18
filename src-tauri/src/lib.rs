@@ -18,7 +18,7 @@ pub fn run() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             product_id INTEGER NOT NULL,
             supplier_id INTEGER,
-            date TEXT DEFAULT CURRENT_TIMESTAMP,                   
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,                   
             quantity INTEGER NOT NULL,
             total REAL NOT NULL,
             payment_method TEXT NOT NULL,
@@ -28,7 +28,8 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS owners (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
+            name TEXT NOT NULL UNIQUE,
+            alias TEXT NOT NULL UNIQUE
         );
 
         CREATE TABLE IF NOT EXISTS product_owners (
@@ -52,7 +53,7 @@ pub fn run() {
         CREATE TABLE IF NOT EXISTS sales (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_id INTEGER,              
-            date TEXT DEFAULT CURRENT_TIMESTAMP,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             total REAL NOT NULL,
             surcharge INTEGER NOT NULL DEFAULT 0,
             payment_method TEXT NOT NULL,
@@ -73,8 +74,7 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS customers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            reference TEXT,
+            name TEXT NOT NULL UNIQUE,
             phone TEXT
         );
 
@@ -89,7 +89,7 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS expenses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT DEFAULT CURRENT_TIMESTAMP,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             category TEXT NOT NULL,
             amount REAL NOT NULL,
             description TEXT
@@ -97,7 +97,7 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS notifications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT DEFAULT CURRENT_TIMESTAMP,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             title TEXT NOT NULL,
             message TEXT NOT NULL,
             link TEXT NOT NULL,

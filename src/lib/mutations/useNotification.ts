@@ -5,7 +5,7 @@ import { Notification } from "../zod";
 export async function GetNotifications(): Promise<Notification[]> {
   const db = await getDb();
   return db.select(
-    `SELECT id, datetime(date, '-3 hours') as local_date, title, message, link, is_read FROM notifications ORDER BY local_date DESC;`
+    `SELECT id, datetime(created_at, '-3 hours') as local_date, title, message, link, is_read FROM notifications ORDER BY local_date DESC;`
   );
 }
 

@@ -1,15 +1,15 @@
 import { PurchasesColumns } from "@/components/purchases/purchases-columns";
 import { PurchasesTable } from "@/components/purchases/purchases-table";
+import { getDb } from "@/lib/db";
 import { Purchase, PurchaseSchema } from "@/lib/zod";
 import { useQuery } from "@tanstack/react-query";
-import Database from "@tauri-apps/plugin-sql";
 
 async function getPurchases(): Promise<Purchase[]> {
-  const db = await Database.load("sqlite:mydatabase.db");
+  const db = await getDb();
   const query = `
     SELECT 
       purchases.id,
-      datetime(purchases.date, '-3 hours') AS local_date,
+      datetime(purchases.created_at, '-3 hours') AS local_date,
 	    purchases.product_id,
       products.name AS product_name, 
 	    purchases.supplier_id,

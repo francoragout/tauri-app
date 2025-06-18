@@ -99,6 +99,7 @@ export const OwnerSchema = z.object({
     .nonempty({
       message: "Ingrese el nombre del propietario",
     }),
+  alias: z.string().trim().optional(),
   product_count: z.number().optional(),
 });
 
@@ -144,7 +145,6 @@ export const CustomerSchema = z.object({
     .nonempty({
       message: "Ingrese el nombre completo del cliente",
     }),
-  reference: z.string().trim().optional(),
   phone: z
     .string()
     .optional()

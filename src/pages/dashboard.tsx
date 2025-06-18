@@ -18,12 +18,12 @@ async function GetDailyFinancialReport(): Promise<FinancialReport[]> {
       GROUP BY local_date
       ),
       purchases_by_day AS (
-        SELECT date(datetime(date, '-3 hours')) AS local_date, SUM(total) AS purchases
+        SELECT date(datetime(created_at, '-3 hours')) AS local_date, SUM(total) AS purchases
         FROM purchases
         GROUP BY local_date
       ),
       expenses_by_day AS (
-        SELECT date(datetime(date, '-3 hours')) AS local_date, SUM(amount) AS expenses
+        SELECT date(datetime(created_at, '-3 hours')) AS local_date, SUM(amount) AS expenses
         FROM expenses
         GROUP BY local_date
       )
@@ -60,12 +60,12 @@ async function GetMonthlyFinancialReport(): Promise<FinancialReport[]> {
       GROUP BY local_date
       ),
       purchases_by_month AS (
-        SELECT strftime('%Y-%m', datetime(date, '-3 hours')) AS local_date, SUM(total) AS purchases
+        SELECT strftime('%Y-%m', datetime(created_at, '-3 hours')) AS local_date, SUM(total) AS purchases
         FROM purchases
         GROUP BY local_date
       ),
       expenses_by_month AS (
-        SELECT strftime('%Y-%m', datetime(date, '-3 hours')) AS local_date, SUM(amount) AS expenses
+        SELECT strftime('%Y-%m', datetime(created_at, '-3 hours')) AS local_date, SUM(amount) AS expenses
         FROM expenses
         GROUP BY local_date
       )
@@ -92,15 +92,21 @@ async function GetMonthlyFinancialReport(): Promise<FinancialReport[]> {
 }
 
 export default function Dashboard() {
-  const { data: dailyReports = [] } = useQuery<FinancialReport[]>({
+  const { data: dailyReports = [], isLoading: isDailyLoading } = useQuery<
+    FinancialReport[]
+  >({
     queryKey: ["daily_financial_report"],
     queryFn: GetDailyFinancialReport,
   });
 
-  const { data: monthlyReports = [] } = useQuery<FinancialReport[]>({
+  const { data: monthlyReports = [], isLoading: isMonthlyLoading } = useQuery<
+    FinancialReport[]
+  >({
     queryKey: ["monthly_financial_report"],
     queryFn: GetMonthlyFinancialReport,
   });
+
+  const isLoading = isDailyLoading || isMonthlyLoading;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -119,14 +125,22 @@ export default function Dashboard() {
             className="flex flex-col gap-4 md:gap-6"
           >
             <ChartAreaInteractive dailyReports={dailyReports} />
-            <DashboardTable data={dailyReports} columns={DashboardColumns} />
+            <DashboardTable
+              data={dailyReports}
+              columns={DashboardColumns}
+              isLoading={isLoading}
+            />
           </TabsContent>
           <TabsContent
             value="monthly_report"
             className="flex flex-col gap-4 md:gap-6"
           >
             <ChartBarInteractive monthlyReports={monthlyReports} />
-            <DashboardTable data={monthlyReports} columns={DashboardColumns} />
+            <DashboardTable
+              data={monthlyReports}
+              columns={DashboardColumns}
+              isLoading={isLoading}
+            />
           </TabsContent>
         </Tabs>
       </div>

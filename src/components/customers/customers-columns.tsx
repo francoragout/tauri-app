@@ -39,16 +39,6 @@ export const CustomersColumns: ColumnDef<Customer>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "reference",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Referencia" />
-    ),
-    cell: ({ row }) => {
-      const reference = row.getValue("reference") as string;
-      return <div>{reference}</div>;
-    },
-  },
-  {
     accessorKey: "phone",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Teléfono" />

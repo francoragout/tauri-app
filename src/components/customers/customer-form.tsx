@@ -33,7 +33,6 @@ export default function CustomerForm({
     resolver: zodResolver(CustomerSchema),
     defaultValues: {
       name: customer?.name ?? "",
-      reference: customer?.reference ?? "",
       phone: customer?.phone ?? "",
     },
   });
@@ -47,8 +46,12 @@ export default function CustomerForm({
             onOpenChange(false);
             toast.success("Cliente actualizado");
           },
-          onError: () => {
-            toast.error("Error al actualizar cliente");
+          onError: (error: unknown) => {
+            const message =
+              error instanceof Error
+                ? error.message
+                : "Error al registrar cliente";
+            toast.error(message);
           },
         }
       );
@@ -58,8 +61,12 @@ export default function CustomerForm({
           onOpenChange(false);
           toast.success("Cliente registrado");
         },
-        onError: () => {
-          toast.error("Error al registrar cliente");
+        onError: (error: unknown) => {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Error al registrar cliente";
+          toast.error(message);
         },
       });
     }
@@ -80,23 +87,6 @@ export default function CustomerForm({
                   {...field}
                   disabled={isPending}
                   placeholder="Nombre completo (requerido)"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="reference"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isPending}
-                  placeholder="Referencia (opcional)"
                 />
               </FormControl>
               <FormMessage />

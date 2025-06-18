@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Database from "@tauri-apps/plugin-sql";
 import { Product } from "../zod";
+import { getDb } from "../db";
 
-export function GetProducts(): Promise<Product[]> {
-  return Database.load("sqlite:mydatabase.db").then((db) =>
-    db.select(`SELECT * FROM products`)
-  );
+export async function GetProducts(): Promise<Product[]> {
+  const db = await getDb();
+  return db.select(`SELECT id, name FROM products;`);
+
 }
 
 export function CreateProduct() {
@@ -13,7 +13,7 @@ export function CreateProduct() {
 
   return useMutation({
     mutationFn: async (values: Product) => {
-      const db = await Database.load("sqlite:mydatabase.db");
+      const db = await getDb();
 
       // Normaliza el nombre: elimina espacios y convierte a minúsculas
       const cleanName = values.name.trim().toLowerCase();
@@ -66,7 +66,7 @@ export function UpdateProduct() {
 
   return useMutation({
     mutationFn: async (values: Product) => {
-      const db = await Database.load("sqlite:mydatabase.db");
+      const db = await getDb();
 
       // Normaliza el nombre: elimina espacios y convierte a minúsculas
       const cleanName = values.name.trim().toLowerCase();
@@ -121,8 +121,8 @@ export function DeleteProducts() {
 
   return useMutation({
     mutationFn: async (ids: number[]) => {
-      const db = await Database.load("sqlite:mydatabase.db");
-      const placeholders = ids.map(() => "?").join(",");
+      const db = await getDb();
+      const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
 
       // Verificar si los productos seleccionados tienen compras o ventas asociadas
       const purchases = await db.select<{ product_id: number }[]>(

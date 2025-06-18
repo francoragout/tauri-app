@@ -1,18 +1,18 @@
 import { BillsColumns } from "@/components/bills/bills-columns";
 import { BillsTable } from "@/components/bills/bills-table";
+import { getDb } from "@/lib/db";
 import { Bill, BillSchema } from "@/lib/zod";
 import { useQuery } from "@tanstack/react-query";
-import Database from "@tauri-apps/plugin-sql";
 
 async function getBills(): Promise<Bill[]> {
-  const db = await Database.load("sqlite:mydatabase.db");
+  const db = await getDb();
   const query = `
     WITH sale_totals AS (
     SELECT 
       s.id AS sale_id,
       s.customer_id,
       strftime('%Y-%m', datetime(s.date, '-3 hours')) AS year_month,
-      date(datetime(s.date, '-3 hours')) AS date, -- 👈 solo la fecha
+      date(datetime(s.date, '-3 hours')) AS date,
       s.is_paid,
       SUM(si.quantity * p.price) AS total
     FROM sales s

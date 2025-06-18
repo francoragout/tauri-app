@@ -1,16 +1,15 @@
-import Database from "@tauri-apps/plugin-sql";
-import "../App.css";
 import { useQuery } from "@tanstack/react-query";
 import { ExpensesTable } from "@/components/expenses/expenses-table";
 import { ExpensesColumns } from "@/components/expenses/expenses-columns";
 import { Expense, ExpenseSchema } from "@/lib/zod";
+import { getDb } from "@/lib/db";
 
 async function GetExpenses(): Promise<Expense[]> {
-  const db = await Database.load("sqlite:mydatabase.db");
+  const db = await getDb();
   const query = `
     SELECT 
       e.id, 
-      datetime(e.date, '-3 hours') AS local_date,
+      datetime(e.created_at, '-3 hours') AS local_date,
       e.category,
       e.description, 
       e.amount,
@@ -24,7 +23,7 @@ async function GetExpenses(): Promise<Expense[]> {
     FROM expenses e
     LEFT JOIN expense_owners eo ON e.id = eo.expense_id
     LEFT JOIN owners o ON eo.owner_id = o.id
-    GROUP BY e.id, e.date, e.category, e.description, e.amount;
+    GROUP BY e.id, e.created_at, e.category, e.description, e.amount;
   `;
   const result = (await db.select(query)) as any[];
 

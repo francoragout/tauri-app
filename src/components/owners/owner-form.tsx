@@ -30,6 +30,7 @@ export default function OwnerForm({ owner, onOpenChange }: OwnerFormProps) {
     resolver: zodResolver(OwnerSchema),
     defaultValues: {
       name: owner?.name ?? "",
+      alias: owner?.alias ?? "",
     },
   });
 
@@ -42,8 +43,12 @@ export default function OwnerForm({ owner, onOpenChange }: OwnerFormProps) {
             onOpenChange(false);
             toast.success("Propietario actualizado");
           },
-          onError: () => {
-            toast.error("Error al actualizar propietario");
+          onError: (error: unknown) => {
+            const message =
+              error instanceof Error
+                ? error.message
+                : "Error al registrar propietario";
+            toast.error(message);
           },
         }
       );
@@ -53,8 +58,12 @@ export default function OwnerForm({ owner, onOpenChange }: OwnerFormProps) {
           onOpenChange(false);
           toast.success("Propietario registrado");
         },
-        onError: () => {
-          toast.error("Error al registrar propietario");
+        onError: (error: unknown) => {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Error al registrar propietario";
+          toast.error(message);
         },
       });
     }
@@ -75,6 +84,23 @@ export default function OwnerForm({ owner, onOpenChange }: OwnerFormProps) {
                   {...field}
                   disabled={isPending}
                   placeholder="Nombre completo (requerido)"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="alias"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input
+                  {...field}
+                  disabled={isPending}
+                  placeholder="Alias (opcional)"
                 />
               </FormControl>
               <FormMessage />

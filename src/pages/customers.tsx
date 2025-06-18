@@ -1,12 +1,11 @@
-import Database from "@tauri-apps/plugin-sql";
-import "../App.css";
 import { useQuery } from "@tanstack/react-query";
 import { CustomersTable } from "@/components/customers/customers-table";
 import { CustomersColumns } from "@/components/customers/customers-columns";
 import { Customer, CustomerSchema } from "@/lib/zod";
+import { getDb } from "@/lib/db";
 
 async function GetCustomers(): Promise<Customer[]> {
-  const db = await Database.load("sqlite:mydatabase.db");
+  const db = await getDb();
   const result = await db.select(`SELECT * FROM customers`);
   return CustomerSchema.array().parse(result);
 }
