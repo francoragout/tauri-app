@@ -1,4 +1,4 @@
-import { format, isValid, parse } from "date-fns";
+import { endOfDay, format, isValid, parse, startOfDay } from "date-fns";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Expense } from "@/lib/zod";
@@ -42,23 +42,19 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
 
       if (!isValid(parsed)) return <div>-</div>;
 
-      const formatted = format(parsed, "PP", { locale: es });
+      const formatted = format(parsed, "PPp", { locale: es });
       return <div>{formatted}</div>;
     },
-  },
-  {
-    accessorKey: "local_time",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Hora" />
-    ),
-    cell: ({ row }) => {
-      const rawDate = row.getValue("local_date") as string;
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue?.from || !filterValue?.to) return true;
+      const rawDate = row.getValue(columnId) as string;
       const parsed = parse(rawDate, "yyyy-MM-dd HH:mm:ss", new Date());
-
-      if (!isValid(parsed)) return <div>-</div>;
-
-      const formatted = format(parsed, "HH:mm", { locale: es });
-      return <div>{formatted}</div>;
+      if (!isValid(parsed)) return false;
+      // Incluye ambos extremos del rango
+      return (
+        parsed >= startOfDay(new Date(filterValue.from)) &&
+        parsed <= endOfDay(new Date(filterValue.to))
+      );
     },
   },
   {

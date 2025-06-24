@@ -19,7 +19,8 @@ import { Button } from "@/components/ui/button";
 import { BillSchema } from "@/lib/zod";
 import { useState } from "react";
 import BillForm from "./bill-form";
-import BillSend from "./bill-send";
+import { IconBrandWhatsapp } from "@tabler/icons-react";
+import { BillSendForm } from "./bill-send-form";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -29,7 +30,10 @@ export function BillsTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
   const bill = BillSchema.parse(row.original);
-  const [isOpen, setIsOpen] = useState(false);
+
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [isSendOpen, setIsSendOpen] = useState(false);
+
   return (
     <>
       <DropdownMenu>
@@ -42,7 +46,17 @@ export function BillsTableRowActions<TData>({
         <DropdownMenuContent align="end" className="w-[160px] z-50">
           <div className="flex flex-col w-full">
             <DropdownMenuItem asChild>
-              <BillSend bill={bill} />
+              <Button
+                className="flex justify-start pl-2"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setTimeout(() => setIsPaymentOpen(true), 0);
+                }}
+              >
+                <DollarSign className="text-primary" />
+                Pagar cuenta
+              </Button>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Button
@@ -50,18 +64,31 @@ export function BillsTableRowActions<TData>({
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setTimeout(() => setIsOpen(true), 0);
+                  setTimeout(() => setIsSendOpen(true), 0);
                 }}
               >
-                <DollarSign className="text-primary" />
-                Pagar cuenta
+                <IconBrandWhatsapp className="text-primary" />
+                Enviar cuenta
               </Button>
             </DropdownMenuItem>
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isSendOpen} onOpenChange={setIsSendOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enviar cuenta de {bill.customer_name}</DialogTitle>
+            <DialogDescription>
+              Seleccione el alias del propietario para enviar la cuenta por
+              WhatsApp.
+            </DialogDescription>
+          </DialogHeader>
+          <BillSendForm bill={bill} onOpenChange={setIsSendOpen}/>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Registrar pago</DialogTitle>
@@ -69,7 +96,7 @@ export function BillsTableRowActions<TData>({
               Use tabs para navegar mas rapido entre los diferentes campos.
             </DialogDescription>
           </DialogHeader>
-          <BillForm onOpenChange={setIsOpen} bill={bill} />
+          <BillForm onOpenChange={setIsPaymentOpen} bill={bill} />
         </DialogContent>
       </Dialog>
     </>

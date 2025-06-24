@@ -19,24 +19,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
 import { PlusCircle, Trash2 } from "lucide-react";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Table } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import { useState } from "react";
 import { DeletePurchases } from "@/lib/mutations/usePurchase";
 import PurchaseForm from "./purchase-form";
+import { DateRange } from "react-day-picker";
+import { DataTableDateFilter } from "../data-table-date-filter";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -46,9 +38,25 @@ export function PurchasesTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
-  const [date, setDate] = useState<Date>();
+  const [rangeDate, setRangeDate] = useState<DateRange | undefined>(undefined);
   const { mutate } = DeletePurchases();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  useEffect(() => {
+    if (rangeDate?.from && rangeDate?.to) {
+      table.setColumnFilters([
+        {
+          id: "local_date",
+          value: {
+            from: format(rangeDate.from, "yyyy-MM-dd HH:mm:ss"),
+            to: format(rangeDate.to, "yyyy-MM-dd HH:mm:ss"),
+          },
+        },
+      ]);
+    } else {
+      table.setColumnFilters([]);
+    }
+  }, [rangeDate, table]);
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
@@ -76,46 +84,7 @@ export function PurchasesTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-4">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={"outline"}
-              size="sm"
-              className={cn(
-                "w-[150px] lg:w-[250px] justify-start text-left font-normal",
-                !date && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? (
-                format(date, "PP", { locale: es })
-              ) : (
-                <span>Filtrar compras...</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              locale={es}
-              mode="single"
-              selected={date}
-              onSelect={(selectedDate) => {
-                setDate(selectedDate);
-                if (selectedDate) {
-                  table.setColumnFilters([
-                    {
-                      id: "local_date",
-                      value: format(selectedDate, "yyyy-MM-dd"),
-                    },
-                  ]);
-                } else {
-                  table.setColumnFilters([]);
-                }
-              }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
+        <DataTableDateFilter date={rangeDate} setDate={setRangeDate} />
       </div>
       <div className="flex space-x-4">
         {selectedRowsCount > 0 && (

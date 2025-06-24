@@ -19,24 +19,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
-import { Calendar as CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Table } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import { es } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import { useState } from "react";
 import { DeleteExpenses } from "@/lib/mutations/useExpense";
-import { DataTableFacetedFilter } from "../data-table-faceted-filter";
 import { format } from "date-fns";
 import ExpenseForm from "./expense-form";
+import { DateRange } from "react-day-picker";
+import { DataTableDateFilter } from "../data-table-date-filter";
+import { DataTableFacetedFilter } from "../data-table-faceted-filter";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -46,9 +39,25 @@ export function ExpensesTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
-  const [date, setDate] = useState<Date>();
+  const [rangeDate, setRangeDate] = useState<DateRange | undefined>(undefined);
   const { mutate, isPending } = DeleteExpenses();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  useEffect(() => {
+    if (rangeDate?.from && rangeDate?.to) {
+      table.setColumnFilters([
+        {
+          id: "local_date",
+          value: {
+            from: format(rangeDate.from, "yyyy-MM-dd HH:mm:ss"),
+            to: format(rangeDate.to, "yyyy-MM-dd HH:mm:ss"),
+          },
+        },
+      ]);
+    } else {
+      table.setColumnFilters([]);
+    }
+  }, [rangeDate, table]);
 
   const handleDeleteSelected = () => {
     const selectedRows = table.getSelectedRowModel().rows;
@@ -76,46 +85,7 @@ export function ExpensesTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-4">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={"outline"}
-              size="sm"
-              className={cn(
-                "w-[150px] lg:w-[250px] justify-start text-left font-normal",
-                !date && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? (
-                format(date, "PP", { locale: es })
-              ) : (
-                <span>Filtrar gastos...</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              locale={es}
-              mode="single"
-              selected={date}
-              onSelect={(selectedDate) => {
-                setDate(selectedDate);
-                if (selectedDate) {
-                  table.setColumnFilters([
-                    {
-                      id: "local_date",
-                      value: format(selectedDate, "yyyy-MM-dd"),
-                    },
-                  ]);
-                } else {
-                  table.setColumnFilters([]);
-                }
-              }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
+        <DataTableDateFilter date={rangeDate} setDate={setRangeDate} />
 
         {table.getColumn("category") && (
           <DataTableFacetedFilter

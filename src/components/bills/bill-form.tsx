@@ -26,6 +26,7 @@ import { es } from "date-fns/locale";
 import { NumericFormat } from "react-number-format";
 import { PayBill } from "@/lib/mutations/useBill";
 import { useEffect } from "react";
+import { Loader2Icon } from "lucide-react";
 
 type BillFormProps = {
   bill: Bill;
@@ -212,7 +213,7 @@ export default function BillForm({ onOpenChange, bill }: BillFormProps) {
             Cancelar
           </Button>
           <Button type="submit" size="sm" disabled={isPending}>
-            Guardar
+            {isPending ? <Loader2Icon className="animate-spin" /> : "Registrar"}
           </Button>
         </div>
       </form>

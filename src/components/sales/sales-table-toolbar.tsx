@@ -17,7 +17,7 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { DeleteSales } from "@/lib/mutations/useSale";
 import { format } from "date-fns";
-import { DatePickerWithRange } from "../date-picker-with-range";
+import { DataTableDateFilter } from "../data-table-date-filter";
 import { DateRange } from "react-day-picker";
 
 interface DataTableToolbarProps<TData> {
@@ -28,7 +28,6 @@ export function SalesTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const selectedRowsCount = table.getSelectedRowModel().rows.length;
-  // const [date, setDate] = useState<Date>();
   const [rangeDate, setRangeDate] = useState<DateRange | undefined>(undefined);
   const { mutate } = DeleteSales();
 
@@ -74,7 +73,7 @@ export function SalesTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-4">
-        <DatePickerWithRange date={rangeDate} setDate={setRangeDate} />
+        <DataTableDateFilter date={rangeDate} setDate={setRangeDate} />
       </div>
       <div className="flex space-x-2">
         {selectedRowsCount > 0 && (

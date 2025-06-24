@@ -11,16 +11,31 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { es } from "date-fns/locale";
+import { useLocation } from "react-router";
+
+const pathnames: Record<string, string> = {
+  "/expenses": "gastos",
+  "/purchases": "compras",
+  "/sales": "ventas",
+};
 
 interface DatePickerWithRangeProps {
   date: DateRange | undefined;
   setDate: React.Dispatch<React.SetStateAction<DateRange | undefined>>;
 }
 
-export function DatePickerWithRange({
+export function DataTableDateFilter({
   date,
   setDate,
 }: DatePickerWithRangeProps) {
+  const location = useLocation();
+
+  const matchedPath = Object.keys(pathnames).find((key) =>
+    location.pathname.startsWith(key)
+  );
+
+  const title = matchedPath ? pathnames[matchedPath] : "";
+
   return (
     <div className={cn("grid gap-2")}>
       <Popover>
@@ -45,7 +60,7 @@ export function DatePickerWithRange({
                 format(date.from, "PP", { locale: es })
               )
             ) : (
-              <span>Filtrar ventas...</span>
+              <span>Filtrar {title}...</span>
             )}
           </Button>
         </PopoverTrigger>

@@ -14,42 +14,24 @@ export function CreateOwner() {
     mutationFn: async (values: Owner) => {
       const db = await getDb();
 
-      // Normalizamos el nombre y alias para validar duplicados
+      // 1. Normalizamos el nombre del propietario para evitar duplicados
       const cleanName = values.name.trim().toLowerCase();
-      const cleanAlias = values.alias?.trim().toLowerCase() ?? null;
 
-      // Buscar si ya existe otro owner con el mismo nombre o alias
-      const existing = await db.select<
-        { name: string; alias: string | null }[]
-      >(
-        `SELECT name, alias FROM owners
-         WHERE LOWER(name) = $1 OR LOWER(alias) = $2`,
-        [cleanName, cleanAlias ?? ""]
+      // 2. Verificamos si ya existe un propietario con ese nombre normalizado
+      const existing = await db.select<{ name: string }[]>(
+        `SELECT name FROM owners WHERE LOWER(TRIM(name)) = $1`,
+        [cleanName]
       );
 
-      const nameExists = existing.some(
-        (row) => row.name.trim().toLowerCase() === cleanName
-      );
-      const aliasExists = cleanAlias
-        ? existing.some(
-            (row) =>
-              row.alias !== null &&
-              row.alias.trim().toLowerCase() === cleanAlias
-          )
-        : false;
-
-      if (nameExists && aliasExists) {
-        throw new Error("Ya existe un propietario con ese nombre y alias");
-      } else if (nameExists) {
+      // 3. Si existe, lanzamos un error
+      if (existing.length > 0) {
         throw new Error("Ya existe un propietario con ese nombre");
-      } else if (aliasExists) {
-        throw new Error("Ya existe un propietario con ese alias");
       }
 
-      // Insertar los valores tal como vienen (sin normalizar)
+      // 4. Si no existe, insertamos el nuevo propietario
       await db.execute(`INSERT INTO owners (name, alias) VALUES ($1, $2)`, [
         values.name,
-        values.alias ?? null,
+        values.alias,
       ]);
     },
     onSuccess: () => {
@@ -65,42 +47,24 @@ export function UpdateOwner() {
     mutationFn: async (values: Owner) => {
       const db = await getDb();
 
-      // Normalizamos para validar duplicados
+      // 1. Normalizamos el nombre del propietario para evitar duplicados
       const cleanName = values.name.trim().toLowerCase();
-      const cleanAlias = values.alias?.trim().toLowerCase() ?? null;
 
-      // Buscar si ya existe otro owner con el mismo nombre o alias (excluyendo el actual)
-      const existing = await db.select<
-        { id: number; name: string; alias: string | null }[]
-      >(
-        `SELECT id, name, alias FROM owners
-         WHERE id != $1 AND (LOWER(name) = $2 OR LOWER(alias) = $3)`,
-        [values.id, cleanName, cleanAlias ?? ""]
+      // 2. Verificamos si ya existe un propietario con ese nombre normalizado, excluyendo el actual
+      const existing = await db.select<{ id: number }[]>(
+        `SELECT id FROM owners WHERE LOWER(TRIM(name)) = $1 AND id != $2`,
+        [cleanName, values.id]
       );
 
-      const nameExists = existing.some(
-        (row) => row.name.trim().toLowerCase() === cleanName
-      );
-      const aliasExists = cleanAlias
-        ? existing.some(
-            (row) =>
-              row.alias !== null &&
-              row.alias.trim().toLowerCase() === cleanAlias
-          )
-        : false;
-
-      if (nameExists && aliasExists) {
-        throw new Error("Ya existe otro propietario con ese nombre y alias");
-      } else if (nameExists) {
-        throw new Error("Ya existe otro propietario con ese nombre");
-      } else if (aliasExists) {
-        throw new Error("Ya existe otro propietario con ese alias");
+      // 3. Si existe, lanzamos un error
+      if (existing.length > 0) {
+        throw new Error("Ya existe un propietario con ese nombre");
       }
 
-      // Guardamos los datos tal como fueron ingresados
+      // 4. Si no existe, actualizamos el propietario
       await db.execute(
         `UPDATE owners SET name = $1, alias = $2 WHERE id = $3`,
-        [values.name, values.alias ?? null, values.id]
+        [values.name, values.alias, values.id]
       );
     },
     onSuccess: () => {
@@ -115,34 +79,47 @@ export function DeleteOwners() {
   return useMutation({
     mutationFn: async (ids: number[]) => {
       const db = await getDb();
-      const placeholders = ids.map(() => "?").join(",");
 
-      // Verificar si el propietario tiene productos o gastos asociadas
+      // 1. Generamos placeholders para los IDs (ej: $1, $2, ...)
+      const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
+
+      // 2. Verificamos los propietarios para ver si tienen productos o gastos asociados
       const productCheck = await db.select<{ count: number }[]>(
-        `SELECT owner_id FROM product_owners WHERE owner_id IN (${placeholders})`,
+        `SELECT COUNT(*) as count FROM product_owners WHERE owner_id IN (${placeholders})`,
         ids
       );
 
       const expenseCheck = await db.select<{ count: number }[]>(
-        `SELECT owner_id FROM expense_owners WHERE owner_id IN (${placeholders})`,
+        `SELECT COUNT(*) as count FROM expense_owners WHERE owner_id IN (${placeholders})`,
         ids
       );
 
-      if (productCheck.length > 0 && expenseCheck.length > 0) {
+      // 3. Sumamos los resultados
+      const productCount = productCheck.reduce(
+        (acc, row) => acc + row.count,
+        0
+      );
+      const expenseCount = expenseCheck.reduce(
+        (acc, row) => acc + row.count,
+        0
+      );
+
+      // 4. Si hay productos o gastos asociados, lanzamos un error
+      if (productCount > 0 && expenseCount > 0) {
         throw new Error(
           "No se pueden eliminar propietarios con productos o gastos asociados"
         );
-      } else if (productCheck.length > 0) {
+      } else if (productCount > 0) {
         throw new Error(
           "No se pueden eliminar propietarios con productos asociados"
         );
-      } else if (expenseCheck.length > 0) {
+      } else if (expenseCount > 0) {
         throw new Error(
           "No se pueden eliminar propietarios con gastos asociados"
         );
       }
 
-      // Eliminar los propietarios
+      // 5. Eliminamos los propietarios seleccionados de la base de datos
       await db.execute(`DELETE FROM owners WHERE id IN (${placeholders})`, ids);
     },
     onSuccess: () => {

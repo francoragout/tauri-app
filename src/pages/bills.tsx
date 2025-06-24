@@ -11,8 +11,8 @@ async function getBills(): Promise<Bill[]> {
     SELECT 
       s.id AS sale_id,
       s.customer_id,
-      strftime('%Y-%m', datetime(s.date, '-3 hours')) AS year_month,
-      date(datetime(s.date, '-3 hours')) AS date,
+      strftime('%Y-%m', datetime(s.created_at, '-3 hours')) AS year_month,
+      date(datetime(s.created_at, '-3 hours')) AS date,
       s.is_paid,
       SUM(si.quantity * p.price) AS total
     FROM sales s

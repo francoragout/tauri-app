@@ -1,12 +1,9 @@
-"use client";
-
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { Sale } from "@/lib/zod";
 import { endOfDay, format, isValid, parse, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
-// import { SalesTableRowActions } from "./sales-table-row-actions";
 
 export const SalesColumns: ColumnDef<Sale>[] = [
   {
@@ -44,7 +41,7 @@ export const SalesColumns: ColumnDef<Sale>[] = [
 
       if (!isValid(parsed)) return <div>-</div>;
 
-      const formatted = format(parsed, "PP", { locale: es });
+      const formatted = format(parsed, "PPp", { locale: es });
       return <div>{formatted}</div>;
     },
     filterFn: (row, columnId, filterValue) => {
@@ -57,21 +54,6 @@ export const SalesColumns: ColumnDef<Sale>[] = [
         parsed >= startOfDay(new Date(filterValue.from)) &&
         parsed <= endOfDay(new Date(filterValue.to))
       );
-    },
-  },
-  {
-    accessorKey: "local_time",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Hora" />
-    ),
-    cell: ({ row }) => {
-      const rawDate = row.getValue("local_date") as string;
-      const parsed = parse(rawDate, "yyyy-MM-dd HH:mm:ss", new Date());
-
-      if (!isValid(parsed)) return <div>-</div>;
-
-      const formatted = format(parsed, "HH:mm", { locale: es });
-      return <div>{formatted}</div>;
     },
   },
   {
@@ -107,12 +89,26 @@ export const SalesColumns: ColumnDef<Sale>[] = [
     ),
     cell: ({ row }) => {
       const paymentMethod = row.getValue("payment_method");
+      const surcharge = row.original.surcharge as number;
 
       const translatedPaymentMethod = {
         cash: "Efectivo",
         transfer: "Transferencia",
-        account: "Cuenta",
+        account: "Cuenta corriente",
       };
+
+      if (surcharge > 0) {
+        return (
+          <div>
+            {
+              translatedPaymentMethod[
+                paymentMethod as keyof typeof translatedPaymentMethod
+              ]
+            }{" "}
+            (+{surcharge}%)
+          </div>
+        );
+      }
 
       return (
         <div>
@@ -124,13 +120,6 @@ export const SalesColumns: ColumnDef<Sale>[] = [
         </div>
       );
     },
-  },
-  {
-    accessorKey: "surcharge",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Recargo" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("surcharge")}%</div>,
   },
   {
     accessorKey: "total",
@@ -149,16 +138,6 @@ export const SalesColumns: ColumnDef<Sale>[] = [
     },
   },
   {
-    accessorKey: "customer_id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Cliente" />
-    ),
-    cell: ({ row }) => {
-      const customerId = row.getValue("customer_id") as string | null;
-      return <div>{customerId}</div>;
-    },
-  },
-  {
     accessorKey: "customer_name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Cliente" />
@@ -174,18 +153,15 @@ export const SalesColumns: ColumnDef<Sale>[] = [
       <DataTableColumnHeader column={column} title="Fecha de pago" />
     ),
     cell: ({ row }) => {
-      const customerId = row.getValue("customer_id") as number | null;
-      const rawDate = row.getValue("payment_date") as string | null;
+      const payment_date = row.getValue("payment_date") as string | null;
 
-      // Si no hay cliente o no hay fecha, mostrar "-"
-      if (!customerId || !rawDate) return;
+      if (!payment_date) return;
 
-      const parsed = parse(rawDate, "yyyy-MM-dd HH:mm:ss", new Date());
+      const parsed = parse(payment_date, "yyyy-MM-dd HH:mm:ss", new Date());
 
-      // Si no se pudo parsear correctamente, mostrar "-"
       if (!isValid(parsed)) return;
 
-      const formatted = format(parsed, "Pp", { locale: es });
+      const formatted = format(parsed, "PPp", { locale: es });
 
       return <div>{formatted}</div>;
     },

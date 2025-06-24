@@ -99,7 +99,7 @@ export const OwnerSchema = z.object({
     .nonempty({
       message: "Ingrese el nombre del propietario",
     }),
-  alias: z.string().trim().optional(),
+  alias: z.string().trim().nullish(),
   product_count: z.number().optional(),
 });
 
@@ -107,6 +107,7 @@ export const SaleSchema = z
   .object({
     id: z.number().optional(),
     local_date: z.string().optional(),
+    created_at: z.date().optional(),
     is_paid: z.number(),
     payment_date: z.string().nullish(),
     customer_id: z.number().nullish(),

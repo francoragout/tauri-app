@@ -29,7 +29,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { Check, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, Loader2Icon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -43,6 +43,9 @@ import { useDispatch } from "react-redux";
 import { CartItem, clearCart } from "@/features/cart/cartSlice";
 import { GetCustomers } from "@/lib/mutations/useCustomer";
 import { useQuery } from "@tanstack/react-query";
+import { Calendar } from "../ui/calendar";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface SaleCreateFormProps {
   products: CartItem[];
@@ -66,6 +69,7 @@ export function SaleForm({
 
   const [selectedCustomerId, setSelectedCustomerId] = useState<number>();
   const [open, setOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const dispatch = useDispatch();
   const { mutate, isPending } = CreateSale();
 
@@ -78,6 +82,7 @@ export function SaleForm({
       surcharge,
       is_paid: 1,
       products: [],
+      created_at: new Date(),
     },
   });
 
@@ -133,6 +138,7 @@ export function SaleForm({
         onOpenChange(false);
       },
       onError: (error: any) => {
+        console.error("Error al registrar venta:", error);
         toast.error(error?.message || "Error al registrar venta");
       },
     });
@@ -141,6 +147,47 @@ export function SaleForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+        <FormField
+          control={form.control}
+          name="created_at"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "pl-3 text-left font-normal",
+                      !field.value && "text-muted-foreground"
+                    )}
+                  >
+                    {field.value ? (
+                      format(field.value, "PP", { locale: es })
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    locale={es}
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    captionLayout="dropdown"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="payment_method"
@@ -214,14 +261,12 @@ export function SaleForm({
                       )}
                     >
                       {selectedCustomer
-                        ? selectedCustomer.reference
-                          ? `${selectedCustomer.name} (${selectedCustomer.reference})`
-                          : selectedCustomer.name
+                        ? selectedCustomer.name
                         : "Cliente (opcional)"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[446px]">
+                  <PopoverContent className="w-[466px]">
                     <Command>
                       <CommandInput placeholder="Filtrar clientes..." />
                       <CommandList>
@@ -230,7 +275,7 @@ export function SaleForm({
                           {customers.map((customer) => (
                             <CommandItem
                               key={customer.id}
-                              value={`${customer.name} ${customer.reference}`}
+                              value={customer.name}
                               onSelect={() => {
                                 setSelectedCustomerId(customer.id);
                                 form.setValue("customer_id", customer.id, {
@@ -247,11 +292,7 @@ export function SaleForm({
                                     : "opacity-0"
                                 )}
                               />
-                              {`${customer.name} ${
-                                customer.reference
-                                  ? ` (${customer.reference})`
-                                  : ""
-                              }`}
+                              {customer.name}
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -267,7 +308,7 @@ export function SaleForm({
 
         <div className="flex justify-end">
           <Button type="submit" size="sm" disabled={isPending}>
-            Confirmar venta
+            {isPending ? <Loader2Icon className="animate-spin" /> : "Registrar"}
           </Button>
         </div>
       </form>

@@ -30,7 +30,7 @@ import {
   PopoverDialogTrigger,
 } from "../ui/popover-dialog";
 
-import { Check, ChevronsUpDown, X } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2Icon, X } from "lucide-react";
 import { Expense, ExpenseSchema } from "@/lib/zod";
 import { CreateExpense, UpdateExpense } from "@/lib/mutations/useExpense";
 import { useEffect, useState } from "react";
@@ -352,7 +352,13 @@ export default function ExpenseForm({
             size="sm"
             disabled={isPending || (isEditMode && !form.formState.isDirty)}
           >
-            Guardar
+            {isPending ? (
+              <Loader2Icon className="animate-spin" />
+            ) : isEditMode ? (
+              "Actualizar"
+            ) : (
+              "Registrar"
+            )}
           </Button>
         </div>
       </form>

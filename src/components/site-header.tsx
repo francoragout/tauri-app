@@ -14,7 +14,6 @@ const pathnames: Record<string, string> = {
   "/purchases": "Compras",
   "/products": "Productos",
   "/sales": "Ventas",
-  "/configuration": "Configuración",
 };
 
 export function SiteHeader() {

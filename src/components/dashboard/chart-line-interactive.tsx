@@ -6,7 +6,6 @@ import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -87,12 +86,6 @@ export function ChartAreaInteractive({
     <Card className="@container/card">
       <CardHeader>
         <CardTitle>Reportes Diarios</CardTitle>
-        <CardDescription>
-          <span className="hidden @[540px]/card:block">
-            Total por los últimos 3 meses
-          </span>
-          <span className="@[540px]/card:hidden">Last 3 months</span>
-        </CardDescription>
         <CardAction>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger
@@ -148,9 +141,8 @@ export function ChartAreaInteractive({
                 <ChartTooltipContent
                   className="w-[175px]"
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("es-ES", {
-                      month: "long",
-                      year: "numeric",
+                    return format(parseLocalDate(value), "PPP", {
+                      locale: es,
                     });
                   }}
                 />

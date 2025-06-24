@@ -14,6 +14,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { Loader2Icon } from "lucide-react";
 
 type SupplierFormProps = {
   supplier?: Supplier;
@@ -140,7 +141,13 @@ export default function SupplierForm({
             size="sm"
             disabled={isPending || (isEditMode && !form.formState.isDirty)}
           >
-            Guardar
+            {isPending ? (
+              <Loader2Icon className="animate-spin" />
+            ) : isEditMode ? (
+              "Actualizar"
+            ) : (
+              "Registrar"
+            )}
           </Button>
         </div>
       </form>

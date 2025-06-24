@@ -2,10 +2,11 @@ use tauri::Builder;
 use tauri_plugin_sql::{Builder as SqlBuilder, Migration, MigrationKind};
 
 pub fn run() {
-    let migrations = vec![Migration {
-        version: 1,
-        description: "create_initial_tables",
-        sql: "
+    let migrations = vec![
+        Migration {
+            version: 1,
+            description: "create_initial_tables",
+            sql: "
 
         CREATE TABLE IF NOT EXISTS suppliers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,7 +19,7 @@ pub fn run() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             product_id INTEGER NOT NULL,
             supplier_id INTEGER,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,                   
+            date TEXT DEFAULT CURRENT_TIMESTAMP,                   
             quantity INTEGER NOT NULL,
             total REAL NOT NULL,
             payment_method TEXT NOT NULL,
@@ -28,8 +29,7 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS owners (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            alias TEXT NOT NULL UNIQUE
+            name TEXT NOT NULL
         );
 
         CREATE TABLE IF NOT EXISTS product_owners (
@@ -53,7 +53,7 @@ pub fn run() {
         CREATE TABLE IF NOT EXISTS sales (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_id INTEGER,              
-            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            date TEXT DEFAULT CURRENT_TIMESTAMP,
             total REAL NOT NULL,
             surcharge INTEGER NOT NULL DEFAULT 0,
             payment_method TEXT NOT NULL,
@@ -74,7 +74,8 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS customers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
+            name TEXT NOT NULL,
+            reference TEXT,
             phone TEXT
         );
 
@@ -89,7 +90,7 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS expenses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            date TEXT DEFAULT CURRENT_TIMESTAMP,
             category TEXT NOT NULL,
             amount REAL NOT NULL,
             description TEXT
@@ -97,7 +98,7 @@ pub fn run() {
 
         CREATE TABLE IF NOT EXISTS notifications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            date TEXT DEFAULT CURRENT_TIMESTAMP,
             title TEXT NOT NULL,
             message TEXT NOT NULL,
             link TEXT NOT NULL,
@@ -105,8 +106,33 @@ pub fn run() {
             read_at TEXT
         );
             ",
-        kind: MigrationKind::Up,
-    }];
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
+            description: "rename_date_to_created_at_in_tables",
+            sql: "\
+            -- Renombrar columna date a created_at en purchases
+            ALTER TABLE purchases RENAME COLUMN date TO created_at;
+            -- Renombrar columna date a created_at en sales
+            ALTER TABLE sales RENAME COLUMN date TO created_at;
+            -- Renombrar columna date a created_at en expenses
+            ALTER TABLE expenses RENAME COLUMN date TO created_at;
+            -- Renombrar columna date a created_at en notifications
+            ALTER TABLE notifications RENAME COLUMN date TO created_at;
+            ",
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 3,
+            description: "add_alias_to_owners_and_make_name_unique",
+            sql: "
+            ALTER TABLE owners ADD COLUMN alias TEXT;
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_name_unique ON owners(name);
+            ",
+            kind: MigrationKind::Up,
+        },
+    ];
 
     Builder::default()
         .plugin(

@@ -69,36 +69,30 @@ export default function Notifications() {
           {notifications.length > 0 ? (
             notifications.map((notification) => (
               <Link to={notification.link} key={notification.id}>
-                <Alert className="my-2 hover:bg-accent">
-                  <AlertTitle
-                    className={clsx(
-                      notification.is_read
-                        ? "text-muted-foreground"
-                        : "text-primary"
-                    )}
-                  >
+                <Alert className={
+                  clsx(
+                    "my-2 hover:bg-accent",
+                    !notification.is_read && "bg-accent"
+                  )
+                }>
+                  <AlertTitle className="flex justify-between items-center">
                     {notification.title}
+
+                    <span className="">
+                      {formatDistanceToNow(new Date(notification.local_date), {
+                        addSuffix: true,
+                        locale: es,
+                      })}
+                    </span>
                   </AlertTitle>
                   <AlertDescription
                     className={clsx(
                       notification.is_read
-                        ? "text-muted-foreground"
+                        ? "text-primary"
                         : "text-primary"
                     )}
                   >
                     {notification.message}
-                  </AlertDescription>
-                  <AlertDescription
-                    className={clsx(
-                      notification.is_read
-                        ? "text-muted-foreground"
-                        : "text-primary"
-                    )}
-                  >
-                    {formatDistanceToNow(new Date(notification.local_date), {
-                      addSuffix: true,
-                      locale: es,
-                    })}
                   </AlertDescription>
                 </Alert>
               </Link>

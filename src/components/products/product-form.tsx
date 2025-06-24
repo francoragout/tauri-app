@@ -32,7 +32,7 @@ import {
 
 import { CreateProduct, UpdateProduct } from "@/lib/mutations/useProduct";
 import { Product, ProductSchema } from "@/lib/zod";
-import { Check, ChevronsUpDown, X } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2Icon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -394,7 +394,13 @@ export default function ProductForm({
             size="sm"
             disabled={isPending || (isEditMode && !form.formState.isDirty)}
           >
-            Guardar
+            {isPending ? (
+              <Loader2Icon className="animate-spin" />
+            ) : isEditMode ? (
+              "Actualizar"
+            ) : (
+              "Registrar"
+            )}
           </Button>
         </div>
       </form>

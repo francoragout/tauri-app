@@ -30,7 +30,7 @@ import {
 } from "../ui/popover-dialog";
 
 import { Purchase, PurchaseSchema } from "@/lib/zod";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2Icon } from "lucide-react";
 import { CreatePurchase, UpdatePurchase } from "@/lib/mutations/usePurchase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -343,7 +343,13 @@ export default function PurchaseForm({
             size="sm"
             disabled={isPending || (isEditMode && !form.formState.isDirty)}
           >
-            Guardar
+            {isPending ? (
+              <Loader2Icon className="animate-spin" />
+            ) : isEditMode ? (
+              "Actualizar"
+            ) : (
+              "Registrar"
+            )}
           </Button>
         </div>
       </form>

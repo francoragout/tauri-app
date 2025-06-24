@@ -11,8 +11,8 @@ import { Badge } from "./ui/badge";
 import { RootState } from "@/store";
 import { clearCart } from "@/features/cart/cartSlice";
 import { useMemo, useState } from "react";
-import { SaleForm } from "./sales/sale-form";
 import CartTable from "./cart-table";
+import { SaleForm } from "./sales/sale-form";
 
 export default function Cart() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);

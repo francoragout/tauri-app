@@ -6,7 +6,6 @@ import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -82,12 +81,6 @@ export function ChartBarInteractive({
     <Card className="@container/card">
       <CardHeader>
         <CardTitle>Reportes Mensuales</CardTitle>
-        <CardDescription>
-          <span className="hidden @[540px]/card:block">
-            Total por los últimos 12 meses
-          </span>
-          <span className="@[540px]/card:hidden">Last 3 months</span>
-        </CardDescription>
         <CardAction>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger

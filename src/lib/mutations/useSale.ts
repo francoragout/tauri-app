@@ -2,10 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sale } from "../zod";
 import { getDb } from "../db";
 
+// Función para formatear la fecha a formato SQL
 function formatDateToSql(date: Date) {
   return date.toISOString().replace("T", " ").substring(0, 19);
 }
 
+// Función para crear una notificación en la base de datos
 async function createNotification(
   title: string,
   message: string,
@@ -18,12 +20,28 @@ async function createNotification(
   );
 }
 
+// Función para combinar una fecha con la hora actual
+function combineDateWithCurrentTime(date: Date) {
+  const now = new Date();
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds(),
+    now.getMilliseconds()
+  );
+}
+
 export function CreateSale() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (values: Sale) => {
       const db = await getDb();
+
+      console.log("Valores de la venta:", values);
 
       await db.execute("BEGIN TRANSACTION");
 
@@ -58,8 +76,12 @@ export function CreateSale() {
         }
 
         // 2. Insertar venta
+        const createdAtWithTime = combineDateWithCurrentTime(
+          values.created_at ?? new Date()
+        );
+
         await db.execute(
-          `INSERT INTO sales (payment_method, customer_id, is_paid, total, surcharge, paid_at) VALUES ($1, $2, $3, $4, $5, $6)`,
+          `INSERT INTO sales (payment_method, customer_id, is_paid, total, surcharge, paid_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
           [
             values.payment_method,
             values.customer_id,
@@ -67,6 +89,7 @@ export function CreateSale() {
             values.total,
             values.surcharge,
             values.is_paid === 1 ? formatDateToSql(new Date()) : null,
+            formatDateToSql(createdAtWithTime),
           ]
         );
 
