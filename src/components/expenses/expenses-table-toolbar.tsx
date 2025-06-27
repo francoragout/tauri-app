@@ -29,7 +29,6 @@ import { format } from "date-fns";
 import ExpenseForm from "./expense-form";
 import { DateRange } from "react-day-picker";
 import { DataTableDateFilter } from "../data-table-date-filter";
-import { DataTableFacetedFilter } from "../data-table-faceted-filter";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -86,22 +85,6 @@ export function ExpensesTableToolbar<TData>({
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-4">
         <DataTableDateFilter date={rangeDate} setDate={setRangeDate} />
-
-        {table.getColumn("category") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("category")}
-            title="Categoría"
-            options={Array.from(
-              table
-                .getColumn("category")
-                ?.getFacetedUniqueValues()
-                ?.entries() ?? []
-            ).map(([key, _]) => ({
-              label: String(key),
-              value: String(key),
-            }))}
-          />
-        )}
       </div>
 
       <div className="flex space-x-4">

@@ -17,6 +17,14 @@ import {
 } from "@/components/ui/table";
 
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import {
   Form,
   FormControl,
   FormField,
@@ -30,10 +38,16 @@ import {
   PopoverDialogTrigger,
 } from "../ui/popover-dialog";
 
-import { Check, ChevronsUpDown, Loader2Icon, X } from "lucide-react";
-import { Expense, ExpenseSchema } from "@/lib/zod";
+import {
+  CalendarIcon,
+  Check,
+  ChevronsUpDown,
+  Loader2Icon,
+  X,
+} from "lucide-react";
+import { Expense, ExpenseSchema, Owner, OwnerWithPercentage } from "@/lib/zod";
 import { CreateExpense, UpdateExpense } from "@/lib/mutations/useExpense";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
@@ -44,6 +58,10 @@ import { NumericFormat } from "react-number-format";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { GetOwners } from "@/lib/mutations/useOwner";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Calendar } from "../ui/calendar";
 
 type ExpenseFormProps = {
   expense?: Expense;
@@ -56,6 +74,7 @@ export default function ExpenseForm({
 }: ExpenseFormProps) {
   const isEditMode = Boolean(expense);
   const [openOwner, setOpenOwner] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const { data: owners = [] } = useQuery({
     queryKey: ["owners"],
@@ -68,29 +87,20 @@ export default function ExpenseForm({
   const form = useForm<z.infer<typeof ExpenseSchema>>({
     resolver: zodResolver(ExpenseSchema),
     defaultValues: {
-      category: expense?.category ?? "",
       description: expense?.description ?? "",
       amount: expense?.amount ?? undefined,
+      payment_method: expense?.payment_method ?? undefined,
+      created_at: expense?.local_date
+        ? new Date(expense.local_date)
+        : new Date(),
       owners:
         expense?.owners?.map((owner) => ({
           id: owner.id,
           name: owner.name,
-          percentage: owner.percentage ?? 0, // Asegura que el porcentaje esté definido
+          percentage: owner.percentage ?? 0,
         })) ?? [],
     },
   });
-
-  // Si solo hay un propietario, su porcentaje será 100
-  useEffect(() => {
-    const owners = form.watch("owners");
-    if (owners.length === 1 && owners[0].percentage !== 100) {
-      form.setValue("owners", [{ ...owners[0], percentage: 100 }], {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: true,
-      });
-    }
-  }, [form.watch("owners")]);
 
   function onSubmit(values: z.infer<typeof ExpenseSchema>) {
     if (isEditMode && expense?.id) {
@@ -105,7 +115,7 @@ export default function ExpenseForm({
             const message =
               error instanceof Error
                 ? error.message
-                : "Error al registrar gasto";
+                : "Error al actualizar gasto";
             toast.error(message);
           },
         }
@@ -114,9 +124,11 @@ export default function ExpenseForm({
       createExpense(values, {
         onSuccess: () => {
           onOpenChange(false);
+          form.reset();
           toast.success("Gasto registrado");
         },
         onError: (error: unknown) => {
+
           const message =
             error instanceof Error ? error.message : "Error al registrar gasto";
           toast.error(message);
@@ -132,16 +144,39 @@ export default function ExpenseForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="category"
+          name="created_at"
           render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isPending}
-                  placeholder="Categoría (requerido)"
-                />
-              </FormControl>
+            <FormItem className="flex flex-col">
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "pl-3 text-left font-normal hover:bg-transparent",
+                      !field.value && "text-muted-foreground"
+                    )}
+                  >
+                    {field.value ? (
+                      format(field.value, "PP", { locale: es })
+                    ) : (
+                      <span>Fecha (requerido)</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    locale={es}
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    captionLayout="dropdown"
+                  />
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}
@@ -156,7 +191,7 @@ export default function ExpenseForm({
                 <Input
                   {...field}
                   disabled={isPending}
-                  placeholder="Descripción (opcional)"
+                  placeholder="Descripción (requerido)"
                 />
               </FormControl>
               <FormMessage />
@@ -184,6 +219,29 @@ export default function ExpenseForm({
                   placeholder="Monto (requerido)"
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="payment_method"
+          render={({ field }) => (
+            <FormItem>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-full" disabled={isPending}>
+                    <SelectValue placeholder="Metodo de pago (requerido)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="credit">Crédito</SelectItem>
+                  <SelectItem value="debit">Débito</SelectItem>
+                  <SelectItem value="cash">Efectivo</SelectItem>
+                  <SelectItem value="transfer">Transferencia</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -230,17 +288,17 @@ export default function ExpenseForm({
                               if (
                                 owner.id !== undefined &&
                                 !field.value?.some(
-                                  (o: any) => o.id === owner.id
+                                  (o: Owner) => o.id === owner.id
                                 )
                               ) {
                                 form.setValue(
                                   "owners",
                                   [
                                     ...(field.value || []),
-                                    { ...owner, percentage: 0 } as {
-                                      id: number;
-                                      name: string;
-                                      percentage: number;
+                                    {
+                                      id: owner.id,
+                                      name: owner.name,
+                                      percentage: 0,
                                     },
                                   ],
                                   {
@@ -257,7 +315,7 @@ export default function ExpenseForm({
                             <Check
                               className={cn(
                                 "ml-auto",
-                                field.value?.some((o: any) => o.id === owner.id)
+                                field.value?.some((o: Owner) => o.id === owner.id)
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}
@@ -284,7 +342,7 @@ export default function ExpenseForm({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {form.watch("owners").map((owner: any, idx: number) => (
+              {form.watch("owners").map((owner: OwnerWithPercentage, idx: number) => (
                 <TableRow key={owner.id}>
                   <TableCell>{owner.name}</TableCell>
                   <TableCell className="py-1">

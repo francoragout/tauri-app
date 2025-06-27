@@ -30,9 +30,9 @@ import {
   PopoverDialogTrigger,
 } from "../ui/popover-dialog";
 
+import { Check, ChevronsUpDown, Loader2Icon, X } from "lucide-react";
 import { CreateProduct, UpdateProduct } from "@/lib/mutations/useProduct";
 import { Product, ProductSchema } from "@/lib/zod";
-import { Check, ChevronsUpDown, Loader2Icon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,7 +80,7 @@ export default function ProductForm({
         product?.owners?.map((owner) => ({
           id: owner.id,
           name: owner.name,
-          percentage: owner.percentage ?? 0, // Asegura que el porcentaje esté definido
+          percentage: owner.percentage ?? 0,
         })) ?? [],
     },
   });
@@ -105,6 +105,7 @@ export default function ProductForm({
           onSuccess: () => {
             onOpenChange(false);
             dispatch(clearCart());
+            form.reset();
             toast.success("Producto actualizado");
           },
           onError: (error: unknown) => {
@@ -120,6 +121,7 @@ export default function ProductForm({
       createProduct(values, {
         onSuccess: () => {
           onOpenChange(false);
+          form.reset();
           toast.success("Producto registrado");
         },
         onError: (error: unknown) => {

@@ -30,7 +30,7 @@ import {
 } from "../ui/popover-dialog";
 
 import { Purchase, PurchaseSchema } from "@/lib/zod";
-import { Check, ChevronsUpDown, Loader2Icon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, Loader2Icon } from "lucide-react";
 import { CreatePurchase, UpdatePurchase } from "@/lib/mutations/usePurchase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,10 @@ import { NumericFormat } from "react-number-format";
 import { GetProducts } from "@/lib/mutations/useProduct";
 import { useQuery } from "@tanstack/react-query";
 import { GetSuppliers } from "@/lib/mutations/useSupplier";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Calendar } from "../ui/calendar";
 
 interface PurchaseFormProps {
   purchase?: Purchase;
@@ -68,6 +72,7 @@ export default function PurchaseForm({
 
   const [openProduct, setOpenProduct] = useState(false);
   const [openSupplier, setOpenSupplier] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const { mutate: createPurchase, isPending: isCreating } = CreatePurchase();
   const { mutate: updatePurchase, isPending: isUpdating } = UpdatePurchase();
@@ -80,6 +85,9 @@ export default function PurchaseForm({
       payment_method: purchase?.payment_method ?? undefined,
       total: purchase?.total ?? undefined,
       quantity: purchase?.quantity ?? undefined,
+      created_at: purchase?.created_at
+        ? new Date(purchase.created_at)
+        : new Date(),
     },
   });
 
@@ -106,6 +114,7 @@ export default function PurchaseForm({
         onSuccess: () => {
           onOpenChange(false);
           toast.success("Compra registrada");
+          form.reset();
         },
         onError: (error: unknown) => {
           const message =
@@ -123,6 +132,46 @@ export default function PurchaseForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="created_at"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "pl-3 text-left font-normal",
+                      !field.value && "text-muted-foreground"
+                    )}
+                  >
+                    {field.value ? (
+                      format(field.value, "PP", { locale: es })
+                    ) : (
+                      <span>Fecha (requerido)</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    locale={es}
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    captionLayout="dropdown"
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="product_id"

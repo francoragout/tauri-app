@@ -132,7 +132,7 @@ export function ChartAreaInteractive({
               minTickGap={32}
               tickFormatter={(value) => {
                 const date = parseLocalDate(value);
-                return format(date, "MMM d", { locale: es });
+                return format(date, "d MMM", { locale: es });
               }}
             />
 

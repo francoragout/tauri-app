@@ -58,23 +58,11 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
     },
   },
   {
-    accessorKey: "category",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Categoría" />
-    ),
-    filterFn: (row, columnId, filterValue) => {
-      return filterValue.includes(row.getValue(columnId));
-    },
-  },
-  {
     accessorKey: "description",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Descripción" />
     ),
-    cell: ({ row }) => {
-      const description = row.getValue("description") as string | null;
-      return <div>{description !== null ? description : ""}</div>;
-    },
+    cell: ({ row }) => <div>{row.getValue("description")}</div>,
     enableSorting: false,
   },
   {
@@ -115,7 +103,6 @@ export const ExpensesColumns: ColumnDef<Expense>[] = [
         </div>
       );
     },
-    enableSorting: false,
   },
   {
     id: "actions",

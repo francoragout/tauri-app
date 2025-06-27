@@ -36,11 +36,11 @@ import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { SaleSchema } from "@/lib/zod";
+import { CartItem, SaleSchema } from "@/lib/zod";
 import { useEffect, useState, useMemo } from "react";
 import { CreateSale } from "@/lib/mutations/useSale";
 import { useDispatch } from "react-redux";
-import { CartItem, clearCart } from "@/features/cart/cartSlice";
+import { clearCart } from "@/features/cart/cartSlice";
 import { GetCustomers } from "@/lib/mutations/useCustomer";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar } from "../ui/calendar";
@@ -49,7 +49,6 @@ import { es } from "date-fns/locale";
 
 interface SaleCreateFormProps {
   products: CartItem[];
-  surcharge: number;
   total: number;
   onOpenChange: (open: boolean) => void;
   onSurchargeChange: (surcharge: number) => void;
@@ -57,7 +56,6 @@ interface SaleCreateFormProps {
 
 export function SaleForm({
   products,
-  surcharge,
   total,
   onOpenChange,
   onSurchargeChange,
@@ -68,6 +66,12 @@ export function SaleForm({
   });
 
   const [selectedCustomerId, setSelectedCustomerId] = useState<number>();
+
+  const selectedCustomer = useMemo(
+    () => customers.find((c) => c.id === selectedCustomerId),
+    [customers, selectedCustomerId]
+  );
+
   const [open, setOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const dispatch = useDispatch();
@@ -76,57 +80,36 @@ export function SaleForm({
   const form = useForm<z.infer<typeof SaleSchema>>({
     resolver: zodResolver(SaleSchema),
     defaultValues: {
-      payment_method: "cash",
+      payment_method: undefined,
       customer_id: undefined,
-      total,
-      surcharge,
-      is_paid: 1,
-      products: [],
       created_at: new Date(),
     },
   });
 
   useEffect(() => {
-    const formattedProducts = products.map((product) => ({
-      id: product.id,
-      quantity: product.quantity,
-      price: product.price,
-      name: product.name,
-      stock: product.stock,
-      low_stock_threshold: product.low_stock_threshold,
-    }));
-    form.setValue("products", formattedProducts);
+    form.setValue("products", products);
   }, [products, form]);
 
-  const paymentMethod = form.watch("payment_method");
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      const hasTransfer = value.payment_method === "transfer";
+      onSurchargeChange(hasTransfer ? 5 : 0);
+
+      if (
+        value.payment_method !== "account" &&
+        value.customer_id !== undefined
+      ) {
+        form.setValue("customer_id", undefined);
+        setSelectedCustomerId(undefined);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, onSurchargeChange]);
 
   useEffect(() => {
-    if (paymentMethod === "cash") {
-      onSurchargeChange(0);
-      setSelectedCustomerId(undefined);
-      form.setValue("customer_id", undefined);
-      form.setValue("total", total);
-      form.setValue("surcharge", 0);
-      form.setValue("is_paid", 1);
-    } else if (paymentMethod === "account") {
-      onSurchargeChange(0);
-      form.setValue("total", 0);
-      form.setValue("surcharge", 0);
-      form.setValue("is_paid", 0);
-    } else {
-      onSurchargeChange(surcharge);
-      form.setValue("surcharge", surcharge);
-      form.setValue("total", total);
-      setSelectedCustomerId(undefined);
-      form.setValue("customer_id", undefined);
-      form.setValue("is_paid", 1);
-    }
-  }, [paymentMethod, surcharge, total, form, onSurchargeChange]);
-
-  const selectedCustomer = useMemo(
-    () => customers.find((c) => c.id === selectedCustomerId),
-    [selectedCustomerId, customers]
-  );
+    form.setValue("total", total);
+  }, [total, form]);
 
   function onSubmit(values: z.infer<typeof SaleSchema>) {
     mutate(values, {
@@ -135,11 +118,19 @@ export function SaleForm({
         dispatch(clearCart());
         onSurchargeChange(0);
         setSelectedCustomerId(undefined);
+        form.reset({
+        payment_method: undefined,
+        customer_id: undefined,
+        created_at: new Date(),
+        products: [],
+        total: 0
+      });
         onOpenChange(false);
       },
-      onError: (error: any) => {
-        console.error("Error al registrar venta:", error);
-        toast.error(error?.message || "Error al registrar venta");
+      onError: (error: unknown) => {
+        const message =
+          error instanceof Error ? error.message : "Error al registrar venta";
+        toast.error(message);
       },
     });
   }
@@ -157,7 +148,7 @@ export function SaleForm({
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "pl-3 text-left font-normal",
+                      "pl-3 text-left font-normal hover:bg-transparent",
                       !field.value && "text-muted-foreground"
                     )}
                   >
@@ -182,7 +173,6 @@ export function SaleForm({
                   />
                 </PopoverContent>
               </Popover>
-
               <FormMessage />
             </FormItem>
           )}
@@ -200,12 +190,12 @@ export function SaleForm({
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Metodo de pago (opcional)" />
+                    <SelectValue placeholder="Metodo de pago (requerido)" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   <SelectItem value="cash">Efectivo</SelectItem>
-                  <SelectItem value="transfer">Transferencia</SelectItem>
+                  <SelectItem value="transfer">Transferencia (+5%)</SelectItem>
                   <SelectItem value="account">Cuenta</SelectItem>
                 </SelectContent>
               </Select>
@@ -214,35 +204,7 @@ export function SaleForm({
           )}
         />
 
-        {paymentMethod === "transfer" && (
-          <FormField
-            control={form.control}
-            name="surcharge"
-            render={() => (
-              <FormItem>
-                <Select
-                  value={surcharge.toString()}
-                  onValueChange={(value) => onSurchargeChange(Number(value))}
-                  disabled={isPending}
-                >
-                  <SelectTrigger className="bg-background w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[0, 1, 2, 3, 4, 5].map((value) => (
-                      <SelectItem key={value} value={value.toString()}>
-                        {value}%
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
-        {paymentMethod === "account" && (
+        {form.watch("payment_method") === "account" && (
           <FormField
             control={form.control}
             name="customer_id"
@@ -256,13 +218,14 @@ export function SaleForm({
                       role="combobox"
                       disabled={isPending}
                       className={cn(
-                        "justify-between h-9 hover:bg-background font-normal",
-                        !field.value && "text-muted-foreground"
+                        "justify-between h-9 hover:bg-background font-normal w-full",
+                        !field.value &&
+                          "hover:text-muted-foreground font-normal text-muted-foreground"
                       )}
                     >
                       {selectedCustomer
                         ? selectedCustomer.name
-                        : "Cliente (opcional)"}
+                        : "Cliente (requerido)"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>

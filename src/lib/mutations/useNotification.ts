@@ -9,6 +9,22 @@ export async function GetNotifications(): Promise<Notification[]> {
   );
 }
 
+
+/**
+ * Crea una notificación en la base de datos.
+ */
+export async function createNotification(
+  title: string,
+  message: string,
+  link: string,
+  db: Awaited<ReturnType<typeof getDb>>
+) {
+  await db.execute(
+    `INSERT INTO notifications (title, message, link) VALUES ($1, $2, $3)`,
+    [title, message, link]
+  );
+}
+
 // Renombra la función para seguir la convención de hooks
 export function useMarkNotificationsAsRead() {
   const queryClient = useQueryClient();

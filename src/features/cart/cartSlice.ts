@@ -1,13 +1,5 @@
+import { CartItem } from "@/lib/zod";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-export interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  stock: number;
-  low_stock_threshold: number;
-}
 
 export interface CartState {
   items: CartItem[];

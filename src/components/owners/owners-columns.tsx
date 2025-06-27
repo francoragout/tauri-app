@@ -45,11 +45,25 @@ export const OwnersColumns: ColumnDef<Owner>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "product_count",
+    accessorKey: "total_products",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Productos" />
     ),
-    cell: ({ row }) => <div>{row.getValue("product_count")}</div>,
+    cell: ({ row }) => <div>{row.getValue("total_products")}</div>,
+  },
+  {
+    accessorKey: "net_profit",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Ganancias" />
+    ),
+    cell: ({ row }) => {
+      const netProfit = row.getValue("net_profit") as number;
+      const formattedNetProfit = Number(netProfit).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      return <div>$ {formattedNetProfit}</div>;
+    },
   },
   {
     id: "actions",

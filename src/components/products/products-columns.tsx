@@ -3,6 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { ProductsTableRowActions } from "./products-table-row-actions";
 import { Product } from "@/lib/zod";
+import { Badge } from "../ui/badge";
 
 export const ProductsColumns: ColumnDef<Product>[] = [
   {
@@ -85,7 +86,15 @@ export const ProductsColumns: ColumnDef<Product>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Stock" />
     ),
-    cell: ({ row }) => <div>{row.getValue("stock")}</div>,
+    cell: ({ row }) => {
+      const stock = row.getValue("stock") as number;
+
+      if (stock === 0) {
+        return <Badge>Sin stock</Badge>;
+      }
+
+      return <div>{stock}</div>;
+    },
   },
   {
     accessorKey: "times_sold",

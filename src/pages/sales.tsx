@@ -12,13 +12,19 @@ async function GetSales(): Promise<Sale[]> {
       s.id,
       datetime(s.created_at, '-3 hours') AS local_date,
       datetime(s.paid_at, '-3 hours') AS payment_date,
-      s.is_paid,
       s.customer_id,
       c.name AS customer_name,
       s.payment_method,
-      s.surcharge,
       s.total,
-      json_group_array(json_object('id', p.id, 'name', p.name, 'quantity', si.quantity)) AS products
+      json_group_array(
+        json_object(
+          'id', p.id, 
+          'name', p.name, 
+          'price', p.price,
+          'quantity', si.quantity,
+          'stock', p.stock
+        )
+      ) AS products
     FROM sales s
     LEFT JOIN sale_items si ON si.sale_id = s.id
     LEFT JOIN products p ON p.id = si.product_id

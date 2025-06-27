@@ -10,9 +10,9 @@ async function GetExpenses(): Promise<Expense[]> {
     SELECT 
       e.id, 
       datetime(e.created_at, '-3 hours') AS local_date,
-      e.category,
       e.description, 
       e.amount,
+	  e.payment_method,
       json_group_array(
         DISTINCT json_object(
           'id', o.id,
@@ -23,7 +23,7 @@ async function GetExpenses(): Promise<Expense[]> {
     FROM expenses e
     LEFT JOIN expense_owners eo ON e.id = eo.expense_id
     LEFT JOIN owners o ON eo.owner_id = o.id
-    GROUP BY e.id, e.created_at, e.category, e.description, e.amount;
+    GROUP BY e.id, e.created_at, e.description, e.amount, e.payment_method;
   `;
   const result = (await db.select(query)) as any[];
 

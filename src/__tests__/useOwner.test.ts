@@ -57,114 +57,197 @@ describe("GetOwners", () => {
 
 describe("CreateOwner", () => {
   it("should insert a new owner and invalidate the query", async () => {
+    // No hay propietario duplicado
+    mockSelect.mockResolvedValueOnce([]); // Simula que no hay coincidencias
+
     const { result } = renderHook(() => CreateOwner(), {
       wrapper: createWrapper(),
     });
 
     await result.current.mutateAsync({
-      id: 0,
-      name: "New Owner",
+      id: 1,
+      name: "Carlos",
+      alias: "C",
     });
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
+    expect(mockSelect).toHaveBeenCalledWith(
+      `SELECT name FROM owners WHERE LOWER(TRIM(name)) = $1`,
+      ["carlos"]
+    );
+
     expect(mockExecute).toHaveBeenCalledWith(
-      expect.stringContaining("INSERT INTO owners"),
-      ["New Owner"]
+      `INSERT INTO owners (name, alias) VALUES ($1, $2)`,
+      ["Carlos", "C"]
     );
 
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
       queryKey: ["owners"],
     });
   });
+
+  it("should throw an error if an owner with the same normalized name exists", async () => {
+    // Simula que ya existe un propietario con ese nombre
+    mockSelect.mockResolvedValueOnce([{ name: "Carlos" }]);
+
+    const { result } = renderHook(() => CreateOwner(), {
+      wrapper: createWrapper(),
+    });
+
+    await expect(
+      result.current.mutateAsync({
+        id: 2,
+        name: "  CARLOS  ",
+        alias: "C2",
+      })
+    ).rejects.toThrow("Ya existe un propietario con ese nombre");
+
+    expect(mockExecute).not.toHaveBeenCalled();
+    expect(mockInvalidateQueries).not.toHaveBeenCalled();
+  });
 });
 
 describe("UpdateOwner", () => {
   it("should update an existing owner and invalidate the query", async () => {
+    // No hay otro propietario con el nombre normalizado (excluyendo el mismo)
+    mockSelect.mockResolvedValueOnce([]);
+
     const { result } = renderHook(() => UpdateOwner(), {
       wrapper: createWrapper(),
     });
 
     await result.current.mutateAsync({
       id: 1,
-      name: "Updated Owner",
+      name: "Pedro",
+      alias: "P",
     });
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
+    expect(mockSelect).toHaveBeenCalledWith(
+      `SELECT id FROM owners WHERE LOWER(TRIM(name)) = $1 AND id != $2`,
+      ["pedro", 1]
+    );
+
     expect(mockExecute).toHaveBeenCalledWith(
-      expect.stringContaining("UPDATE owners"),
-      ["Updated Owner", 1]
+      `UPDATE owners SET name = $1, alias = $2 WHERE id = $3`,
+      ["Pedro", "P", 1]
     );
 
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
       queryKey: ["owners"],
     });
+  });
+
+  it("should throw an error if another owner with the same normalized name exists", async () => {
+    // Simulamos que otro propietario con el mismo nombre existe
+    mockSelect.mockResolvedValueOnce([{ id: 2 }]);
+
+    const { result } = renderHook(() => UpdateOwner(), {
+      wrapper: createWrapper(),
+    });
+
+    await expect(
+      result.current.mutateAsync({
+        id: 1,
+        name: "  PEDRO  ",
+        alias: "P2",
+      })
+    ).rejects.toThrow("Ya existe un propietario con ese nombre");
+
+    expect(mockExecute).not.toHaveBeenCalled();
+    expect(mockInvalidateQueries).not.toHaveBeenCalled();
   });
 });
 
 describe("DeleteOwners", () => {
-  it("should delete owners if they have no products or expenses", async () => {
+  it("should delete owners with no products or expenses and invalidate the query", async () => {
     mockSelect
-      .mockResolvedValueOnce([{ count: 0 }]) // product_owners check
-      .mockResolvedValueOnce([{ count: 0 }]); // expense_owners check
+      .mockResolvedValueOnce([{ count: 0 }]) // productCheck
+      .mockResolvedValueOnce([{ count: 0 }]); // expenseCheck
 
     const { result } = renderHook(() => DeleteOwners(), {
       wrapper: createWrapper(),
     });
 
-    const idsToDelete = [1, 2];
-
-    await result.current.mutateAsync(idsToDelete);
+    await result.current.mutateAsync([1, 2]);
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(mockSelect).toHaveBeenCalledTimes(2);
-    expect(mockExecute).toHaveBeenCalledWith(
-      `DELETE FROM owners WHERE id IN (${idsToDelete.map(() => "?").join(",")})`,
-      idsToDelete
+    expect(mockSelect).toHaveBeenCalledWith(
+      expect.stringContaining("SELECT COUNT(*) as count FROM product_owners"),
+      [1, 2]
     );
+    expect(mockSelect).toHaveBeenCalledWith(
+      expect.stringContaining("SELECT COUNT(*) as count FROM expense_owners"),
+      [1, 2]
+    );
+
+    expect(mockExecute).toHaveBeenCalledWith(
+      expect.stringContaining("DELETE FROM owners WHERE id IN"),
+      [1, 2]
+    );
+
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
       queryKey: ["owners"],
     });
   });
 
-  it("should throw error if any owner has products", async () => {
-    mockSelect.mockResolvedValueOnce([{ count: 2 }]); // product_owners check
+  it("should throw an error if owners have products associated", async () => {
+    mockSelect
+      .mockResolvedValueOnce([{ count: 3 }]) // productCheck
+      .mockResolvedValueOnce([{ count: 0 }]); // expenseCheck
 
     const { result } = renderHook(() => DeleteOwners(), {
       wrapper: createWrapper(),
     });
 
-    await expect(result.current.mutateAsync([1])).rejects.toThrow(
-      "No se puede eliminar un propietario con productos asociados"
+    await expect(result.current.mutateAsync([1, 2])).rejects.toThrow(
+      "No se pueden eliminar propietarios con productos asociados"
     );
 
     expect(mockExecute).not.toHaveBeenCalled();
     expect(mockInvalidateQueries).not.toHaveBeenCalled();
   });
 
-  it("should throw error if any owner has expenses", async () => {
+  it("should throw an error if owners have expenses associated", async () => {
     mockSelect
-      .mockResolvedValueOnce([{ count: 0 }]) // product_owners check
-      .mockResolvedValueOnce([{ count: 2 }]); // expense_owners check
+      .mockResolvedValueOnce([{ count: 0 }]) // productCheck
+      .mockResolvedValueOnce([{ count: 5 }]); // expenseCheck
 
     const { result } = renderHook(() => DeleteOwners(), {
       wrapper: createWrapper(),
     });
 
-    await expect(result.current.mutateAsync([1])).rejects.toThrow(
-      "No se puede eliminar un propietario con expensas asociadas"
+    await expect(result.current.mutateAsync([1, 2])).rejects.toThrow(
+      "No se pueden eliminar propietarios con gastos asociados"
+    );
+
+    expect(mockExecute).not.toHaveBeenCalled();
+    expect(mockInvalidateQueries).not.toHaveBeenCalled();
+  });
+
+  it("should throw an error if owners have both products and expenses associated", async () => {
+    mockSelect
+      .mockResolvedValueOnce([{ count: 2 }]) // productCheck
+      .mockResolvedValueOnce([{ count: 4 }]); // expenseCheck
+
+    const { result } = renderHook(() => DeleteOwners(), {
+      wrapper: createWrapper(),
+    });
+
+    await expect(result.current.mutateAsync([1, 2])).rejects.toThrow(
+      "No se pueden eliminar propietarios con productos o gastos asociados"
     );
 
     expect(mockExecute).not.toHaveBeenCalled();
     expect(mockInvalidateQueries).not.toHaveBeenCalled();
   });
 });
-

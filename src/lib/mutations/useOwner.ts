@@ -1,6 +1,6 @@
-import { Owner } from "../zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getDb } from "../db";
+import { Owner } from "../zod";
 
 export async function GetOwners(): Promise<Owner[]> {
   const db = await getDb();

@@ -13,13 +13,14 @@ import { Link } from "react-router";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 export default function Notifications() {
   const { data: notifications = [], refetch } = useQuery({
     queryKey: ["notifications"],
     queryFn: GetNotifications,
   });
+  const [isOpen, setIsOpen] = useState(false);
 
   const unreadNotifications = useMemo(
     () => notifications.filter((n) => !n.is_read),
@@ -32,14 +33,14 @@ export default function Notifications() {
     mutate();
   };
 
-  const handlePopoverOpenChange = (open: boolean) => {
-    if (open) {
-      refetch();
-    }
-  };
-
   return (
-    <Popover onOpenChange={handlePopoverOpenChange}>
+    <Popover
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (open) refetch();
+      }}
+    >
       <PopoverTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 p-0">
           <Bell className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -68,13 +69,19 @@ export default function Notifications() {
         <ScrollArea className="h-[400px]">
           {notifications.length > 0 ? (
             notifications.map((notification) => (
-              <Link to={notification.link} key={notification.id}>
-                <Alert className={
-                  clsx(
-                    "my-2 hover:bg-accent",
-                    !notification.is_read && "bg-accent"
-                  )
-                }>
+              <Link
+                to={notification.link}
+                key={notification.id}
+                className="cursor-default"
+              >
+                <Alert
+                  className={clsx(
+                    "my-2 transition-all duration-300 ",
+                    !notification.is_read
+                      ? "bg-gradient-to-r from-primary via-primary/80 to-primary/60 text-primary-foreground animate-pulse"
+                      : "bg-background"
+                  )}
+                >
                   <AlertTitle className="flex justify-between items-center">
                     {notification.title}
 
@@ -89,7 +96,7 @@ export default function Notifications() {
                     className={clsx(
                       notification.is_read
                         ? "text-primary"
-                        : "text-primary"
+                        : "text-primary-foreground"
                     )}
                   >
                     {notification.message}

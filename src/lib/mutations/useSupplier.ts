@@ -1,11 +1,10 @@
-import Database from "@tauri-apps/plugin-sql";
 import { Supplier } from "../zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getDb } from "../db";
 
-export function GetSuppliers(): Promise<Supplier[]> {
-  return Database.load("sqlite:mydatabase.db").then((db) =>
-    db.select(`SELECT id, name FROM suppliers`)
-  );
+export async function GetSuppliers(): Promise<Supplier[]> {
+  const db = await getDb();
+  return db.select(`SELECT id, name FROM suppliers;`);
 }
 
 export function CreateSupplier() {
@@ -13,12 +12,11 @@ export function CreateSupplier() {
 
   return useMutation({
     mutationFn: async (values: Supplier) => {
-      const db = await Database.load("sqlite:mydatabase.db");
+      const db = await getDb();
 
-      // Normaliza el nombre: elimina espacios y convierte a minúsculas
+      // Validación duplicados: asegurar que no exista un proveedor con el mismo nombre
       const cleanName = values.name.trim().toLowerCase();
 
-      // Verifica si ya existe un proveedor con ese nombre normalizado
       const existing = await db.select<{ id: number }[]>(
         `SELECT id FROM suppliers WHERE LOWER(TRIM(name)) = $1`,
         [cleanName]
@@ -28,6 +26,7 @@ export function CreateSupplier() {
         throw new Error("Ya existe un proveedor con ese nombre");
       }
 
+      // Crear proveedor
       await db.execute(
         `INSERT INTO suppliers (name, phone, address) VALUES ($1, $2, $3)`,
         [values.name, values.phone, values.address]
@@ -44,11 +43,11 @@ export function UpdateSupplier() {
 
   return useMutation({
     mutationFn: async (values: Supplier) => {
-      const db = await Database.load("sqlite:mydatabase.db");
+      const db = await getDb();
 
+      // Validación duplicados: asegurar que no exista un proveedor con el mismo nombre que no sea el mismo que se está actualizando
       const cleanName = values.name.trim().toLowerCase();
 
-      // Busca proveedores con ese nombre que NO sean el actual
       const existing = await db.select<{ id: number }[]>(
         `SELECT id FROM suppliers WHERE LOWER(TRIM(name)) = $1 AND id != $2`,
         [cleanName, values.id]
@@ -58,6 +57,7 @@ export function UpdateSupplier() {
         throw new Error("Ya existe un proveedor con ese nombre");
       }
 
+      // Actualizar proveedor
       await db.execute(
         `UPDATE suppliers SET name = $1, phone = $2, address = $3 WHERE id = $4`,
         [values.name, values.phone, values.address, values.id]
@@ -74,9 +74,13 @@ export function DeleteSuppliers() {
 
   return useMutation({
     mutationFn: async (ids: number[]) => {
-      const db = await Database.load("sqlite:mydatabase.db");
+      const db = await getDb();
 
-      await db.execute(`DELETE FROM suppliers WHERE id IN (${ids.join(",")})`);
+      const placeholders = ids.map((_, i) => `$${i + 1}`).join(", ");
+      await db.execute(
+        `DELETE FROM suppliers WHERE id IN (${placeholders})`,
+        ids
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });

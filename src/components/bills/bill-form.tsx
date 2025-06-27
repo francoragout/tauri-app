@@ -60,7 +60,7 @@ export default function BillForm({ onOpenChange, bill }: BillFormProps) {
   // Actualizar total_debt solo si el método de pago es transferencia
   useEffect(() => {
     let nuevoTotal = bill.total_debt;
-    if (paymentMethod === "transfer") {
+    if (paymentMethod !== "cash") {
       nuevoTotal = bill.total_debt * (1 + (surcharge ?? 0) / 100);
     }
     form.setValue("total_debt", Number(nuevoTotal.toFixed(2)));
@@ -145,7 +145,7 @@ export default function BillForm({ onOpenChange, bill }: BillFormProps) {
           )}
         />
 
-        {paymentMethod === "transfer" && (
+        {paymentMethod !== "cash" && (
           <FormField
             control={form.control}
             name="surcharge"

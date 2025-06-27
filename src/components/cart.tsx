@@ -76,7 +76,6 @@ export default function Cart() {
             <CartTable totalWithSurcharge={totalWithSurcharge} />
             <SaleForm
               products={products}
-              surcharge={surcharge}
               total={totalWithSurcharge}
               onOpenChange={setIsCreateOpen}
               onSurchargeChange={setSurcharge}

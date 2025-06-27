@@ -89,26 +89,12 @@ export const SalesColumns: ColumnDef<Sale>[] = [
     ),
     cell: ({ row }) => {
       const paymentMethod = row.getValue("payment_method");
-      const surcharge = row.original.surcharge as number;
 
       const translatedPaymentMethod = {
         cash: "Efectivo",
-        transfer: "Transferencia",
+        transfer: "Transferencia (+5%)",
         account: "Cuenta corriente",
       };
-
-      if (surcharge > 0) {
-        return (
-          <div>
-            {
-              translatedPaymentMethod[
-                paymentMethod as keyof typeof translatedPaymentMethod
-              ]
-            }{" "}
-            (+{surcharge}%)
-          </div>
-        );
-      }
 
       return (
         <div>

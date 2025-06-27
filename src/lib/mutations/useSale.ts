@@ -1,38 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sale } from "../zod";
 import { getDb } from "../db";
-
-// Función para formatear la fecha a formato SQL
-function formatDateToSql(date: Date) {
-  return date.toISOString().replace("T", " ").substring(0, 19);
-}
-
-// Función para crear una notificación en la base de datos
-async function createNotification(
-  title: string,
-  message: string,
-  link: string,
-  db: Awaited<ReturnType<typeof getDb>>
-) {
-  await db.execute(
-    `INSERT INTO notifications (title, message, link) VALUES ($1, $2, $3)`,
-    [title, message, link]
-  );
-}
-
-// Función para combinar una fecha con la hora actual
-function combineDateWithCurrentTime(date: Date) {
-  const now = new Date();
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    now.getHours(),
-    now.getMinutes(),
-    now.getSeconds(),
-    now.getMilliseconds()
-  );
-}
+import { combineDateWithCurrentTime, formatDateToSql } from "../utils";
+import { createNotification } from "./useNotification";
 
 export function CreateSale() {
   const queryClient = useQueryClient();
@@ -41,55 +11,60 @@ export function CreateSale() {
     mutationFn: async (values: Sale) => {
       const db = await getDb();
 
-      console.log("Valores de la venta:", values);
+      // Validación extra: asegurarse que ningún producto tenga valores nulos o inválidos
+      const invalidProduct = values.products.some(
+        (product) =>
+          product.id == null ||
+          product.name == null ||
+          product.quantity == null ||
+          typeof product.id !== "number" ||
+          typeof product.quantity !== "number"
+      );
 
+      if (invalidProduct) {
+        throw new Error("Hay productos con datos inválidos.");
+      }
+
+      // Verificar stock: asegurarse que todos los productos existen y tienen suficiente stock
+
+      for (const product of values.products) {
+        const result = await db.select<
+          { id: number; name: string; stock: number }[]
+        >(`SELECT id, name, stock FROM products WHERE id = $1`, [product.id]);
+
+        const dbProduct = result[0];
+
+        if (!dbProduct) {
+          throw new Error(`Producto no encontrado (ID: ${product.id})`);
+        }
+
+        if (dbProduct.stock < product.quantity) {
+          throw new Error(`Stock insuficiente: ${dbProduct.name}`);
+        }
+      }
+
+      // Combinar la fecha seleccionada con la hora actual y formatear a SQL
+      if (!values.created_at) {
+        throw new Error("La fecha de creación es requerida");
+      }
+
+      const createdAt = formatDateToSql(
+        combineDateWithCurrentTime(new Date(values.created_at))
+      );
+
+      // Iniciar transacción
       await db.execute("BEGIN TRANSACTION");
 
       try {
-        // 1. Verificar stock de los productos
-        for (const product of values.products) {
-          const result = await db.select<
-            {
-              stock: number;
-              name: string;
-              price: number;
-              low_stock_threshold: number;
-            }[]
-          >(
-            `SELECT stock, name, price, low_stock_threshold FROM products WHERE id = $1`,
-            [product.id]
-          );
-
-          if (!result.length)
-            throw new Error(`Producto no encontrado: ${product.id}`);
-
-          const { stock, name, price, low_stock_threshold } = result[0];
-
-          if (stock < product.quantity) {
-            throw new Error(`Stock insuficiente: ${name}`);
-          }
-
-          product.price = price; // lo guardamos para insertar después
-          product.name = name;
-          product.low_stock_threshold = low_stock_threshold;
-          product.stock = stock;
-        }
-
-        // 2. Insertar venta
-        const createdAtWithTime = combineDateWithCurrentTime(
-          values.created_at ?? new Date()
-        );
-
+        // 1. Insertar venta
         await db.execute(
-          `INSERT INTO sales (payment_method, customer_id, is_paid, total, surcharge, paid_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          `INSERT INTO sales (payment_method, customer_id, total, paid_at, created_at) VALUES ($1, $2, $3, $4, $5)`,
           [
             values.payment_method,
             values.customer_id,
-            values.is_paid,
-            values.total,
-            values.surcharge,
-            values.is_paid === 1 ? formatDateToSql(new Date()) : null,
-            formatDateToSql(createdAtWithTime),
+            values.customer_id ? 0 : values.total,
+            values.customer_id ? null : createdAt,
+            createdAt,
           ]
         );
 
@@ -99,34 +74,42 @@ export function CreateSale() {
 
         const saleId = saleIdResult[0].id;
 
-        // 3. Insertar productos y actualizar stock
         for (const product of values.products) {
+          // 2. Insertar item de la venta
           await db.execute(
             `INSERT INTO sale_items (sale_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)`,
             [saleId, product.id, product.quantity, product.price]
           );
 
+          // 3. Actualizar stock
           await db.execute(
             `UPDATE products SET stock = stock - $1 WHERE id = $2`,
             [product.quantity, product.id]
           );
 
-          const newStock = (product.stock ?? 0) - product.quantity;
+          // 4. Obtener nuevo stock y low_stock_threshold desde la DB
+          const [updatedProduct] = await db.select<
+            {
+              stock: number;
+              name: string;
+              low_stock_threshold: number;
+            }[]
+          >(
+            `SELECT stock, name, low_stock_threshold FROM products WHERE id = $1`,
+            [product.id]
+          );
 
+          const newStock = updatedProduct.stock;
+          const name = updatedProduct.name;
+          const threshold = updatedProduct.low_stock_threshold ?? 0;
+
+          // 5. Crear notificaciones si corresponde
           if (newStock === 0) {
+            await createNotification("Sin Stock", name, "/products", db);
+          } else if (newStock < threshold) {
             await createNotification(
-              "Sin Stock",
-              product.name,
-              "/products",
-              db
-            );
-          } else if (
-            product.low_stock_threshold !== undefined &&
-            newStock < product.low_stock_threshold
-          ) {
-            await createNotification(
-              "Ultimas Unidades",
-              `${product.name} (${newStock})`,
+              "Últimas Unidades",
+              `${name} (${newStock} restantes)`,
               "/products",
               db
             );
