@@ -15,6 +15,11 @@ export const OwnerSchema = z.object({
   net_profit: z.number().optional(),
 });
 
+export const OwnerWithPercentageSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  percentage: z.number().min(0).max(100),
+});
 
 export const ProductSchema = z.object({
   id: z.number().optional(),
@@ -58,13 +63,7 @@ export const ProductSchema = z.object({
   unit_price: z.number().nullish(),
   times_sold: z.number().optional(),
   owners: z
-    .array(
-      z.object({
-        id: z.number(),
-        name: z.string(),
-        percentage: z.number(),
-      })
-    )
+    .array(OwnerWithPercentageSchema)
     .refine((owners) => owners.length > 0, {
       message: "Seleccione al menos un propietario",
     })
@@ -119,12 +118,6 @@ export const CustomerSchema = z.object({
     .refine((val) => !val || val.length === 10, {
       message: "El número de teléfono debe tener 10 dígitos",
     }),
-});
-
-export const OwnerWithPercentageSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  percentage: z.number().min(0).max(100),
 });
 
 export const ExpenseSchema = z.object({
@@ -212,7 +205,7 @@ export const SaleSchema = z
       required_error: "Seleccione un método de pago",
     }),
     total: z.number(),
-    products: z.array(CartItemSchema),
+    products: z.array(CartItemSchema).min(1, "Debe haber al menos un producto"),
   })
   .refine(
     (data) =>
@@ -250,8 +243,6 @@ export const NotificationSchema = z.object({
   local_date: z.string(),
 });
 
-
-
 export type Notification = z.infer<typeof NotificationSchema>;
 export type Bill = z.infer<typeof BillSchema>;
 export type Purchase = z.infer<typeof PurchaseSchema>;
@@ -262,8 +253,4 @@ export type Customer = z.infer<typeof CustomerSchema>;
 export type Supplier = z.infer<typeof SupplierSchema>;
 export type Owner = z.infer<typeof OwnerSchema>;
 export type CartItem = z.infer<typeof CartItemSchema>;
-
-
-
 export type OwnerWithPercentage = z.infer<typeof OwnerWithPercentageSchema>;
-

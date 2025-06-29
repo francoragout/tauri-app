@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { ProductsColumns } from "@/components/products/products-columns";
 import { ProductsTable } from "@/components/products/products-table";
 import { Product, ProductSchema } from "@/lib/zod";
-import Database from "@tauri-apps/plugin-sql";
+import { getDb } from "@/lib/db";
 
 async function GetProducts(): Promise<Product[]> {
-  const db = await Database.load("sqlite:mydatabase.db");
+  const db = await getDb();
   const query = `
     WITH purchase_calculations AS (
       SELECT 

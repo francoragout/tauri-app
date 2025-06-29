@@ -1,11 +1,11 @@
 import { SuppliersColumns } from "@/components/suppliers/suppliers-columns";
 import { SuppliersTable } from "@/components/suppliers/suppliers-table";
+import { getDb } from "@/lib/db";
 import { Supplier, SupplierSchema } from "@/lib/zod";
 import { useQuery } from "@tanstack/react-query";
-import Database from "@tauri-apps/plugin-sql";
 
 async function GetSuppliers(): Promise<Supplier[]> {
-  const db = await Database.load("sqlite:mydatabase.db");
+  const db = await getDb();
   const query = `
     SELECT 
       suppliers.id,

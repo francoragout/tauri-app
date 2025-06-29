@@ -28,7 +28,7 @@ import { ProductsTableToolbar } from "./products-table-toolbar";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/features/cart/cartSlice";
-import { Product } from "@/lib/zod";
+import { CartItem, Product } from "@/lib/zod";
 import { RootState } from "@/store";
 
 interface DataTableProps<TData, TValue> {
@@ -87,7 +87,7 @@ export function ProductsTable<TData, TValue>({
       return;
     }
 
-    const cartItem = cart.find((item: any) => item.id === product.id);
+    const cartItem = cart.find((item: CartItem) => item.id === product.id);
     const quantityInCart = cartItem ? cartItem.quantity : 0;
 
     if (product.stock - quantityInCart <= 0) {
@@ -101,7 +101,6 @@ export function ProductsTable<TData, TValue>({
         name: product.name,
         price: product.price,
         stock: product.stock,
-        low_stock_threshold: product.low_stock_threshold,
         quantity: 1,
       })
     );
@@ -135,7 +134,10 @@ export function ProductsTable<TData, TValue>({
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   Cargando...
                 </TableCell>
               </TableRow>

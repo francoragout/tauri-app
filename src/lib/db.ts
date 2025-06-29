@@ -7,9 +7,10 @@ export async function getDb() {
   if (!dbInstance) {
     dbInstance = await Database.load("sqlite:mydatabase.db");
 
-    // Activar claves foráneas — ¡muy importante!
+    // Solo lo hacemos una vez, al iniciar la conexión
     await dbInstance.execute("PRAGMA foreign_keys = ON");
-    console.log("Foreign key support enabled");
+    console.log("✅ PRAGMA foreign_keys activado");
   }
+
   return dbInstance;
 }

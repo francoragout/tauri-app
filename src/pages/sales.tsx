@@ -1,12 +1,12 @@
 import "../App.css";
-import Database from "@tauri-apps/plugin-sql";
 import { useQuery } from "@tanstack/react-query";
 import { SalesTable } from "@/components/sales/sales-table";
 import { SalesColumns } from "@/components/sales/sales-columns";
 import { Sale, SaleSchema } from "@/lib/zod";
+import { getDb } from "@/lib/db";
 
 async function GetSales(): Promise<Sale[]> {
-  const db = await Database.load("sqlite:mydatabase.db");
+  const db = await getDb();
   const query = `
     SELECT
       s.id,

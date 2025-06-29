@@ -94,20 +94,14 @@ export function DeleteOwners() {
         ids
       );
 
-      // 3. Sumamos los resultados
-      const productCount = productCheck.reduce(
-        (acc, row) => acc + row.count,
-        0
-      );
-      const expenseCount = expenseCheck.reduce(
-        (acc, row) => acc + row.count,
-        0
-      );
+      // 3. Obtenemos los conteos directamente (sin reduce)
+      const productCount = productCheck.length > 0 ? productCheck[0].count : 0;
+      const expenseCount = expenseCheck.length > 0 ? expenseCheck[0].count : 0;
 
       // 4. Si hay productos o gastos asociados, lanzamos un error
       if (productCount > 0 && expenseCount > 0) {
         throw new Error(
-          "No se pueden eliminar propietarios con productos o gastos asociados"
+          "No se pueden eliminar propietarios con productos y gastos asociados"
         );
       } else if (productCount > 0) {
         throw new Error(

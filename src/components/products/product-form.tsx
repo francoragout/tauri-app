@@ -32,7 +32,7 @@ import {
 
 import { Check, ChevronsUpDown, Loader2Icon, X } from "lucide-react";
 import { CreateProduct, UpdateProduct } from "@/lib/mutations/useProduct";
-import { Product, ProductSchema } from "@/lib/zod";
+import { OwnerWithPercentage, Product, ProductSchema } from "@/lib/zod";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,7 @@ import { useDispatch } from "react-redux";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { GetOwners } from "@/lib/mutations/useOwner";
+import { useWatch } from "react-hook-form";
 
 type ProductFormProps = {
   product?: Product;
@@ -85,17 +86,21 @@ export default function ProductForm({
     },
   });
 
-  // Si solo hay un propietario, su porcentaje será 100
+  const ownersFromForm = useWatch({
+    control: form.control,
+    name: "owners",
+    defaultValue: [],
+  });
+
   useEffect(() => {
-    const owners = form.watch("owners");
-    if (owners.length === 1 && owners[0].percentage !== 100) {
-      form.setValue("owners", [{ ...owners[0], percentage: 100 }], {
+    if (ownersFromForm.length === 1 && ownersFromForm[0].percentage !== 100) {
+      form.setValue("owners", [{ ...ownersFromForm[0], percentage: 100 }], {
         shouldDirty: true,
         shouldTouch: true,
         shouldValidate: true,
       });
     }
-  }, [form.watch("owners")]);
+  }, [ownersFromForm, form]);
 
   function onSubmit(values: z.infer<typeof ProductSchema>) {
     if (isEditMode && product?.id) {
@@ -247,9 +252,9 @@ export default function ProductForm({
                       role="combobox"
                       disabled={isPending}
                       className={cn(
-                        "justify-between h-9 hover:bg-background font-normal w-full",
+                        "justify-between h-9 hover:bg-background w-full",
                         !field.value?.length &&
-                          "hover:text-muted-foreground font-normal text-muted-foreground"
+                          "hover:text-muted-foreground text-muted-foreground"
                       )}
                     >
                       {field.value?.length
@@ -274,7 +279,7 @@ export default function ProductForm({
                               if (
                                 owner.id !== undefined &&
                                 !field.value?.some(
-                                  (o: any) => o.id === owner.id
+                                  (o: OwnerWithPercentage) => o.id === owner.id
                                 )
                               ) {
                                 form.setValue(
@@ -301,7 +306,9 @@ export default function ProductForm({
                             <Check
                               className={cn(
                                 "ml-auto",
-                                field.value?.some((o: any) => o.id === owner.id)
+                                field.value?.some(
+                                  (o: OwnerWithPercentage) => o.id === owner.id
+                                )
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}
@@ -328,53 +335,57 @@ export default function ProductForm({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {form.watch("owners").map((owner: any, idx: number) => (
-                <TableRow key={owner.id}>
-                  <TableCell>{owner.name}</TableCell>
-                  <TableCell className="py-1">
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      disabled={isPending}
-                      value={owner.percentage}
-                      onChange={(e) => {
-                        const newOwners = [...form.watch("owners")];
-                        newOwners[idx] = {
-                          ...owner,
-                          percentage: Number(e.target.value),
-                        };
-                        form.setValue("owners", newOwners, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                      className="h-8 w-20"
-                    />
-                  </TableCell>
-                  <TableCell className="py-1 text-right">
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      disabled={isPending}
-                      onClick={() => {
-                        const newOwners = form
-                          .watch("owners")
-                          .filter((_: any, i: number) => i !== idx);
-                        form.setValue("owners", newOwners, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {form
+                .watch("owners")
+                .map((owner: OwnerWithPercentage, idx: number) => (
+                  <TableRow key={owner.id}>
+                    <TableCell>{owner.name}</TableCell>
+                    <TableCell className="py-1">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={isPending}
+                        value={owner.percentage}
+                        onChange={(e) => {
+                          const newOwners = [...form.watch("owners")];
+                          newOwners[idx] = {
+                            ...owner,
+                            percentage: Number(e.target.value),
+                          };
+                          form.setValue("owners", newOwners, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                        className="h-8 w-20"
+                      />
+                    </TableCell>
+                    <TableCell className="py-1 text-right">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        disabled={isPending}
+                        onClick={() => {
+                          const newOwners = form
+                            .watch("owners")
+                            .filter(
+                              (_: OwnerWithPercentage, i: number) => i !== idx
+                            );
+                          form.setValue("owners", newOwners, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         )}
@@ -386,6 +397,7 @@ export default function ProductForm({
             size="sm"
             onClick={() => {
               onOpenChange(false);
+              form.reset();
             }}
             disabled={isPending}
           >

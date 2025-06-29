@@ -1,38 +1,29 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sale } from "../zod";
-import { getDb } from "../db";
 import { combineDateWithCurrentTime, formatDateToSql } from "../utils";
 import { createNotification } from "./useNotification";
+import Database from "@tauri-apps/plugin-sql";
 
 export function CreateSale() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (values: Sale) => {
-      const db = await getDb();
+      const db = await Database.load("sqlite:mydatabase.db");
 
-      // Validación extra: asegurarse que ningún producto tenga valores nulos o inválidos
-      const invalidProduct = values.products.some(
-        (product) =>
-          product.id == null ||
-          product.name == null ||
-          product.quantity == null ||
-          typeof product.id !== "number" ||
-          typeof product.quantity !== "number"
-      );
-
-      if (invalidProduct) {
-        throw new Error("Hay productos con datos inválidos.");
+      if (!values.created_at) {
+        throw new Error("La fecha de creación es requerida");
       }
 
-      // Verificar stock: asegurarse que todos los productos existen y tienen suficiente stock
+      const createdAt = formatDateToSql(
+        combineDateWithCurrentTime(new Date(values.created_at))
+      );
 
+      // 1. Validar stock de cada producto
       for (const product of values.products) {
-        const result = await db.select<
+        const [dbProduct] = await db.select<
           { id: number; name: string; stock: number }[]
         >(`SELECT id, name, stock FROM products WHERE id = $1`, [product.id]);
-
-        const dbProduct = result[0];
 
         if (!dbProduct) {
           throw new Error(`Producto no encontrado (ID: ${product.id})`);
@@ -43,22 +34,14 @@ export function CreateSale() {
         }
       }
 
-      // Combinar la fecha seleccionada con la hora actual y formatear a SQL
-      if (!values.created_at) {
-        throw new Error("La fecha de creación es requerida");
-      }
-
-      const createdAt = formatDateToSql(
-        combineDateWithCurrentTime(new Date(values.created_at))
-      );
-
-      // Iniciar transacción
+      // 2. Iniciar transacción
       await db.execute("BEGIN TRANSACTION");
 
       try {
-        // 1. Insertar venta
-        await db.execute(
-          `INSERT INTO sales (payment_method, customer_id, total, paid_at, created_at) VALUES ($1, $2, $3, $4, $5)`,
+        // 3. Insertar venta
+        const [{ id: sale_id }] = await db.select<{ id: number }[]>(
+          `INSERT INTO sales (payment_method, customer_id, total, paid_at, created_at)
+           VALUES ($1, $2, $3, $4, $5) RETURNING id`,
           [
             values.payment_method,
             values.customer_id,
@@ -68,26 +51,19 @@ export function CreateSale() {
           ]
         );
 
-        const saleIdResult = await db.select<{ id: number }[]>(
-          `SELECT last_insert_rowid() as id`
-        );
-
-        const saleId = saleIdResult[0].id;
-
+        // 4. Insertar items + actualizar stock + crear notificaciones
         for (const product of values.products) {
-          // 2. Insertar item de la venta
           await db.execute(
-            `INSERT INTO sale_items (sale_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)`,
-            [saleId, product.id, product.quantity, product.price]
+            `INSERT INTO sale_items (sale_id, product_id, quantity, price)
+             VALUES ($1, $2, $3, $4)`,
+            [sale_id, product.id, product.quantity, product.price]
           );
 
-          // 3. Actualizar stock
           await db.execute(
             `UPDATE products SET stock = stock - $1 WHERE id = $2`,
             [product.quantity, product.id]
           );
 
-          // 4. Obtener nuevo stock y low_stock_threshold desde la DB
           const [updatedProduct] = await db.select<
             {
               stock: number;
@@ -99,37 +75,40 @@ export function CreateSale() {
             [product.id]
           );
 
-          const newStock = updatedProduct.stock;
-          const name = updatedProduct.name;
-          const threshold = updatedProduct.low_stock_threshold ?? 0;
+          const { stock, name, low_stock_threshold } = updatedProduct;
 
-          // 5. Crear notificaciones si corresponde
-          if (newStock === 0) {
+          if (stock === 0) {
             await createNotification("Sin Stock", name, "/products", db);
-          } else if (newStock < threshold) {
+          } else if (stock < (low_stock_threshold ?? 0)) {
             await createNotification(
               "Últimas Unidades",
-              `${name} (${newStock} restantes)`,
+              `${name} (${stock} restantes)`,
               "/products",
               db
             );
           }
         }
 
+        // 5. Confirmar transacción
         await db.execute("COMMIT");
       } catch (error) {
         await db.execute("ROLLBACK");
         throw error;
       }
     },
+
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sales"] });
-      queryClient.invalidateQueries({ queryKey: ["balance"] });
-      queryClient.invalidateQueries({ queryKey: ["bills"] });
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["daily_financial_report"] });
-      queryClient.invalidateQueries({ queryKey: ["monthly_financial_report"] });
+      const keys = [
+        "sales",
+        "balance",
+        "bills",
+        "products",
+        "notifications",
+        "daily_financial_report",
+        "monthly_financial_report",
+      ];
+
+      keys.forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
     },
   });
 }
@@ -141,33 +120,34 @@ export function DeleteSales() {
     mutationFn: async (ids: number[]) => {
       if (ids.length === 0) return;
 
-      const db = await getDb();
+      const db = await Database.load("sqlite:mydatabase.db");
       await db.execute("BEGIN TRANSACTION");
 
       try {
-        // 1. Obtener productos afectados
-        const placeholders = ids.map(() => "?").join(", ");
-        const saleProducts = await db.select<
+        // 1. Obtener productos afectados y sus cantidades
+        const placeholders = ids.map((_, i) => `$${i + 1}`).join(", ");
+        const saleItems = await db.select<
           { product_id: number; quantity: number }[]
         >(
           `SELECT product_id, quantity FROM sale_items WHERE sale_id IN (${placeholders})`,
           ids
         );
 
-        // 2. Revertir stock
-        for (const product of saleProducts) {
+        // 2. Revertir stock por cada producto involucrado
+        for (const { product_id, quantity } of saleItems) {
           await db.execute(
             `UPDATE products SET stock = stock + $1 WHERE id = $2`,
-            [product.quantity, product.product_id]
+            [quantity, product_id]
           );
         }
 
-        // 3. Eliminar ventas
+        // 3. Eliminar las ventas
         await db.execute(
           `DELETE FROM sales WHERE id IN (${placeholders})`,
           ids
         );
 
+        // 4. Confirmar transacción
         await db.execute("COMMIT");
       } catch (error) {
         await db.execute("ROLLBACK");
@@ -175,8 +155,8 @@ export function DeleteSales() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sales"] });
-      queryClient.invalidateQueries({ queryKey: ["balance"] });
+      const keys = ["sales", "balance", "products"];
+      keys.forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
     },
   });
 }

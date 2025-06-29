@@ -119,12 +119,12 @@ export function SaleForm({
         onSurchargeChange(0);
         setSelectedCustomerId(undefined);
         form.reset({
-        payment_method: undefined,
-        customer_id: undefined,
-        created_at: new Date(),
-        products: [],
-        total: 0
-      });
+          payment_method: undefined,
+          customer_id: undefined,
+          created_at: new Date(),
+          products: [],
+          total: 0,
+        });
         onOpenChange(false);
       },
       onError: (error: unknown) => {
@@ -218,9 +218,9 @@ export function SaleForm({
                       role="combobox"
                       disabled={isPending}
                       className={cn(
-                        "justify-between h-9 hover:bg-background font-normal w-full",
+                        "justify-between h-9 hover:bg-background w-full",
                         !field.value &&
-                          "hover:text-muted-foreground font-normal text-muted-foreground"
+                          "hover:text-muted-foreground text-muted-foreground"
                       )}
                     >
                       {selectedCustomer

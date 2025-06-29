@@ -22,6 +22,7 @@ export function ExpensesTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
   const expense = ExpenseSchema.parse(row.original);
+  
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 
   return (

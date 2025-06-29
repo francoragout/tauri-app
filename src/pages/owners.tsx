@@ -66,7 +66,7 @@ async function GetOwners(): Promise<Owner[]> {
       )
 
     SELECT
-      o.id AS owner_id,
+      o.id,
       o.name,
     	o.alias,
       IFNULL(prod.total_products, 0) AS total_products,

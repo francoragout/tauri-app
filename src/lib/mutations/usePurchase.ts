@@ -27,10 +27,10 @@ export function CreatePurchase() {
         combineDateWithCurrentTime(new Date(values.created_at))
       );
 
-      // Iniciar transacción
-      await db.execute("BEGIN TRANSACTION");
-
       try {
+        // Iniciar transacción
+        await db.execute("BEGIN TRANSACTION");
+
         // 1. Insertar compra
         await db.execute(
           `INSERT INTO purchases (product_id, supplier_id, quantity, total, payment_method, created_at)

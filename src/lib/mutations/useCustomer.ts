@@ -83,14 +83,14 @@ export function DeleteCustomers() {
       // 1. Generamos placeholders para los IDs (ej: $1, $2, ...)
       const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
 
-      // 2. Verificamos si los clientes seleccionados tienen deudas
+      // 2. Verificamos si los clientes seleccionados tienen deudas (ventas no pagadas)
       const result = await db.select<{ count: number }[]>(
-        `SELECT COUNT(*) as count FROM sales WHERE customer_id IN (${placeholders}) AND is_paid = 0`,
+        `SELECT COUNT(*) as count FROM sales WHERE customer_id IN (${placeholders}) AND paid_at IS NULL`,
         ids
       );
 
-      // 3. Sumamos el total de ventas impagas
-      const totalCount = result.reduce((acc, row) => acc + row.count, 0);
+      // 3. Obtenemos el conteo de ventas impagas
+      const totalCount = result.length > 0 ? result[0].count : 0;
 
       // 4. Si existe al menos una venta impaga, cancelamos la operación
       if (totalCount > 0) {

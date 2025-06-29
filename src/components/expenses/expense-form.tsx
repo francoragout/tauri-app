@@ -45,14 +45,14 @@ import {
   Loader2Icon,
   X,
 } from "lucide-react";
-import { Expense, ExpenseSchema, Owner, OwnerWithPercentage } from "@/lib/zod";
+import { Expense, ExpenseSchema, OwnerWithPercentage } from "@/lib/zod";
 import { CreateExpense, UpdateExpense } from "@/lib/mutations/useExpense";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { cn } from "@/lib/utils";
@@ -94,13 +94,31 @@ export default function ExpenseForm({
         ? new Date(expense.local_date)
         : new Date(),
       owners:
-        expense?.owners?.map((owner) => ({
-          id: owner.id,
-          name: owner.name,
-          percentage: owner.percentage ?? 0,
-        })) ?? [],
+        expense?.owners
+          ?.filter((o) => typeof o.id === "number" && o.id !== null)
+          .map((owner) => ({
+            id: owner.id,
+            name: owner.name,
+            percentage: owner.percentage ?? 0,
+          })) ?? [],
     },
   });
+
+  const ownersFromForm = useWatch({
+    control: form.control,
+    name: "owners",
+    defaultValue: [],
+  });
+
+  useEffect(() => {
+    if (ownersFromForm.length === 1 && ownersFromForm[0].percentage !== 100) {
+      form.setValue("owners", [{ ...ownersFromForm[0], percentage: 100 }], {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    }
+  }, [ownersFromForm, form]);
 
   function onSubmit(values: z.infer<typeof ExpenseSchema>) {
     if (isEditMode && expense?.id) {
@@ -109,6 +127,7 @@ export default function ExpenseForm({
         {
           onSuccess: () => {
             onOpenChange(false);
+            form.reset();
             toast.success("Gasto actualizado");
           },
           onError: (error: unknown) => {
@@ -128,7 +147,6 @@ export default function ExpenseForm({
           toast.success("Gasto registrado");
         },
         onError: (error: unknown) => {
-
           const message =
             error instanceof Error ? error.message : "Error al registrar gasto";
           toast.error(message);
@@ -261,9 +279,9 @@ export default function ExpenseForm({
                       role="combobox"
                       disabled={isPending}
                       className={cn(
-                        "justify-between h-9 hover:bg-background font-normal w-full",
+                        "justify-between h-9 hover:bg-background w-full",
                         !field.value?.length &&
-                          "hover:text-muted-foreground font-normal text-muted-foreground"
+                          "hover:text-muted-foreground text-muted-foreground"
                       )}
                     >
                       {field.value?.length
@@ -288,17 +306,17 @@ export default function ExpenseForm({
                               if (
                                 owner.id !== undefined &&
                                 !field.value?.some(
-                                  (o: Owner) => o.id === owner.id
+                                  (o: OwnerWithPercentage) => o.id === owner.id
                                 )
                               ) {
                                 form.setValue(
                                   "owners",
                                   [
                                     ...(field.value || []),
-                                    {
-                                      id: owner.id,
-                                      name: owner.name,
-                                      percentage: 0,
+                                    { ...owner, percentage: 0 } as {
+                                      id: number;
+                                      name: string;
+                                      percentage: number;
                                     },
                                   ],
                                   {
@@ -315,7 +333,9 @@ export default function ExpenseForm({
                             <Check
                               className={cn(
                                 "ml-auto",
-                                field.value?.some((o: Owner) => o.id === owner.id)
+                                field.value?.some(
+                                  (o: OwnerWithPercentage) => o.id === owner.id
+                                )
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}
@@ -342,53 +362,57 @@ export default function ExpenseForm({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {form.watch("owners").map((owner: OwnerWithPercentage, idx: number) => (
-                <TableRow key={owner.id}>
-                  <TableCell>{owner.name}</TableCell>
-                  <TableCell className="py-1">
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      disabled={isPending}
-                      value={owner.percentage}
-                      onChange={(e) => {
-                        const newOwners = [...form.watch("owners")];
-                        newOwners[idx] = {
-                          ...owner,
-                          percentage: Number(e.target.value),
-                        };
-                        form.setValue("owners", newOwners, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                      className="h-8 w-20"
-                    />
-                  </TableCell>
-                  <TableCell className="py-1 text-right">
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      disabled={isPending}
-                      onClick={() => {
-                        const newOwners = form
-                          .watch("owners")
-                          .filter((_: any, i: number) => i !== idx);
-                        form.setValue("owners", newOwners, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {form
+                .watch("owners")
+                .map((owner: OwnerWithPercentage, idx: number) => (
+                  <TableRow key={owner.id}>
+                    <TableCell>{owner.name}</TableCell>
+                    <TableCell className="py-1">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={isPending}
+                        value={owner.percentage}
+                        onChange={(e) => {
+                          const newOwners = [...form.watch("owners")];
+                          newOwners[idx] = {
+                            ...owner,
+                            percentage: Number(e.target.value),
+                          };
+                          form.setValue("owners", newOwners, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                        className="h-8 w-20"
+                      />
+                    </TableCell>
+                    <TableCell className="py-1 text-right">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        disabled={isPending}
+                        onClick={() => {
+                          const newOwners = form
+                            .watch("owners")
+                            .filter(
+                              (_: OwnerWithPercentage, i: number) => i !== idx
+                            );
+                          form.setValue("owners", newOwners, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         )}
@@ -400,6 +424,7 @@ export default function ExpenseForm({
             size="sm"
             onClick={() => {
               onOpenChange(false);
+              form.reset();
             }}
             disabled={isPending}
           >

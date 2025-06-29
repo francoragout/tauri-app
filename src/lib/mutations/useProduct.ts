@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Product } from "../zod";
 import { getDb } from "../db";
+import Database from "@tauri-apps/plugin-sql";
 
 export async function GetProducts(): Promise<Product[]> {
   const db = await getDb();
@@ -12,21 +13,7 @@ export function CreateProduct() {
 
   return useMutation({
     mutationFn: async (values: Product) => {
-      const db = await getDb();
-
-      // Validación extra: asegurarse que ningún owner tenga valores nulos o inválidos
-      const invalidOwner = values.owners.some(
-        (owner) =>
-          owner.id == null ||
-          owner.name == null ||
-          owner.percentage == null ||
-          typeof owner.id !== "number" ||
-          typeof owner.percentage !== "number"
-      );
-
-      if (invalidOwner) {
-        throw new Error("Hay propietarios con datos inválidos.");
-      }
+      const db = await Database.load("sqlite:mydatabase.db");
 
       // Validación duplicados: asegurar que no exista un producto con el mismo nombre
       const cleanName = values.name.trim().toLowerCase();
@@ -44,10 +31,11 @@ export function CreateProduct() {
       await db.execute("BEGIN TRANSACTION");
 
       try {
-        // 1. Insertar producto
-        await db.execute(
+        // 1. Insertar producto y obtener su ID
+        const [{ id: product_id }] = await db.select<{ id: number }[]>(
           `INSERT INTO products (name, category, price, stock, low_stock_threshold)
-           VALUES ($1, $2, $3, $4, $5)`,
+           VALUES ($1, $2, $3, $4, $5)
+           RETURNING id`,
           [
             values.name,
             values.category,
@@ -57,12 +45,7 @@ export function CreateProduct() {
           ]
         );
 
-        // 2. Obtener el id del producto recién creado
-        const [{ id: product_id }] = await db.select<{ id: number }[]>(
-          `SELECT last_insert_rowid() as id`
-        );
-
-        // 3. Insertar dueños y porcentajes
+        // 2. Insertar los propietarios y su porcentaje
         for (const owner of values.owners) {
           await db.execute(
             `INSERT INTO product_owners (product_id, owner_id, percentage)
@@ -71,12 +54,12 @@ export function CreateProduct() {
           );
         }
 
-        // Confirmar los cambios
+        // Confirmar transacción
         await db.execute("COMMIT");
       } catch (error) {
-        // Revertir los cambios
+        // Si ocurre un error, revertir la transacción
         await db.execute("ROLLBACK");
-        throw error; // Relanzar el error para que lo capture el useMutation
+        throw error;
       }
     },
 
@@ -91,25 +74,11 @@ export function UpdateProduct() {
 
   return useMutation({
     mutationFn: async (values: Product) => {
-      const db = await getDb();
-
-      // Validación extra: asegurarse que ningún owner tenga valores nulos o inválidos
-      const invalidOwner = values.owners.some(
-        (owner) =>
-          owner.id == null ||
-          owner.name == null ||
-          owner.percentage == null ||
-          typeof owner.id !== "number" ||
-          typeof owner.percentage !== "number"
-      );
-
-      if (invalidOwner) {
-        throw new Error("Hay propietarios con datos inválidos.");
-      }
-
-      const cleanName = values.name.trim().toLowerCase();
+      const db = await Database.load("sqlite:mydatabase.db");
 
       // Validación duplicados: asegurar que no exista un producto con el mismo nombre
+      const cleanName = values.name.trim().toLowerCase();
+
       const existing = await db.select<{ id: number }[]>(
         `SELECT id FROM products WHERE LOWER(TRIM(name)) = $1 AND id != $2`,
         [cleanName, values.id]

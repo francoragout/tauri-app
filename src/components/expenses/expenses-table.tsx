@@ -43,12 +43,17 @@ export function ExpensesTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [sorting, setSorting] = React.useState<SortingState>([
-    {
-      id: "local_date",
-      desc: true,
-    },
-  ]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  // Inicializar el sorting en useEffect en lugar de en useState
+  React.useEffect(() => {
+    setSorting([
+      {
+        id: "local_date",
+        desc: true,
+      },
+    ]);
+  }, []);
 
   const table = useReactTable({
     data,
