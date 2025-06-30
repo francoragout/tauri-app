@@ -56,7 +56,9 @@ export function BillSendForm({ bill, onOpenChange }: BillSendFormProps) {
   });
 
   function onSubmit(values: z.infer<typeof FormSchema>) {
-    if (!bill.customer_phone) {
+    const phone = bill.customer_phone;
+
+    if (!phone) {
       toast.error("El cliente no tiene número de teléfono");
       return;
     }
@@ -94,9 +96,7 @@ export function BillSendForm({ bill, onOpenChange }: BillSendFormProps) {
 
     const message = `¡Hola! ¿Cómo estás?\nTe comparto el resumen de compras de *${bill.customer_name}* correspondiente a *${yearMonth}*:\n\n${billSummary}\n\nTotal: *$${totalFormatted}*\n\n*Formas de pago disponibles:*\n- Efectivo: *$${totalFormatted}* (sin recargo)\n- Transferencia o tarjeta: *$${totalWithSurcharge}* (5% de recargo)\n\nPor favor avisar el medio de pago una vez definido.\n\n*Datos para transferencia:*\nALIAS: \`${values.owner}\`\n\nAnte cualquier duda o consulta, quedo a disposición.`;
 
-    const url = `https://wa.me/549${
-      bill.customer_phone
-    }?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/549${phone}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
 
     form.reset();
