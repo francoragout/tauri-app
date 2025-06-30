@@ -220,7 +220,6 @@ export const SaleSchema = z
 export const BillSchema = z.object({
   customer_id: z.number(),
   customer_name: z.string(),
-  customer_phone: z.string().optional(),
   year_month: z.string(),
   sales_summary: z.array(
     z.object({
@@ -229,8 +228,9 @@ export const BillSchema = z.object({
       total: z.number(),
     })
   ),
-  payment_method: z.string().optional(),
-  surcharge: z.number().optional(),
+  payment_method: z.string({
+    required_error: "Seleccione un método de pago",
+  }),
   total_debt: z.number(),
 });
 

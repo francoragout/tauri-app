@@ -78,26 +78,23 @@ export function DeleteCustomers() {
 
   return useMutation({
     mutationFn: async (ids: number[]) => {
-      const db = await getDb();
+      if (ids.length === 0) return;
 
-      // 1. Generamos placeholders para los IDs (ej: $1, $2, ...)
+      const db = await getDb();
       const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
 
-      // 2. Verificamos si los clientes seleccionados tienen deudas (ventas no pagadas)
+      // Verificamos si hay ventas impagas asociadas
       const result = await db.select<{ count: number }[]>(
         `SELECT COUNT(*) as count FROM sales WHERE customer_id IN (${placeholders}) AND paid_at IS NULL`,
         ids
       );
 
-      // 3. Obtenemos el conteo de ventas impagas
-      const totalCount = result.length > 0 ? result[0].count : 0;
+      const unpaidCount = result[0]?.count ?? 0;
 
-      // 4. Si existe al menos una venta impaga, cancelamos la operación
-      if (totalCount > 0) {
+      if (unpaidCount > 0) {
         throw new Error("No se puede eliminar un cliente con deudas");
       }
 
-      // 5. Eliminamos los clientes seleccionados de la base de datos
       await db.execute(
         `DELETE FROM customers WHERE id IN (${placeholders})`,
         ids

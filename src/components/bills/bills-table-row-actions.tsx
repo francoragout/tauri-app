@@ -16,11 +16,11 @@ import {
 import { DollarSign, MoreHorizontal } from "lucide-react";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { BillSchema } from "@/lib/zod";
 import { useState } from "react";
 import BillForm from "./bill-form";
 import { IconBrandWhatsapp } from "@tabler/icons-react";
 import { BillSendForm } from "./bill-send-form";
+import { Bill } from "@/lib/types";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -29,7 +29,7 @@ interface DataTableRowActionsProps<TData> {
 export function BillsTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const bill = BillSchema.parse(row.original);
+  const bill = row.original as Bill;
 
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isSendOpen, setIsSendOpen] = useState(false);

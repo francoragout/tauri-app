@@ -1,7 +1,7 @@
 import { BillsColumns } from "@/components/bills/bills-columns";
 import { BillsTable } from "@/components/bills/bills-table";
 import { getDb } from "@/lib/db";
-import { Bill, BillSchema } from "@/lib/zod";
+import { Bill } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 
 async function getBills(): Promise<Bill[]> {
@@ -18,6 +18,7 @@ async function getBills(): Promise<Bill[]> {
         FROM sales s
         JOIN sale_items si ON si.sale_id = s.id
         JOIN products p ON p.id = si.product_id
+        WHERE s.paid_at IS NULL
         GROUP BY s.id
       )
 
@@ -42,12 +43,16 @@ async function getBills(): Promise<Bill[]> {
   `;
   const result = (await db.select(query)) as any[];
 
-  const parsed = result.map((row: any) => ({
-    ...row,
+  const parsed: Bill[] = result.map((row: any) => ({
+    customer_id: row.customer_id,
+    customer_name: row.customer_name,
+    customer_phone: row.customer_phone || undefined, // Ensure phone is optional
+    year_month: row.year_month,
     sales_summary: JSON.parse(row.sales_summary),
+    total_debt: row.total_debt,
   }));
 
-  return BillSchema.array().parse(parsed);
+  return parsed;
 }
 
 export default function Bills() {
@@ -55,6 +60,8 @@ export default function Bills() {
     queryKey: ["bills"],
     queryFn: getBills,
   });
+
+  console.log("Fetched bills:", data);
 
   return (
     <BillsTable data={data} columns={BillsColumns} isLoading={isLoading} />

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Sale } from "../zod";
+import { Bill, Sale } from "../zod";
 import { combineDateWithCurrentTime, formatDateToSql } from "../utils";
 import { createNotification } from "./useNotification";
 import Database from "@tauri-apps/plugin-sql";
@@ -19,7 +19,7 @@ export function CreateSale() {
         combineDateWithCurrentTime(new Date(values.created_at))
       );
 
-      // 1. Validar stock de cada producto
+      // Validar stock de cada producto
       for (const product of values.products) {
         const [dbProduct] = await db.select<
           { id: number; name: string; stock: number }[]
@@ -34,11 +34,11 @@ export function CreateSale() {
         }
       }
 
-      // 2. Iniciar transacción
-      await db.execute("BEGIN TRANSACTION");
-
       try {
-        // 3. Insertar venta
+        // Iniciar transacción
+        await db.execute("BEGIN TRANSACTION");
+
+        // 1. Insertar venta
         const [{ id: sale_id }] = await db.select<{ id: number }[]>(
           `INSERT INTO sales (payment_method, customer_id, total, paid_at, created_at)
            VALUES ($1, $2, $3, $4, $5) RETURNING id`,
@@ -51,7 +51,7 @@ export function CreateSale() {
           ]
         );
 
-        // 4. Insertar items + actualizar stock + crear notificaciones
+        // 2. Registrar productos vendidos
         for (const product of values.products) {
           await db.execute(
             `INSERT INTO sale_items (sale_id, product_id, quantity, price)
@@ -59,6 +59,7 @@ export function CreateSale() {
             [sale_id, product.id, product.quantity, product.price]
           );
 
+          // 3. Actualizar stock del producto
           await db.execute(
             `UPDATE products SET stock = stock - $1 WHERE id = $2`,
             [product.quantity, product.id]
@@ -108,6 +109,56 @@ export function CreateSale() {
         "monthly_financial_report",
       ];
 
+      keys.forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+    },
+  });
+}
+
+export function UpdateSales() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (values: Bill) => {
+      const db = await Database.load("sqlite:mydatabase.db");
+
+      if (!values.sales_summary.length) {
+        throw new Error("No hay ventas seleccionadas para actualizar.");
+      }
+
+      try {
+        const formattedDate = formatDateToSql(new Date());
+
+        await db.execute("BEGIN TRANSACTION");
+
+        for (const sale of values.sales_summary) {
+          // Aplicar recargo si no es "cash"
+          const surcharge =
+            values.payment_method !== "cash" ? sale.total * 0.05 : 0;
+
+          const totalWithSurcharge = sale.total + surcharge;
+
+          await db.execute(
+            `UPDATE sales
+             SET paid_at = $1, payment_method = $2, total = $3
+             WHERE id = $4`,
+            [
+              formattedDate,
+              values.payment_method,
+              totalWithSurcharge,
+              sale.sale_id,
+            ]
+          );
+        }
+
+        await db.execute("COMMIT");
+      } catch (error) {
+        await db.execute("ROLLBACK");
+        throw error;
+      }
+    },
+
+    onSuccess: () => {
+      const keys = ["bills", "balance", "sales"];
       keys.forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
     },
   });

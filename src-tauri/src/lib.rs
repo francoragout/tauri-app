@@ -66,7 +66,7 @@ pub fn run() {
                 customer_id INTEGER,              
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 total REAL NOT NULL,
-                payment_method TEXT NOT NULL CHECK (payment_method IN ('cash', 'transfer', 'account')),
+                payment_method TEXT NOT NULL CHECK (payment_method IN ('cash', 'transfer', 'account', 'debit', 'credit')),
                 paid_at TEXT,
                 FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
             );

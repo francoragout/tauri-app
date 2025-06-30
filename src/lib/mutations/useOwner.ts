@@ -78,27 +78,27 @@ export function DeleteOwners() {
 
   return useMutation({
     mutationFn: async (ids: number[]) => {
-      const db = await getDb();
+      if (ids.length === 0) return;
 
-      // 1. Generamos placeholders para los IDs (ej: $1, $2, ...)
+      const db = await getDb();
       const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
 
-      // 2. Verificamos los propietarios para ver si tienen productos o gastos asociados
-      const productCheck = await db.select<{ count: number }[]>(
-        `SELECT COUNT(*) as count FROM product_owners WHERE owner_id IN (${placeholders})`,
-        ids
-      );
+      // Ejecutamos ambas verificaciones en paralelo
+      const [productResult, expenseResult] = await Promise.all([
+        db.select<{ count: number }[]>(
+          `SELECT COUNT(*) as count FROM product_owners WHERE owner_id IN (${placeholders})`,
+          ids
+        ),
+        db.select<{ count: number }[]>(
+          `SELECT COUNT(*) as count FROM expense_owners WHERE owner_id IN (${placeholders})`,
+          ids
+        ),
+      ]);
 
-      const expenseCheck = await db.select<{ count: number }[]>(
-        `SELECT COUNT(*) as count FROM expense_owners WHERE owner_id IN (${placeholders})`,
-        ids
-      );
+      const productCount = productResult[0]?.count ?? 0;
+      const expenseCount = expenseResult[0]?.count ?? 0;
 
-      // 3. Obtenemos los conteos directamente (sin reduce)
-      const productCount = productCheck.length > 0 ? productCheck[0].count : 0;
-      const expenseCount = expenseCheck.length > 0 ? expenseCheck[0].count : 0;
-
-      // 4. Si hay productos o gastos asociados, lanzamos un error
+      // Mensajes de error según relaciones encontradas
       if (productCount > 0 && expenseCount > 0) {
         throw new Error(
           "No se pueden eliminar propietarios con productos y gastos asociados"
@@ -113,7 +113,7 @@ export function DeleteOwners() {
         );
       }
 
-      // 5. Eliminamos los propietarios seleccionados de la base de datos
+      // Eliminamos los propietarios
       await db.execute(`DELETE FROM owners WHERE id IN (${placeholders})`, ids);
     },
     onSuccess: () => {

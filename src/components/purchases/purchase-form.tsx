@@ -85,8 +85,8 @@ export default function PurchaseForm({
       payment_method: purchase?.payment_method ?? undefined,
       total: purchase?.total ?? undefined,
       quantity: purchase?.quantity ?? undefined,
-      created_at: purchase?.created_at
-        ? new Date(purchase.created_at)
+      created_at: purchase?.local_date
+        ? new Date(purchase.local_date)
         : new Date(),
     },
   });
@@ -142,7 +142,7 @@ export default function PurchaseForm({
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "pl-3 text-left font-normal",
+                      "pl-3 text-left font-normal hover:bg-transparent",
                       !field.value && "text-muted-foreground"
                     )}
                   >

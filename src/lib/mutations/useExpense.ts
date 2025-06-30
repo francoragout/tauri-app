@@ -15,7 +15,7 @@ export function CreateExpense() {
       const balance = await GetBalance();
 
       if (values.amount > balance) {
-        throw new Error("La compra no puede ser mayor que el balance actual");
+        throw new Error("El gasto no puede ser mayor que el balance actual");
       }
 
       // Combinar la fecha seleccionada con la hora actual y formatear a SQL
@@ -27,10 +27,10 @@ export function CreateExpense() {
         combineDateWithCurrentTime(new Date(values.created_at))
       );
 
-      // Iniciar transacción
-      await db.execute("BEGIN TRANSACTION");
-
       try {
+        // Iniciar transacción
+        await db.execute("BEGIN TRANSACTION");
+
         // 1. Insertar gasto y obtener su ID
         const [{ id: expense_id }] = await db.select<{ id: number }[]>(
           `INSERT INTO expenses (created_at, description, amount, payment_method)
@@ -73,7 +73,7 @@ export function UpdateExpense() {
       const balance = await GetBalance();
 
       if (values.amount > balance) {
-        throw new Error("La compra no puede ser mayor que el balance actual");
+        throw new Error("El gasto no puede ser mayor que el balance actual");
       }
 
       // Combinar la fecha seleccionada con la hora actual y formatear a SQL
@@ -85,11 +85,10 @@ export function UpdateExpense() {
         combineDateWithCurrentTime(new Date(values.created_at))
       );
 
-      // Iniciar transacción
-
-      await db.execute("BEGIN TRANSACTION");
-
       try {
+        // Iniciar transacción
+        await db.execute("BEGIN TRANSACTION");
+
         // 1. Actualizar el gasto
         await db.execute(
           `UPDATE expenses

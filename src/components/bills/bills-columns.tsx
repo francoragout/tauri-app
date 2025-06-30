@@ -1,10 +1,10 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "../data-table-column-header";
-import { Bill } from "@/lib/zod";
 import { format, isValid, parse } from "date-fns";
 import { es } from "date-fns/locale";
 import { BillsTableRowActions } from "./bills-table-row-actions";
+import { Bill } from "@/lib/types";
 
 export const BillsColumns: ColumnDef<Bill>[] = [
   {

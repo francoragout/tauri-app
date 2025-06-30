@@ -31,8 +31,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { GetOwners } from "@/lib/mutations/useOwner";
-import { Bill } from "@/lib/zod";
 import { es } from "date-fns/locale";
+import { Bill } from "@/lib/types";
 
 const FormSchema = z.object({
   owner: z

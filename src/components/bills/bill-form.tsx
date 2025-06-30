@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Bill, BillSchema } from "@/lib/zod";
+import { BillSchema } from "@/lib/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
@@ -24,9 +24,10 @@ import { toast } from "sonner";
 import { format, isValid, parse } from "date-fns";
 import { es } from "date-fns/locale";
 import { NumericFormat } from "react-number-format";
-import { PayBill } from "@/lib/mutations/useBill";
 import { useEffect } from "react";
 import { Loader2Icon } from "lucide-react";
+import { Bill } from "@/lib/types";
+import { UpdateSales } from "@/lib/mutations/useSale";
 
 type BillFormProps = {
   bill: Bill;
@@ -40,8 +41,7 @@ export default function BillForm({ onOpenChange, bill }: BillFormProps) {
       customer_id: bill.customer_id,
       customer_name: bill.customer_name,
       year_month: bill.year_month,
-      payment_method: "cash", // Default to cash payment method
-      surcharge: 0, // Default surcharge to 0%
+      payment_method: undefined,
       total_debt: bill.total_debt,
       sales_summary: bill.sales_summary.map((sale) => ({
         date: sale.date,
@@ -51,20 +51,17 @@ export default function BillForm({ onOpenChange, bill }: BillFormProps) {
     },
   });
 
-  const { mutate, isPending } = PayBill();
+  const { mutate, isPending } = UpdateSales();
 
-  // Observar el método de pago y el recargo
   const paymentMethod = form.watch("payment_method");
-  const surcharge = form.watch("surcharge");
 
-  // Actualizar total_debt solo si el método de pago es transferencia
   useEffect(() => {
     let nuevoTotal = bill.total_debt;
-    if (paymentMethod !== "cash") {
-      nuevoTotal = bill.total_debt * (1 + (surcharge ?? 0) / 100);
+    if (paymentMethod && paymentMethod !== "cash") {
+      nuevoTotal = bill.total_debt * 1.05; // Recargo del 5%
     }
     form.setValue("total_debt", Number(nuevoTotal.toFixed(2)));
-  }, [paymentMethod, surcharge, bill.total_debt, form]);
+  }, [paymentMethod, bill.total_debt, form]);
 
   function onSubmit(values: z.infer<typeof BillSchema>) {
     mutate(values, {
@@ -127,53 +124,27 @@ export default function BillForm({ onOpenChange, bill }: BillFormProps) {
           name="payment_method"
           render={({ field }) => (
             <FormItem>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+              >
                 <FormControl>
-                  <SelectTrigger className="w-full" disabled={isPending}>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Metodo de pago (requerido)" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="credit">Crédito</SelectItem>
-                  <SelectItem value="debit">Débito</SelectItem>
                   <SelectItem value="cash">Efectivo</SelectItem>
-                  <SelectItem value="transfer">Transferencia</SelectItem>
+                  <SelectItem value="transfer">Transferencia (+5%)</SelectItem>
+                  <SelectItem value="debit">Débito (+5%)</SelectItem>
+                  <SelectItem value="credit">Crédito (+5%)</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        {paymentMethod !== "cash" && (
-          <FormField
-            control={form.control}
-            name="surcharge"
-            render={({ field }) => (
-              <FormItem>
-                <Select
-                  value={field.value?.toString() ?? "0"}
-                  onValueChange={(value) => field.onChange(Number(value))}
-                >
-                  <SelectTrigger
-                    className="bg-background w-full"
-                    disabled={isPending}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[0, 1, 2, 3, 4, 5].map((value) => (
-                      <SelectItem key={value} value={value.toString()}>
-                        {value}%
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
 
         <FormField
           control={form.control}

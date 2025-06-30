@@ -139,28 +139,33 @@ export function DeleteProducts() {
 
   return useMutation({
     mutationFn: async (ids: number[]) => {
-      const db = await getDb();
+      const db = await Database.load("sqlite:mydatabase.db");
       const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
 
-      // Verificar si los productos seleccionados tienen compras o ventas asociadas
-      const purchases = await db.select<{ product_id: number }[]>(
-        `SELECT product_id FROM purchases WHERE product_id IN (${placeholders})`,
-        ids
-      );
-      const sales = await db.select<{ product_id: number }[]>(
-        `SELECT product_id FROM sale_items WHERE product_id IN (${placeholders})`,
-        ids
-      );
+      // 1. Verificar si los productos tienen compras o ventas asociadas
+      const [purchaseCount, saleCount] = await Promise.all([
+        db.select<{ count: number }[]>(
+          `SELECT COUNT(*) as count FROM purchases WHERE product_id IN (${placeholders})`,
+          ids
+        ),
+        db.select<{ count: number }[]>(
+          `SELECT COUNT(*) as count FROM sale_items WHERE product_id IN (${placeholders})`,
+          ids
+        ),
+      ]);
 
-      if (purchases.length > 0 && sales.length > 0) {
+      const pCount = purchaseCount[0].count;
+      const sCount = saleCount[0].count;
+
+      if (pCount > 0 && sCount > 0) {
         throw new Error(
           "No se pueden eliminar productos con compras y ventas asociadas"
         );
-      } else if (purchases.length > 0) {
+      } else if (pCount > 0) {
         throw new Error(
           "No se pueden eliminar productos con compras asociadas"
         );
-      } else if (sales.length > 0) {
+      } else if (sCount > 0) {
         throw new Error("No se pueden eliminar productos con ventas asociadas");
       }
 
